@@ -61,7 +61,7 @@ services:
       REDIS_URL: redis://:redis123@redis:6379
 
       # Next.js
-      NODE_ENV: development
+      # NODE_ENV is automatically set by Next.js - do not set it manually
       NEXT_PUBLIC_APP_URL: http://localhost:3000
 
       # Authentication (use default for development)

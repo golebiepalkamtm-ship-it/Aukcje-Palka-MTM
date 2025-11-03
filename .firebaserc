@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "pigeon-aucion-41d68",
+    "staging": "pigeon-aucion-41d68"
+  },
+  "targets": {},
+  "etags": {}
+}

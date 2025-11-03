@@ -118,3 +118,21 @@ firestore-debug.log
 .env.test.local
 .env.production.local
 node_modules
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# Firebase Functions / Genkit (separate projects - removed)
+# Keep this section in case old folders reappear
+pigeon/
+wwwwww/
+aucion/
+pigeon_aucion/
+d-data-highway/
+
+# Backup files
+*.env.backup
+.env.backup
+
+# Test/debug folders
+-p/

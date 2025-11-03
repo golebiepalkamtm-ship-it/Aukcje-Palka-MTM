@@ -1,0 +1,30 @@
+{
+  "name": "Pałka MTM - Golebie Pocztowe",
+  "short_name": "Palka MTM",
+  "description": "Platforma aukcji gołębi pocztowych. Mistrzowskie championy, referencje, kontakt i sprzedaż.",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#131821",
+  "theme_color": "#1e293b",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "pl-PL"
+}

@@ -1,0 +1,39 @@
+import { getAdminUser } from '@/lib/firebase-auth-helpers';
+import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
+  const authResult = await getAdminUser(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+  const skip = (page - 1) * pageSize;
+
+  const [items, total] = await Promise.all([
+    prisma.transaction.findMany({
+      skip,
+      take: pageSize,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        amount: true,
+        commission: true,
+        status: true,
+        createdAt: true,
+        auction: { select: { title: true } },
+        buyer: { select: { firstName: true, lastName: true, email: true } },
+        seller: { select: { firstName: true, lastName: true, email: true } },
+      },
+    }),
+    prisma.transaction.count(),
+  ]);
+
+  return NextResponse.json({ items, total, page, pageSize });
+}
