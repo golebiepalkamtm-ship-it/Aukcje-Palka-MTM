@@ -115,6 +115,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, fetchAndSyncUser]);
 
   useEffect(() => {
+    if (!auth) {
+      error('AuthContext: Firebase auth nie jest zainicjalizowany');
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async firebaseUser => {
       setUser(firebaseUser);
       if (firebaseUser) {
@@ -158,6 +163,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
+      if (!auth) {
+        throw new Error('Firebase nie jest zainicjalizowany');
+      }
       await firebaseSignOut(auth);
       setUser(null);
       setDbUser(null);

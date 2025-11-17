@@ -21,6 +21,11 @@ export default function SMSAuth({ phoneNumber, onSuccess, onBack }: SMSAuthProps
   const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
 
   useEffect(() => {
+    if (!auth) {
+      setError('Firebase nie jest zainicjalizowany');
+      return;
+    }
+
     // Inicjalizacja reCAPTCHA
     const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
       size: 'invisible',
@@ -43,6 +48,9 @@ export default function SMSAuth({ phoneNumber, onSuccess, onBack }: SMSAuthProps
       setError('');
 
       try {
+        if (!auth) {
+          throw new Error('Firebase nie jest zainicjalizowany');
+        }
         const result = await signInWithPhoneNumber(auth, phoneNumber, verifier);
         setConfirmationResult(result);
         setIsCodeSent(true);
@@ -84,6 +92,9 @@ export default function SMSAuth({ phoneNumber, onSuccess, onBack }: SMSAuthProps
     setError('');
 
     try {
+      if (!auth) {
+        throw new Error('Firebase nie jest zainicjalizowany');
+      }
       const result = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
       setConfirmationResult(result);
       setIsCodeSent(true);
