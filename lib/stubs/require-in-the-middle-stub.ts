@@ -6,9 +6,9 @@
  * module.exports = function(moduleName, options, onrequire)
  */
 export default function requireInTheMiddle(
-  moduleName?: string | string[],
-  options?: unknown,
-  onrequire?: (exports: unknown, name: string, basedir: string) => unknown
+  _moduleName?: string | string[],
+  _options?: unknown,
+  _onrequire?: (exports: unknown, name: string, basedir: string) => unknown
 ) {
   // W development nie robimy nic - zwracamy noop
   return {

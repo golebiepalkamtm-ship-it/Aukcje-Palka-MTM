@@ -215,7 +215,7 @@ function YearCard({ data, index, total, onClick, isSelected, isVisible }: YearCa
 }
 
 // Particle component
-function Particle({ index }: { index: number }) {
+function Particle({ index: _index }: { index: number }) {
   const size = Math.random() * 3 + 1;
   const startX = Math.random() * 100;
   const startY = Math.random() * 100;

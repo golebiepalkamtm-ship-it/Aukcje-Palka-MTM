@@ -35,7 +35,6 @@ let scriptLoaded = false;
  */
 export function LiquidBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const appRef = useRef<LiquidApp | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current || scriptLoaded) return;

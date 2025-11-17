@@ -78,7 +78,7 @@ export default function AddBreederMeetingForm() {
           duration: 5000,
         });
       }
-    } catch (error) {
+    } catch {
       const errorMsg = 'Wystąpił błąd podczas wysyłania formularza';
       setSubmitStatus('error');
       setErrorMessage(errorMsg);

@@ -12,8 +12,6 @@ import {
   Star,
   Camera,
   Clock,
-  CheckCircle,
-  XCircle,
   AlertCircle,
   Activity,
   Database,
