@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     locale: 'pl_PL',
     images: [
       {
-        url: '/logo.png',
+        url: new URL('/logo.png', process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').toString(),
         width: 1200,
         height: 630,
         alt: 'Palka MTM - Mistrzowie Sprintu',
@@ -41,6 +41,6 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Palka MTM - Mistrzowie Sprintu',
     description: 'Ekskluzywna platforma aukcyjna dla hodowcow golebi pocztowych',
-    images: ['/logo.png'],
+    images: [new URL('/logo.png', process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').toString()],
   },
 };

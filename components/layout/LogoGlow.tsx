@@ -39,6 +39,8 @@ export function LogoGlow() {
               width: 'auto', 
               height: 'auto',
             }}
+            unoptimized
+            priority
           />
         </motion.div>
       </Link>
