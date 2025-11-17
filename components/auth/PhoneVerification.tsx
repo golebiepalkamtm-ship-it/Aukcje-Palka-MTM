@@ -33,6 +33,11 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
   // Inicjalizacja reCAPTCHA
   useEffect(() => {
     if (step === 'phone' || step === 'verify') {
+      if (!auth) {
+        setError('Firebase nie jest zainicjalizowany');
+        return;
+      }
+
       const verifier = new RecaptchaVerifier(auth, 'recaptcha-phone-container', {
         size: 'invisible',
         callback: () => {
@@ -70,6 +75,10 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
     setSuccess('');
 
     try {
+      if (!auth) {
+        throw new Error('Firebase nie jest zainicjalizowany');
+      }
+
       // Użyj PhoneAuthProvider do weryfikacji numeru (bez logowania)
       const phoneAuthProvider = new PhoneAuthProvider(auth);
       const verificationId = await phoneAuthProvider.verifyPhoneNumber(
@@ -186,6 +195,11 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
     // Utwórz nową instancję reCAPTCHA
     if (recaptchaVerifier) {
       recaptchaVerifier.clear();
+    }
+
+    if (!auth) {
+      setError('Firebase nie jest zainicjalizowany');
+      return;
     }
 
     const newVerifier = new RecaptchaVerifier(auth, 'recaptcha-phone-container', {
