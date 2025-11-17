@@ -140,3 +140,10 @@ d-data-highway/
 # Large files that shouldn't be in repo
 oracleJdk-25/
 **/oracleJdk-25/
+
+# Secrets and credentials
+scripts/temp-credentials.json
+**/temp-credentials.json
+**/*credentials*.json
+**/*-key.json
+firebase-key.json
