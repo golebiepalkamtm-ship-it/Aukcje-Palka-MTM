@@ -80,7 +80,7 @@ ${validatedData.message}
       return NextResponse.json(
         {
           error: 'Błąd walidacji danych',
-          details: error.errors.map(e => ({
+          details: error.issues.map(e => ({
             field: e.path.join('.'),
             message: e.message,
           })),

@@ -11,7 +11,7 @@
 
 import { handleApiError } from '@/lib/error-handling';
 import { requireFirebaseAuth } from '@/lib/firebase-auth';
-import { debug, info } from '@/lib/logger';
+import { debug, info, error as logError } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 

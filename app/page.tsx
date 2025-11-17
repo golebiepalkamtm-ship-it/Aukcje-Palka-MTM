@@ -4,10 +4,10 @@ import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 import { LiquidBackground } from '@/components/home/LiquidBackground';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function HomePage() {
+function HomePageContent() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -138,5 +138,19 @@ export default function HomePage() {
           </motion.section>
       </div>
     </UnifiedLayout>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <UnifiedLayout showFooter={false} showBackground={false}>
+        <div className="h-screen flex items-center justify-center">
+          <div className="text-white">Ładowanie...</div>
+        </div>
+      </UnifiedLayout>
+    }>
+      <HomePageContent />
+    </Suspense>
   );
 }

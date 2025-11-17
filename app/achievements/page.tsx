@@ -24,7 +24,7 @@ export default function AchievementsPage() {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   
   const selectedYearData = selectedYear 
-    ? achievementsData.find(d => d.year === selectedYear) 
+    ? achievementsData.find(d => d.year === selectedYear) ?? null
     : null;
   
   const totalMasterTitles = achievementsData.reduce((sum, y) => sum + y.totalMasterTitles, 0);

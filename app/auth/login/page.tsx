@@ -1,5 +1,6 @@
 import AuthFlipCard from '@/components/auth/AuthFlipCard';
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
+import { Suspense } from 'react';
 
 export const metadata = {
   title: 'Zaloguj się | Pałka MTM',
@@ -10,7 +11,9 @@ export default function LoginPage() {
   return (
     <UnifiedLayout showNavigation={true} showFooter={true}>
       <div className="flex items-start justify-center pt-8 pb-12">
-        <AuthFlipCard initialMode="login" />
+        <Suspense fallback={<div className="text-white">Ładowanie...</div>}>
+          <AuthFlipCard initialMode="login" />
+        </Suspense>
       </div>
     </UnifiedLayout>
   );

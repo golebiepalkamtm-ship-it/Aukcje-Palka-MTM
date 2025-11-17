@@ -391,17 +391,20 @@ export function handleApiError(
     if (request) {
       errorLogger.logApiError(error, request, context);
     }
-    return NextResponse.json(
-      {
-        error: error.message,
-        ...(error.details && { details: error.details }),
-        ...(process.env.NODE_ENV === 'development' && {
-          type: error.type,
-          stack: error.stack,
-        }),
-      },
-      { status: error.statusCode }
-    );
+    const responseBody: Record<string, unknown> = {
+      error: error.message,
+    };
+    
+    if (error.details) {
+      responseBody.details = error.details;
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      responseBody.type = error.type;
+      responseBody.stack = error.stack;
+    }
+    
+    return NextResponse.json(responseBody, { status: error.statusCode });
   }
 
   // Firebase errors

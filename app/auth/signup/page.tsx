@@ -1,10 +1,13 @@
-import FirebaseSignUpForm from '@/components/auth/FirebaseSignUpForm';
+import FirebaseAuthForm from '@/components/auth/FirebaseAuthForm';
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
+import { Suspense } from 'react';
 
 export default function SignUpPage() {
   return (
     <UnifiedLayout>
-      <FirebaseSignUpForm />
+      <Suspense fallback={<div className="text-white">Ładowanie...</div>}>
+        <FirebaseAuthForm initialMode="signup" />
+      </Suspense>
     </UnifiedLayout>
   );
 }
