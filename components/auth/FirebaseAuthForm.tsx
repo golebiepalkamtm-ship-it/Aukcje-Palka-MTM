@@ -80,6 +80,9 @@ export default function FirebaseAuthForm({
   // successMessage: opcjonalny komunikat, który zostanie ustawiony po sukcesie (jeśli null - brak komunikatu)
   const syncUser = async (successMessage?: string | null) => {
     try {
+      if (!auth) {
+        throw new Error('Firebase nie jest zainicjalizowany');
+      }
       const user = auth.currentUser;
       if (!user) throw new Error('Brak zalogowanego użytkownika');
 
