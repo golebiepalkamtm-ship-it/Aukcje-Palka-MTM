@@ -143,7 +143,9 @@ oracleJdk-25/
 
 # Secrets and credentials
 scripts/temp-credentials.json
+scripts/service-account.json
 **/temp-credentials.json
 **/*credentials*.json
+**/*service-account*.json
 **/*-key.json
 firebase-key.json
