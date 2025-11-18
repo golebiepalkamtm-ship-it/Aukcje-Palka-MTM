@@ -33,6 +33,9 @@ function HomePageContent() {
   }, [searchParams, router]);
 
   useEffect(() => {
+    // Sprawdź czy jesteśmy w przeglądarce (SSR safety)
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
     // Ukryj scroll na stronie głównej używając CSS zamiast manipulacji DOM
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
@@ -54,11 +57,14 @@ function HomePageContent() {
     };
   }, []);
 
+  // Sprawdź czy LiquidBackground jest włączony
+  const enableLiquidBackground = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_ENABLE_LIQUID_BACKGROUND === 'true';
+  
   return (
-      <UnifiedLayout showFooter={false} showBackground={false}>
+      <UnifiedLayout showFooter={false} showBackground={!enableLiquidBackground}>
         <div className="h-screen relative">
-          {/* Liquid Background Effect */}
-          <LiquidBackground />
+          {/* Liquid Background Effect - wyłączone w production */}
+          {enableLiquidBackground && <LiquidBackground />}
           {/* Napis na górze */}
           <motion.div
             initial={{ opacity: 0, y: -30 }}

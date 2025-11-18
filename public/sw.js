@@ -392,7 +392,7 @@ define(['./workbox-ebf7dac2'], function (e) {
           url: '/_next/static/q2YxkTkcyxI8jlQVEh27z/_ssgManifest.js',
           revision: 'b6652df95db52feb4daf4eca35380933',
         },
-        { url: '/apple-touch-icon.png', revision: 'd386e5086aded801abc8caa8015e86e4' },
+        // Removed apple-touch-icon.png - using logo.png instead
         { url: '/aukcje.png', revision: '87e9ddfb6c5851ba3fb88b94397ab071' },
         { url: '/champions/1/data.json', revision: 'cebcd5cbcc59074087a37e931e3873f0' },
         {

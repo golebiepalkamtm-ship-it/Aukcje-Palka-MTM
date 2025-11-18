@@ -1,14 +1,4 @@
 {
-  "hosting": {
-    "source": ".",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      {
-        "source": "**",
-        "function": "nextjsFunc"
-      }
-    ]
-  },
   "functions": [
     {
       "codebase": "default",
@@ -28,7 +18,13 @@
       "source": "aucion",
       "codebase": "aucion",
       "disallowLegacyRuntimeConfig": true,
-      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
       "predeploy": [
         "npm --prefix \"$RESOURCE_DIR\" run lint",
         "npm --prefix \"$RESOURCE_DIR\" run build"
@@ -44,7 +40,7 @@
     "source": "dataconnect"
   },
   "firestore": {
-    "database": "pigeonaucion",
+    "database": "(default)",
     "location": "europe-central2",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
@@ -52,13 +48,17 @@
   "apphosting": [
     {
       "backendId": "palka-mtm",
-      "rootDir": "/",
-      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "functions"]
-    },
-    {
-      "backendId": "my-web-app",
-      "rootDir": "/",
-      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "functions"]
+      "rootDir": ".",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions",
+        ".next/cache",
+        ".vercel"
+      ],
+      "alwaysDeployFromSource": true
     }
   ]
 }

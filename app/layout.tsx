@@ -1,14 +1,9 @@
 'use client';
 
-// Sentry configs are loaded conditionally in their own files
-// Import them here only in production to avoid webpack warnings in dev
-const isProduction = process.env.NODE_ENV === 'production';
-if (isProduction) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require('@/sentry.client.config');
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require('@/sentry.server.config');
-}
+// UWAGA: Nie ładuj tutaj Sentry config - Next.js automatycznie używa instrumentation-client.ts
+// Ładowanie sentry.client.config tutaj powoduje podwójną inicjalizację!
+// Next.js automatycznie obsługuje instrumentation-client.ts, więc te require() nie są potrzebne.
+
 import ClientProviders from '@/components/providers/ClientProviders';
 import { ToastProvider } from '@/components/providers/ToastProvider';
 import { useState, useEffect } from 'react';
@@ -24,9 +19,36 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [isLoading, setIsLoading] = useState(true);
+  // W production wyłącz overlay jeśli powoduje problemy
+  const isProduction = typeof window !== 'undefined' && process.env.NODE_ENV === 'production';
+  const enableLoadingOverlay = process.env.NEXT_PUBLIC_ENABLE_LOADING_OVERLAY !== 'false';
+  
+  const [isLoading, setIsLoading] = useState(false); // Domyślnie wyłączone
   const [fadeOut, setFadeOut] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Sprawdź czy jesteśmy w przeglądarce
+  useEffect(() => {
+    setIsClient(true);
+    
+    // Jeśli overlay jest wyłączony lub w production, od razu ukryj
+    if (!enableLoadingOverlay || isProduction) {
+      setIsLoading(false);
+      return;
+    }
+    
+    // Fallback: jeśli video się nie załaduje, ukryj overlay po 2 sekundach
+    const fallbackTimer = setTimeout(() => {
+      if (isLoading) {
+        setVideoEnded(true);
+        setFadeOut(true);
+        setTimeout(() => setIsLoading(false), 500); // Krótszy fade-out
+      }
+    }, 2000);
+
+    return () => clearTimeout(fallbackTimer);
+  }, [isLoading, enableLoadingOverlay, isProduction]);
 
   // Obsługa zakończenia wideo - rozpoczyna fade-out białego tła
   const handleVideoEnd = () => {
@@ -37,12 +59,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     }, 100);
   };
 
-  // Po zakończeniu fade-out usuń overlay
+  // Obsługa błędu ładowania video - automatycznie ukryj overlay (szybko!)
+  const handleVideoError = () => {
+    setVideoEnded(true);
+    setFadeOut(true);
+    setTimeout(() => setIsLoading(false), 500); // Krótszy fade-out w przypadku błędu
+  };
+
+  // Po zakończeniu fade-out usuń overlay (krótszy czas)
   useEffect(() => {
     if (fadeOut) {
       const timer = setTimeout(() => {
         setIsLoading(false);
-      }, 3500); // Czas trwania fade-out (3.5 sekundy)
+      }, 600); // Krótszy czas fade-out (0.6 sekundy)
       return () => clearTimeout(timer);
     }
   }, [fadeOut]);
@@ -51,6 +80,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pl" data-scroll-behavior="smooth">
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -72,11 +103,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ClientProviders>
 
         {/* Overlay z białym tłem i wideo - przykrywa główną zawartość */}
-        {isLoading && (
-          <div className="fixed inset-0 z-[10000] pointer-events-none">
-            {/* Białe tło z fade-out */}
+        {/* Tylko w przeglądarce i jeśli jest włączone ładowanie */}
+        {isClient && isLoading && (
+          <div className="fixed inset-0 z-[10000] pointer-events-none" aria-hidden="true">
+            {/* Białe tło z fade-out - krótszy czas transition */}
             <div
-              className={`absolute inset-0 bg-white transition-opacity duration-[3500ms] ease-in-out ${
+              className={`absolute inset-0 bg-white transition-opacity duration-[500ms] ease-in-out ${
                 fadeOut ? 'opacity-0' : 'opacity-100'
               }`}
             />
@@ -89,6 +121,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   muted
                   loop={false}
                   onEnded={handleVideoEnd}
+                  onError={handleVideoError}
                   className="max-w-full max-h-full object-contain"
                 />
               </div>

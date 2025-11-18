@@ -1,0 +1,17 @@
+runConfig:
+  runtime: nodejs20
+  env:
+    - variable: NODE_ENV
+      value: production
+    - variable: NEXT_TELEMETRY_DISABLED
+      value: "1"
+buildConfig:
+  commands:
+    - npm ci
+    - npm run build
+  env:
+    - variable: NODE_ENV
+      value: production
+    - variable: NEXT_TELEMETRY_DISABLED
+      value: "1"
+

@@ -70,8 +70,9 @@ const nextConfig = {
       },
     ];
 
-    // HTTPS redirect w produkcji
-    if (process.env.NODE_ENV === 'production') {
+    // HTTPS redirect w produkcji (TYLKO jeśli nie jesteśmy na Vercel - Vercel robi to automatycznie)
+    // Vercel automatycznie obsługuje HTTPS, więc ten redirect może powodować problemy
+    if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
       redirects.push({
         source: '/:path*',
         has: [
@@ -158,6 +159,19 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Produkcyjna domena palkamtm.pl
+      {
+        protocol: 'https',
+        hostname: 'palkamtm.pl',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.palkamtm.pl',
+        port: '',
+        pathname: '/**',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -202,7 +216,9 @@ const withPWA = require('next-pwa')({
   ],
 });
 
-const { withSentryConfig } = require('@sentry/nextjs');
+// NIE używamy withSentryConfig - powoduje podwójną inicjalizację Sentry
+// Używamy tylko manual setup przez instrumentation-client.ts
+// const { withSentryConfig } = require('@sentry/nextjs');
 
 // Zastosuj modyfikacje webpack PO opakowaniu konfiguracji przez wtyczki
 let finalConfig = withPWA(nextConfig);
@@ -327,17 +343,12 @@ finalConfig.webpack = (config, options) => {
   return config;
 };
 
-// Eksportuj finalną konfigurację, opakowaną w Sentry w środowisku produkcyjnym
-if (process.env.NODE_ENV === 'production') {
-  module.exports = withSentryConfig(finalConfig, {
-    org: 'mtmpalka',
-    project: 'javascript-nextjs',
-    silent: !process.env.CI,
-    widenClientFileUpload: true,
-    tunnelRoute: '/monitoring',
-    disableLogger: true,
-    automaticVercelMonitors: true,
-  });
-} else {
-  module.exports = finalConfig;
-}
+// Eksportuj finalną konfigurację
+// UWAGA: NIE używamy withSentryConfig - powoduje podwójną inicjalizację Sentry
+// Używamy tylko manual setup przez instrumentation-client.ts i sentry.server.config.ts
+// withSentryConfig automatycznie inicjalizuje Sentry po stronie klienta, co powoduje konflikt
+// z instrumentation-client.ts, który też inicjalizuje Sentry
+module.exports = finalConfig;
+
+// UWAGA: Jeśli potrzebujesz automatycznego uploadu source maps do Sentry,
+// możesz użyć Sentry CLI w CI/CD pipeline zamiast withSentryConfig

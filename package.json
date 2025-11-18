@@ -29,7 +29,9 @@
     "test:app": "vitest run ./__tests__ ./app ./lib ./components ./hooks ./utils",
     "test:firebase": "tsx scripts/test-firebase-init.ts",
     "deploy:vercel": "vercel --prod",
-    "deploy:homepl": "bash scripts/deploy-homepl.sh"
+    "deploy:homepl": "bash scripts/deploy-homepl.sh",
+    "deploy:firebase": "npx firebase-tools deploy --only apphosting",
+    "deploy:firebase:all": "npx firebase-tools deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Trasy wymagające autoryzacji
-const protectedRoutes = ['/dashboard', '/admin', '/seller', '/auctions', '/profile', '/settings'];
+// Trasy wymagające autoryzacji (TYLKO konkretne ścieżki, nie całe prefixy)
+const protectedRoutes = ['/dashboard', '/admin', '/seller', '/profile', '/settings'];
+// Podtrasy /auctions wymagające autoryzacji
+const protectedAuctionRoutes = ['/auctions/create', '/auctions/bid', '/auctions/my-bids', '/auctions/my-auctions'];
 
 // Wymogi poziomów dla części tras (proste routingi po prefixie)
 const level2Routes = ['/profile'];
@@ -44,16 +46,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Wymuszenie HTTPS w produkcji
-  if (process.env.NODE_ENV === 'production' && !isHttps(request)) {
+  // Wymuszenie HTTPS w produkcji (TYLKO jeśli nie jesteśmy na Vercel - Vercel robi to automatycznie)
+  // Vercel automatycznie obsługuje HTTPS, więc ten redirect może powodować problemy
+  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL && !isHttps(request)) {
     const httpsUrl = `https://${request.headers.get('host')}${pathname}${request.url.split('?')[1] ? '?' + request.url.split('?')[1] : ''}`;
     return NextResponse.redirect(httpsUrl, 301);
   }
 
   // Sprawdź czy trasa wymaga autoryzacji
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  
+  // Sprawdź czy to chroniona podtrasa /auctions
+  const isProtectedAuctionRoute = protectedAuctionRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
 
-  if (!isProtectedRoute) {
+  if (!isProtectedRoute && !isProtectedAuctionRoute) {
     return NextResponse.next();
   }
 
