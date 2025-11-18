@@ -37,17 +37,17 @@ env:
     availability:
       - RUNTIME
 
-  # Database - use secret in Firebase Console
-  # - variable: DATABASE_URL
-  #   secret: secretProductionDatabaseURL
-  #   availability:
-  #     - RUNTIME
+  # Database - ustaw prawdziwy connection string PostgreSQL
+  - variable: DATABASE_URL
+    value: postgresql://username:password@host:5432/palkamtm_production
+    availability:
+      - RUNTIME
 
-  # NextAuth Secret - use secret in Firebase Console
-  # - variable: NEXTAUTH_SECRET
-  #   secret: secretProductionNextAuthSecret
-  #   availability:
-  #     - RUNTIME
+  # NextAuth Secret - wygeneruj nowy secret (użyj: openssl rand -base64 32)
+  - variable: NEXTAUTH_SECRET
+    value: your-production-secret-key-here-change-this
+    availability:
+      - RUNTIME
 
   # Firebase Client-side (from env.production)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY

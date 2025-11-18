@@ -1,5 +1,6 @@
 runConfig:
   runtime: nodejs20
+  startCommand: node .next/standalone/server.js
   env:
     - variable: NODE_ENV
       value: production
