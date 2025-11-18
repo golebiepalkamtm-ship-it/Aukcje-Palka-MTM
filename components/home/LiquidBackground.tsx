@@ -35,25 +35,25 @@ let scriptLoaded = false;
  * UWAGA: Wyłączone w production - powoduje błędy i blokuje renderowanie
  */
 export function LiquidBackground() {
-  // Wyłącz w production - powoduje problemy z liquid1.min.js
-  // Sprawdź czy jesteśmy w przeglądarce i czy LiquidBackground jest włączony
-  if (typeof window !== 'undefined') {
-    const enableLiquidBackground = process.env.NEXT_PUBLIC_ENABLE_LIQUID_BACKGROUND === 'true';
-    
-    // W production domyślnie wyłączone - zwróć null aby nie blokować renderowania
-    if (!enableLiquidBackground) {
-      return null;
-    }
-  } else {
-    // W SSR zwróć null
-    return null;
-  }
-
+  // Wszystkie React Hooks MUSZĄ być na górze, przed jakimkolwiek early return
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Wyłącz w production - powoduje problemy z liquid1.min.js
+  // Sprawdź czy jesteśmy w przeglądarce i czy LiquidBackground jest włączony
+  const enableLiquidBackground =
+    typeof window !== 'undefined' &&
+    process.env.NEXT_PUBLIC_ENABLE_LIQUID_BACKGROUND === 'true';
+
   useEffect(() => {
-    if (!canvasRef.current || scriptLoaded) return;
-    if (typeof window === 'undefined') return;
+    // Jeśli LiquidBackground jest wyłączony, nie rób nic
+    if (!enableLiquidBackground) {
+      return;
+    }
+
+    // Jeśli nie jesteśmy w przeglądarce, nie rób nic (już sprawdzone wyżej, ale dla pewności)
+    if (typeof window === 'undefined' || !canvasRef.current || scriptLoaded) {
+      return;
+    }
 
     scriptLoaded = true;
     const canvas = canvasRef.current;
@@ -183,7 +183,12 @@ export function LiquidBackground() {
       scriptLoaded = false;
       window.liquidBackgroundInitialized = false;
     };
-  }, []);
+  }, [enableLiquidBackground]);
+
+  // Early return PO hookach - to jest OK
+  if (!enableLiquidBackground || typeof window === 'undefined') {
+    return null;
+  }
 
   return (
     <div

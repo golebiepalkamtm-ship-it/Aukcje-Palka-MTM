@@ -1,0 +1,48 @@
+JAK USTAWIĆ ZMIENNE ŚRODOWISKOWE W FIREBASE APP HOSTING:
+
+1. Otwórz Firebase Console:
+   https://console.firebase.google.com/project/m-t-m-62972/apphosting
+
+2. Kliknij na backend "palka-mtm"
+
+3. W menu po lewej stronie kliknij "Configuration" (Konfiguracja)
+
+4. W sekcji "Environment Variables" kliknij "Add variable" (Dodaj zmienną)
+
+5. Dla każdej zmiennej z env.production:
+   - Variable name: (np. DATABASE_URL)
+   - Variable value: (wklej wartość z env.production)
+   - Availability: Wybierz RUNTIME (lub BUILD i RUNTIME)
+
+WAŻNE ZMIENNE DO DODANIA:
+
+1. DATABASE_URL - connection string PostgreSQL
+2. NEXT_PUBLIC_BASE_URL - https://palkamtm.pl
+3. NEXTAUTH_URL - https://palkamtm.pl
+4. NEXTAUTH_SECRET - wygeneruj nowy secret
+5. NODE_ENV - production
+6. NEXT_TELEMETRY_DISABLED - 1
+
+FIREBASE CLIENT-SIDE (NEXT_PUBLIC_*):
+7. NEXT_PUBLIC_FIREBASE_API_KEY
+8. NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+9. NEXT_PUBLIC_FIREBASE_PROJECT_ID
+10. NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+11. NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+12. NEXT_PUBLIC_FIREBASE_APP_ID
+13. NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+
+FIREBASE ADMIN SDK:
+14. FIREBASE_PROJECT_ID
+15. FIREBASE_CLIENT_EMAIL
+16. FIREBASE_PRIVATE_KEY - cała wartość z env.production (z -----BEGIN i -----END)
+
+17. SMS_PROVIDER - firebase
+
+JAK DODAĆ ZMIENNĄ:
+- Kliknij "Add variable"
+- Wpisz nazwę (np. DATABASE_URL)
+- Wklej wartość
+- Wybierz "RUNTIME" w Availability
+- Kliknij "Save"
+

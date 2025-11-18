@@ -6,6 +6,8 @@ runConfig:
       value: production
     - variable: NEXT_TELEMETRY_DISABLED
       value: "1"
+    - variable: PORT
+      value: "8080"
 buildConfig:
   commands:
     - npm ci
