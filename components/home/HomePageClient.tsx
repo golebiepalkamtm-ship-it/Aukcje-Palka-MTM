@@ -5,7 +5,7 @@ import { HeroSection } from '@/components/home/HeroSection';
 import { PhilosophySection } from '@/components/home/PhilosophySection';
 import { UpcomingAuctions } from '@/components/home/UpcomingAuctions';
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 
 export default function HomePageClient() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,18 +31,33 @@ export default function HomePageClient() {
   useEffect(() => {
     // Sprawdź czy jesteśmy w przeglądarce
     if (typeof window === 'undefined') return;
+    // Throttle mousemove using requestAnimationFrame to avoid flooding state updates
+    let rafId: number | null = null;
+    let lastEvent: MouseEvent | null = null;
+
+    const updateFromEvent = () => {
+      if (!lastEvent || !containerRef.current) return;
+      const e = lastEvent;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left - rect.width / 2) / rect.width;
+      const y = (e.clientY - rect.top - rect.height / 2) / rect.height;
+      setMousePosition({ x, y });
+      lastEvent = null;
+      rafId = null;
+    };
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = (e.clientX - rect.left - rect.width / 2) / rect.width;
-        const y = (e.clientY - rect.top - rect.height / 2) / rect.height;
-        setMousePosition({ x, y });
+      lastEvent = e;
+      if (rafId === null) {
+        rafId = window.requestAnimationFrame(updateFromEvent);
       }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Dynamic 3D transforms based on mouse position
@@ -135,30 +150,37 @@ export default function HomePageClient() {
         </motion.div>
       </motion.div>
 
-      {/* Floating particles for extra depth */}
+      {/* Floating particles for extra depth (memoized positions to avoid regen every render) */}
       <div className="fixed inset-0 pointer-events-none z-5">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-white/20 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -100, 0],
-              x: [0, Math.random() * 50 - 25, 0],
-              opacity: [0, 1, 0],
-              scale: [0, 1, 0],
-            }}
-            transition={{
-              duration: Math.random() * 10 + 10,
-              repeat: Infinity,
-              delay: Math.random() * 10,
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
+        {useMemo(() => {
+          const particles = Array.from({ length: 20 }).map(() => ({
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            x: Math.random() * 50 - 25,
+            duration: Math.random() * 10 + 10,
+            delay: Math.random() * 10,
+          }));
+
+          return particles.map((p, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-white/20 rounded-full"
+              style={{ left: p.left, top: p.top }}
+              animate={{
+                y: [0, -100, 0],
+                x: [0, p.x, 0],
+                opacity: [0, 1, 0],
+                scale: [0, 1, 0],
+              }}
+              transition={{
+                duration: p.duration,
+                repeat: Infinity,
+                delay: p.delay,
+                ease: 'easeInOut',
+              }}
+            />
+          ));
+        }, [])}
       </div>
 
       {/* 3D Cursor follower */}

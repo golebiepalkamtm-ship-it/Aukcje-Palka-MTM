@@ -15,17 +15,23 @@ export async function requirePhoneVerification(request: NextRequest) {
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: decodedToken.uid },
+      where: { firebaseUid: decodedToken.uid },
       select: {
         isPhoneVerified: true,
         phoneNumber: true,
         firstName: true,
         lastName: true,
+        role: true,
       },
     });
 
     if (!user) {
       return NextResponse.json({ error: 'Użytkownik nie został znaleziony' }, { status: 404 });
+    }
+
+    // Administratorzy nie wymagają weryfikacji telefonu
+    if (user.role === 'ADMIN') {
+      return null;
     }
 
     if (!user.isPhoneVerified) {
@@ -66,7 +72,7 @@ export async function requireCompleteProfile(request: NextRequest) {
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: decodedToken.uid },
+      where: { firebaseUid: decodedToken.uid },
       select: {
         firstName: true,
         lastName: true,
@@ -75,11 +81,17 @@ export async function requireCompleteProfile(request: NextRequest) {
         postalCode: true,
         phoneNumber: true,
         isProfileVerified: true,
+        role: true,
       },
     });
 
     if (!user) {
       return NextResponse.json({ error: 'Użytkownik nie został znaleziony' }, { status: 404 });
+    }
+
+    // Administratorzy nie wymagają kompletnego profilu
+    if (user.role === 'ADMIN') {
+      return null;
     }
 
     // Sprawdź czy profil jest kompletny
@@ -133,7 +145,7 @@ export async function requireEmailVerification(request: NextRequest) {
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: decodedToken.uid },
+      where: { firebaseUid: decodedToken.uid },
       select: {
         emailVerified: true,
         isActive: true,
@@ -187,7 +199,7 @@ export async function requireFullVerification(request: NextRequest) {
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: decodedToken.uid },
+      where: { firebaseUid: decodedToken.uid },
       select: {
         role: true,
         isPhoneVerified: true,

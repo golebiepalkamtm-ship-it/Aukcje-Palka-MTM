@@ -1,7 +1,6 @@
 'use client';
 
 import { SmartImage } from '@/components/ui/SmartImage';
-import { Text3D } from '@/components/ui/Text3D';
 import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
@@ -82,16 +81,12 @@ export function PressPage() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.6 }}
-        className="relative z-10 pt-8 pb-20 px-4 sm:px-6 lg:px-8"
+        className="relative z-10 -mt-24 pb-20 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
-          <Text3D
-            variant="gradient"
-            intensity="high"
-            className="text-3xl md:text-4xl font-bold mb-6"
-          >
+          <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">
             Prasa i Media
-          </Text3D>
+          </h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -215,8 +210,9 @@ export function PressPage() {
                       setIsNewspaperOpen(false);
                       setCurrentPageIndex(0);
                     }}
-                    className="w-full h-full cursor-pointer overflow-hidden relative"
+                    className="w-full h-full cursor-pointer overflow-hidden relative rounded-lg border-2 border-white/20 transition-all duration-300 hover:border-white hover:shadow-[0_0_60px_20px_rgba(255,255,255,1),0_0_100px_30px_rgba(255,255,255,0.7)] group"
                   >
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-300 z-10" />
                     <SmartImage
                       src={`/press/articles/older/${folder.id}/${folder.cover}`}
                       alt={`Okładka ${folder.name}`}

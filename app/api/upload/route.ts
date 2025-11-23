@@ -8,7 +8,7 @@ import { join } from 'path';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'];
-const ALLOWED_DOCUMENT_TYPES = ['application/pdf'];
+const ALLOWED_DOCUMENT_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp']; // Dodano obrazy do dokumentów
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10MB
@@ -71,11 +71,21 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll('files') as File[];
     const type = formData.get('type') as string; // 'image', 'video', 'document'
 
+    console.log('📂 [API Upload] Otrzymano żądanie uploadu:', {
+      type,
+      filesCount: files?.length,
+      fileNames: files?.map(f => f.name),
+      fileSizes: files?.map(f => f.size),
+      fileTypes: files?.map(f => f.type)
+    });
+
     if (!files || files.length === 0) {
+      console.error('❌ [API Upload] Brak plików w żądaniu');
       return NextResponse.json({ error: 'Brak plików do przesłania' }, { status: 400 });
     }
 
     if (!type || !['image', 'video', 'document'].includes(type)) {
+      console.error('❌ [API Upload] Nieprawidłowy typ pliku:', type);
       return NextResponse.json({ error: 'Nieprawidłowy typ pliku' }, { status: 400 });
     }
 

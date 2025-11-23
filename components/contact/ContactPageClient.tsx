@@ -61,18 +61,18 @@ export default function ContactPageClient() {
     <>
       {/* Hero Section */}
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, delay: 0.4 }}
-        className="relative z-10 pt-4 pb-12 px-4 sm:px-6 lg:px-8"
+        transition={{ duration: 1, delay: 0.6 }}
+        className="relative z-10 -mt-24 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-white">Kontakt</h1>
+          <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Kontakt</h1>
           <motion.p
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.7 }}
-            className="text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto"
+            transition={{ duration: 0.8, delay: 1 }}
+            className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
           >
             Skontaktuj się z nami, aby dowiedzieć się więcej o naszych gołębiach i hodowli
           </motion.p>

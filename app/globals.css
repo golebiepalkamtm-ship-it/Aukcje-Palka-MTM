@@ -1,5 +1,23 @@
+/* Efekt odbicia progressive-blur na tle gołębnika */
+.progressive-blur {
+  top: calc(50vh - 1px) !important;
+  opacity: 0.85;
+  position: absolute;
+  left: 0;
+  z-index: 100;
+  inset: auto 0 0 0;
+  height: 50vh;
+  width: 100%;
+  pointer-events: none;
+  transform: rotate(0deg);
+  filter: blur(8px);
+  transition: opacity 0.2s ease;
+}
+/* UnifiedCard hover highlight effect */
 /* stylelint-disable at-rule-no-unknown */
 /* csslint ignore:start */
+@import url("mapbox-gl/dist/mapbox-gl.css");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -466,8 +484,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
-    background-color: #1e293b; /* przywrócone ciemniejsze tło, treść pozostaje czytelna */
-    zoom: 0.8;
+    background-color: #1a2332; /* umiarkowanie przyciemnione tło */
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05), transparent 60%),
+      radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.04), transparent 50%),
+      linear-gradient(180deg, #151e2e 0%, #1a2332 65%, #151e2e 100%);
+    background-attachment: fixed;
+    zoom: 0.7;
   }
 
   h1,
@@ -629,7 +652,7 @@
   /* Enhanced 3D Cards with Glassmorphism */
   .card {
     @apply relative rounded-3xl p-6 transition-all duration-500 ease-out hover:scale-[1.02];
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.9);
     box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.1);
     -webkit-backdrop-filter: blur(10px);
@@ -638,15 +661,15 @@
   }
 
   .card:hover {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.2);
     border: 2px solid rgba(255, 255, 255, 1);
-    box-shadow: var(--shadow-glow-strong);
+    box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
     transform: translateY(-4px) scale(1.02);
   }
 
   .card-solid {
     @apply relative rounded-3xl p-6;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow-solid);
     -webkit-backdrop-filter: blur(10px);
@@ -656,23 +679,22 @@
   /* New 3D Card Variants */
   .card-3d {
     @apply relative rounded-3xl p-6 transition-all duration-500 ease-out hover:scale-[1.02];
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow-3d);
-    transform-style: preserve-3d;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
 
   .card-3d:hover {
-    background: rgba(0, 0, 0, 0.4);
-    transform: translateY(-6px) scale(1.02) rotateX(5deg);
-    box-shadow: var(--shadow-glow-strong);
+    background: rgba(0, 0, 0, 0.2);
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
   }
 
   .card-floating {
     @apply relative rounded-3xl p-6 transition-all duration-700 ease-out;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow-solid);
     -webkit-backdrop-filter: blur(10px);
@@ -680,14 +702,14 @@
   }
 
   .card-floating:hover {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.2);
     transform: translateY(-8px) scale(1.05);
-    box-shadow: var(--shadow-glow-strong);
+    box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
   }
 
   .card-glass {
     @apply relative rounded-3xl p-6 transition-all duration-500 ease-out hover:scale-[1.02];
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.9);
     box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.1);
     -webkit-backdrop-filter: blur(10px);
@@ -695,15 +717,15 @@
   }
 
   .card-glass:hover {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.2);
     border: 2px solid rgba(255, 255, 255, 1);
-    box-shadow: var(--shadow-glow-strong);
+    box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
     transform: translateY(-4px) scale(1.02);
   }
 
   .card-gradient {
     @apply relative rounded-3xl p-6 transition-all duration-500 ease-out hover:scale-[1.02];
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.9);
     box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.1);
     -webkit-backdrop-filter: blur(10px);
@@ -711,9 +733,9 @@
   }
 
   .card-gradient:hover {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.2);
     border: 2px solid rgba(255, 255, 255, 1);
-    box-shadow: var(--shadow-glow-strong);
+    box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
     transform: translateY(-4px) scale(1.02);
   }
 
@@ -1264,7 +1286,6 @@ select option {
 
 /* 3D Transform Utilities */
 .transform-3d {
-  transform-style: preserve-3d;
 }
 
 .perspective-1000 {
@@ -1305,7 +1326,7 @@ select option {
   font-weight: 600;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   border: 2px solid rgba(255, 255, 255, 0.9);
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
   box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.1);
   transition:
@@ -1315,8 +1336,8 @@ select option {
     border-width var(--transition-duration) var(--transition-easing);
   overflow: hidden;
   position: relative;
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   /* Fallback for gap in older browsers */
   margin: -0.25rem;
 }
@@ -1331,7 +1352,7 @@ select option {
 
 @supports (backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px)) {
   .glass-nav-button {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(255, 255, 255, 0.08);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
@@ -1349,11 +1370,13 @@ select option {
   transition: left var(--transition-duration) var(--transition-easing);
 }
 
+
 .glass-nav-button:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.2);
-  border: 2px solid rgba(255, 255, 255, 1);
-  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
+  border: 2px solid #fff;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 
 .glass-nav-button:hover::before {
@@ -1789,7 +1812,7 @@ select option {
 
 /* Glassmorphism Utilities - Clean and modern */
 .glass-morphism {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.15);
   border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -1800,13 +1823,13 @@ select option {
 }
 
 .glass-morphism:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.2);
   border: 2px solid rgba(255, 255, 255, 1);
-  box-shadow: var(--shadow-glow-strong);
+  box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
 }
 
 .glass-morphism-strong {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.15);
   border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -1817,13 +1840,13 @@ select option {
 }
 
 .glass-morphism-strong:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.2);
   border: 2px solid rgba(255, 255, 255, 1);
-  box-shadow: var(--shadow-glow-strong);
+  box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
 }
 
   .glass-morphism-ultra {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.9);
     box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.1);
     position: relative;
@@ -1834,14 +1857,14 @@ select option {
   }
 
 .glass-morphism-ultra:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.2);
   border: 2px solid rgba(255, 255, 255, 1);
-  box-shadow: var(--shadow-glow-strong);
+  box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
 }
 
 /* Glass Container Effect */
 .glass-container {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.15);
   border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
@@ -1850,9 +1873,9 @@ select option {
 }
 
 .glass-container:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.2);
   border: 2px solid rgba(255, 255, 255, 1);
-  box-shadow: var(--shadow-glow-strong);
+  box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
 }
 
 /* Dodatkowe efekty solid backgrounds */
@@ -1910,7 +1933,7 @@ select option {
 }
 
 .hover-3d-lift:hover {
-  transform: translateY(-8px) scale(1.02) rotateX(5deg);
+  transform: translateY(-8px) scale(1.02);
   box-shadow: var(--shadow-glow-strong);
 }
 
@@ -1919,7 +1942,7 @@ select option {
 }
 
 .hover-3d-tilt:hover {
-  transform: rotateX(5deg) rotateY(5deg) scale(1.05);
+  transform: scale(1.05);
   box-shadow: var(--shadow-glow-strong);
 }
 
@@ -1928,7 +1951,7 @@ select option {
 }
 
 .hover-3d-rotate:hover {
-  transform: rotateY(10deg) scale(1.05);
+  transform: scale(1.05);
   box-shadow: var(--shadow-glow-strong);
 }
 
@@ -2799,4 +2822,62 @@ select option {
 
 .heritage-cell.clicked {
   --cell-z-index: 3000;
+}
+
+/* Custom scrollbar for Timeline3D */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #f59e0b, #d97706);
+}
+
+/* Fade In Forward Animation - Zmodyfikowana, aby bardziej przypominała wchodzenie z głębi */
+.fade-in-fwd {
+  -webkit-animation: fade-in-fwd 2.5s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+  animation: fade-in-fwd 2.5s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+  perspective: 1000px; /* Dodajemy perspektywę dla lepszego efektu 3D */
+  transform-style: preserve-3d;
+}
+
+/* Upewnij się, że animacja działa poprawnie w różnych przeglądarkach */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-fwd {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@-webkit-keyframes fade-in-fwd {
+  0% {
+    transform: translateZ(-800px) scale(0.5); /* Zwiększamy głębię i dodajemy skalowanie */
+    opacity: 0;
+  }
+  100% {
+    transform: translateZ(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-fwd {
+  0% {
+    transform: translateZ(-800px) scale(0.5); /* Zwiększamy głębię i dodajemy skalowanie */
+    opacity: 0;
+  }
+  100% {
+    transform: translateZ(0) scale(1);
+    opacity: 1;
+  }
 }

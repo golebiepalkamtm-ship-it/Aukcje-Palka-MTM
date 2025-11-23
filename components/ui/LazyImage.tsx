@@ -41,6 +41,11 @@ export default function LazyImage({
 
   // Intersection Observer for lazy loading
   useEffect(() => {
+    if (!('IntersectionObserver' in window)) {
+      setIsInView(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -58,7 +63,13 @@ export default function LazyImage({
       observer.observe(imgRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      try {
+        observer.disconnect();
+      } catch {
+        // ignore
+      }
+    };
   }, []);
 
   const handleLoad = () => {
@@ -115,18 +126,16 @@ export default function LazyImage({
         <Image
           src={src}
           alt={alt}
-          width={width}
-          height={height}
+          {...(width && height
+            ? { width, height }
+            : { fill: true })}
           className={cn('transition-opacity duration-300', isLoaded ? 'opacity-100' : 'opacity-0')}
           onLoad={handleLoad}
           onError={handleError}
-          placeholder={blurDataURL ? 'blur' : 'empty'}
-          blurDataURL={blurDataURL}
+          {...(blurDataURL ? { placeholder: 'blur', blurDataURL } : { placeholder: 'empty' })}
           sizes={sizes}
           quality={quality}
           priority={priority}
-          fill={!width || !height} // Use fill if dimensions not provided
-          style={width && height ? { width, height } : undefined}
         />
       )}
     </div>

@@ -7,9 +7,6 @@ import Link from 'next/link';
 export function LogoGlow() {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -50 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 2.5, delay: 0.8 }}
       className="relative z-[100]"
     >
       <Link href="/">
@@ -32,9 +29,9 @@ export function LogoGlow() {
           <Image
             src="/logo.png"
             alt="Pałka M.T.M. Mistrzowie Sprintu"
-            width={240}
-            height={240}
-            className="h-60 w-auto object-contain cursor-pointer"
+            width={320}
+            height={320}
+            className="h-80 w-auto object-contain cursor-pointer"
             style={{ 
               width: 'auto', 
               height: 'auto',

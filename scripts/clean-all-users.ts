@@ -1,22 +1,28 @@
 
 import admin from 'firebase-admin';
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { PrismaClient } from '@prisma/client';
 
-// Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Załaduj klucz z pliku
-const serviceAccountPath = join(__dirname, '../firebase-key.json');
-const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf-8'));
-
+// Użyj zmiennych środowiskowych z .env
 if (admin.apps.length === 0) {
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+  if (!projectId || !clientEmail || !privateKey) {
+    console.error('❌ Brak konfiguracji Firebase Admin SDK!');
+    console.error('Sprawdź czy w .env są ustawione:');
+    console.error('- FIREBASE_PROJECT_ID');
+    console.error('- FIREBASE_CLIENT_EMAIL');
+    console.error('- FIREBASE_PRIVATE_KEY');
+    process.exit(1);
+  }
+
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert({
+      projectId,
+      clientEmail,
+      privateKey,
+    }),
   });
 }
 

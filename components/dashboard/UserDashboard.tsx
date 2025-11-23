@@ -8,6 +8,7 @@ import { getPhoneCodeForCountry } from '@/lib/country-codes';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 // ...existing code...
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { sendEmailVerification } from 'firebase/auth';
 import { motion } from 'framer-motion';
 import {
@@ -66,13 +67,43 @@ export function UserDashboard() {
   const [smsCode, setSmsCode] = useState('');
   const [isVerifyingSms, setIsVerifyingSms] = useState(false);
   const [showCreateAuctionForm, setShowCreateAuctionForm] = useState(false);
-  const [auctionsData, _setAuctionsData] = useState({
+  const [auctionsData, setAuctionsData] = useState<{
+    myAuctions: any[];
+    watchedAuctions: any[];
+    myBids: any[];
+    endedAuctions: any[];
+    soldAuctions: any[];
+  }>({
     myAuctions: [],
     watchedAuctions: [],
     myBids: [],
     endedAuctions: [],
     soldAuctions: [],
   });
+
+  // Funkcja do pobierania danych aukcji
+  const fetchUserAuctions = useCallback(async () => {
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('/api/auctions/user', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAuctionsData(data);
+      }
+    } catch (error) {
+      console.error('Błąd pobierania aukcji:', error);
+    }
+  }, [user]);
+
+  // Pobierz aukcje gdy zakładka 'auctions' jest aktywna
+  useEffect(() => {
+    if (activeTab === 'auctions') {
+      fetchUserAuctions();
+    }
+  }, [activeTab, fetchUserAuctions]);
 
   // Usunięto console.log aby zmniejszyć spam w konsoli
 
@@ -81,12 +112,8 @@ export function UserDashboard() {
       { id: 'profile', label: 'Profil', icon: User, requiresVerification: false },
       { id: 'auctions', label: 'Moje aukcje', icon: Gavel, requiresVerification: true },
       { id: 'messages', label: 'Wiadomości', icon: MessageSquare, requiresVerification: false },
-      { id: 'achievements', label: 'Osiągnięcia', icon: Trophy, requiresVerification: false },
-      { id: 'references', label: 'Referencje', icon: Star, requiresVerification: false },
-      { id: 'meetings', label: 'Spotkania', icon: Users, requiresVerification: false },
       { id: 'security', label: 'Bezpieczeństwo', icon: Shield, requiresVerification: false },
       { id: 'notifications', label: 'Powiadomienia', icon: Bell, requiresVerification: false },
-      { id: 'settings', label: 'Ustawienia', icon: Settings, requiresVerification: false },
     ],
     []
   );
@@ -221,7 +248,13 @@ export function UserDashboard() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Panel Użytkownika</h1>
+        <h1 className="text-3xl font-bold text-white mb-2 flex items-center">
+          Panel Użytkownika
+          <InfoTooltip
+            text="To jest Twoje centrum dowodzenia. Tutaj możesz edytować dane, sprawdzać aukcje i wiadomości."
+            position="bottom"
+          />
+        </h1>
         <p className="text-white/70">Zarządzaj swoim kontem i ustawieniami</p>
       </div>
 
@@ -350,7 +383,10 @@ export function UserDashboard() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-white/70 text-sm">Email</label>
+                      <label className="text-white/70 text-sm flex items-center">
+                        Email
+                        <InfoTooltip text="Twój adres email służy do logowania i komunikacji. Nie można go zmienić samodzielnie." />
+                      </label>
                       <div className="flex items-center gap-3 p-3">
                         <Mail className="w-4 h-4 text-blue-400" />
                         <span className="text-white">{user.email}</span>
@@ -371,7 +407,10 @@ export function UserDashboard() {
 
                   {/* Numer telefonu */}
                   <div className="space-y-2">
-                    <label className="text-white/70 text-sm">Numer telefonu</label>
+                    <label className="text-white/70 text-sm flex items-center">
+                      Numer telefonu
+                      <InfoTooltip text="Numer służy do weryfikacji konta i kontaktu z kupującymi. Po wpisaniu numeru, kliknij przycisk 'Zweryfikuj', aby otrzymać kod SMS." />
+                    </label>
                     <div className="flex items-center gap-3">
                       {isEditingProfile ? (
                         <div className="flex items-center gap-2 flex-1">
@@ -501,7 +540,10 @@ export function UserDashboard() {
 
                   {/* Adres zamieszkania */}
                   <div className="space-y-4">
-                    <h4 className="text-lg font-semibold text-white">Adres zamieszkania</h4>
+                    <h4 className="text-lg font-semibold text-white flex items-center">
+                      Adres zamieszkania
+                      <InfoTooltip text="Twój adres jest potrzebny do faktur i dokumentacji aukcyjnej." />
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-white/70 text-sm">Ulica i numer</label>
@@ -624,10 +666,16 @@ export function UserDashboard() {
 
                   {/* Informacje o koncie */}
                   <div className="space-y-4">
-                    <h4 className="text-lg font-semibold text-white">Informacje o koncie</h4>
+                    <h4 className="text-lg font-semibold text-white flex items-center">
+                      Informacje o koncie
+                      <InfoTooltip text="Szczegóły dotyczące Twojego konta w systemie." />
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-white/70 text-sm">Data utworzenia konta</label>
+                        <label className="text-white/70 text-sm flex items-center">
+                          Data utworzenia konta
+                          <InfoTooltip text="Dzień, w którym dołączyłeś do naszej społeczności." />
+                        </label>
                         <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
                           <Calendar className="w-4 h-4 text-purple-400" />
                           <span className="text-white">
@@ -639,7 +687,10 @@ export function UserDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-white/70 text-sm">Ostatnie logowanie</label>
+                        <label className="text-white/70 text-sm flex items-center">
+                          Ostatnie logowanie
+                          <InfoTooltip text="Data ostatniej aktywności na Twoim koncie." />
+                        </label>
                         <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
                           <Calendar className="w-4 h-4 text-orange-400" />
                           <span className="text-white">
@@ -751,11 +802,18 @@ export function UserDashboard() {
                 {user?.emailVerified ? (
                   <>
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-2xl font-bold text-white">Moje aukcje</h3>
+                      <h3 className="text-2xl font-bold text-white flex items-center">
+                        Moje aukcje
+                        <InfoTooltip
+                          text="Zarządzaj swoimi aukcjami, licytacjami i obserwowanymi przedmiotami."
+                          position="bottom"
+                        />
+                      </h3>
                       <div className="flex gap-2">
                         <Link
                           href="/auctions"
                           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300"
+                          title="Przeglądaj wszystkie dostępne aukcje"
                         >
                           <Search className="w-4 h-4" />
                           <span>Przeglądaj</span>
@@ -763,6 +821,7 @@ export function UserDashboard() {
                         <button
                           onClick={() => setShowCreateAuctionForm(true)}
                           className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-300"
+                          title="Wystaw nowego gołębia na sprzedaż"
                         >
                           <Plus className="w-4 h-4" />
                           <span>Utwórz</span>
@@ -1125,166 +1184,16 @@ export function UserDashboard() {
               </motion.div>
             )}
 
-            {activeTab === 'achievements' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="text-2xl font-bold text-white mb-6">Osiągnięcia</h3>
-
-                <div className="space-y-6">
-                  <div className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Trophy className="w-5 h-5 text-yellow-400" />
-                      <div>
-                        <h4 className="text-white font-semibold">Twoje osiągnięcia</h4>
-                        <p className="text-white/70 text-sm">Zbieraj odznaki i osiągnięcia</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Trophy className="w-5 h-5 text-yellow-400" />
-                        <h4 className="text-white font-semibold">Pierwsza aukcja</h4>
-                      </div>
-                      <p className="text-white/70 text-sm">Utwórz swoją pierwszą aukcję</p>
-                      <div className="mt-2 w-full bg-gray-700 rounded-full h-2">
-                        <div className="bg-yellow-400 h-2 rounded-full w-0"></div>
-                      </div>
-                    </div>
-
-                    <div className="p-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Star className="w-5 h-5 text-blue-400" />
-                        <h4 className="text-white font-semibold">Aktywny hodowca</h4>
-                      </div>
-                      <p className="text-white/70 text-sm">Bądź aktywny przez 30 dni</p>
-                      <div className="mt-2 w-full bg-gray-700 rounded-full h-2">
-                        <div className="bg-blue-400 h-2 rounded-full w-[15%]"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <Link
-                      href="/achievements"
-                      className="flex items-center gap-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-all duration-300"
-                    >
-                      <Trophy className="w-4 h-4" />
-                      <span>Zobacz wszystkie</span>
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === 'references' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="text-2xl font-bold text-white mb-6">Referencje</h3>
-
-                <div className="space-y-6">
-                  <div className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Star className="w-5 h-5 text-green-400" />
-                      <div>
-                        <h4 className="text-white font-semibold">Twoje referencje</h4>
-                        <p className="text-white/70 text-sm">Zobacz opinie innych hodowców</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-white font-semibold">Brak referencji</h4>
-                          <p className="text-white/70 text-sm">
-                            Zacznij handlować, aby otrzymać pierwsze opinie
-                          </p>
-                        </div>
-                        <div className="text-yellow-400 text-sm">0/5</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <Link
-                      href="/references"
-                      className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-300"
-                    >
-                      <Star className="w-4 h-4" />
-                      <span>Zobacz referencje</span>
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === 'meetings' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="text-2xl font-bold text-white mb-6">Spotkania hodowców</h3>
-
-                <div className="space-y-6">
-                  <div className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Users className="w-5 h-5 text-purple-400" />
-                      <div>
-                        <h4 className="text-white font-semibold">Spotkania i wydarzenia</h4>
-                        <p className="text-white/70 text-sm">Dołącz do społeczności hodowców</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-white font-semibold">Brak nadchodzących spotkań</h4>
-                          <p className="text-white/70 text-sm">Sprawdź ponownie później</p>
-                        </div>
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <Link
-                      href="/breeder-meetings"
-                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all duration-300"
-                    >
-                      <Users className="w-4 h-4" />
-                      <span>Zobacz spotkania</span>
-                    </Link>
-                    <Link
-                      href="/breeder-meetings/dodaj-zdjecie"
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300"
-                    >
-                      <Camera className="w-4 h-4" />
-                      <span>Dodaj zdjęcie</span>
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
             {activeTab === 'security' && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <h3 className="text-2xl font-bold text-white mb-6">Bezpieczeństwo</h3>
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+                  Bezpieczeństwo
+                  <InfoTooltip text="Zarządzaj zabezpieczeniami swojego konta." position="bottom" />
+                </h3>
 
                 {showChangePassword ? (
                   <ChangePasswordForm
@@ -1298,7 +1207,10 @@ export function UserDashboard() {
                         <div className="flex items-center gap-3">
                           <Mail className="w-4 h-4 text-blue-400" />
                           <div>
-                            <h4 className="text-white font-semibold">Weryfikacja email</h4>
+                            <h4 className="text-white font-semibold flex items-center">
+                              Weryfikacja email
+                              <InfoTooltip text="Potwierdzenie adresu email zwiększa bezpieczeństwo konta." />
+                            </h4>
                             <p className="text-white/70 text-sm">
                               {user.emailVerified
                                 ? 'Email zweryfikowany'
@@ -1374,7 +1286,10 @@ export function UserDashboard() {
                         <div className="flex items-center gap-3">
                           <Key className="w-4 h-4 text-purple-400" />
                           <div>
-                            <h4 className="text-white font-semibold">Hasło</h4>
+                            <h4 className="text-white font-semibold flex items-center">
+                              Hasło
+                              <InfoTooltip text="Regularna zmiana hasła chroni Twoje konto przed włamaniem." />
+                            </h4>
                             <p className="text-white/70 text-sm">Zarządzaj swoim hasłem</p>
                           </div>
                         </div>
@@ -1397,7 +1312,13 @@ export function UserDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <h3 className="text-2xl font-bold text-white mb-6">Powiadomienia</h3>
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+                  Powiadomienia
+                  <InfoTooltip
+                    text="Wybierz, jakie informacje chcesz otrzymywać od serwisu."
+                    position="bottom"
+                  />
+                </h3>
 
                 <div className="space-y-4">
                   <div className="p-4">
@@ -1414,7 +1335,10 @@ export function UserDashboard() {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3">
-                      <span className="text-white">Nowe aukcje</span>
+                      <span className="text-white flex items-center">
+                        Nowe aukcje
+                        <InfoTooltip text="Otrzymuj email, gdy pojawią się nowe gołębie na sprzedaż." />
+                      </span>
                       <input
                         type="checkbox"
                         className="toggle"
@@ -1423,7 +1347,10 @@ export function UserDashboard() {
                       />
                     </div>
                     <div className="flex items-center justify-between p-3">
-                      <span className="text-white">Aktualizacje konta</span>
+                      <span className="text-white flex items-center">
+                        Aktualizacje konta
+                        <InfoTooltip text="Informacje o zmianach w regulaminie, statusie weryfikacji itp." />
+                      </span>
                       <input
                         type="checkbox"
                         className="toggle"
@@ -1432,76 +1359,16 @@ export function UserDashboard() {
                       />
                     </div>
                     <div className="flex items-center justify-between p-3">
-                      <span className="text-white">Powiadomienia SMS</span>
+                      <span className="text-white flex items-center">
+                        Powiadomienia SMS
+                        <InfoTooltip text="Otrzymuj ważne alerty (np. o wygranej aukcji) na telefon." />
+                      </span>
                       <input
                         type="checkbox"
                         className="toggle"
                         aria-label="Włącz powiadomienia SMS"
                       />
                     </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === 'settings' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="text-2xl font-bold text-white mb-6">Ustawienia</h3>
-
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4">
-                      <div>
-                        <h4 className="text-white font-semibold">Język</h4>
-                        <p className="text-white/70 text-sm">Wybierz język interfejsu</p>
-                      </div>
-                      <select
-                        className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
-                        aria-label="Wybierz język interfejsu"
-                      >
-                        <option value="pl">Polski</option>
-                        <option value="en">English</option>
-                      </select>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4">
-                      <div>
-                        <h4 className="text-white font-semibold">Motyw</h4>
-                        <p className="text-white/70 text-sm">Wybierz motyw aplikacji</p>
-                      </div>
-                      <select
-                        className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
-                        aria-label="Wybierz motyw aplikacji"
-                      >
-                        <option value="dark">Ciemny</option>
-                        <option value="light">Jasny</option>
-                        <option value="auto">Automatyczny</option>
-                      </select>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4">
-                      <div>
-                        <h4 className="text-white font-semibold">Tryb deweloperski</h4>
-                        <p className="text-white/70 text-sm">
-                          Włącz dodatkowe informacje debugowania
-                        </p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        className="toggle"
-                        aria-label="Włącz tryb deweloperski"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-6 border-t border-white/10">
-                    <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300">
-                      Zapisz ustawienia
-                    </button>
                   </div>
                 </div>
               </motion.div>

@@ -7,7 +7,7 @@ import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore, useError, useFilteredAuctions, useLoading } from '@/store/useAppStore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Calendar, Gavel, Plus, Search } from 'lucide-react';
+import { Calendar, Gavel, LayoutGrid, List, Plus, Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -63,6 +63,7 @@ export function AuctionsPage() {
   const [filterStatus, setFilterStatus] = useState<
     'all' | 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING'
   >('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Domyślnie lista
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [nowTs, setNowTs] = useState<number>(Date.now());
   // const [bidAmounts, setBidAmounts] = useState<Record<string, string>>({}) // unused
@@ -223,8 +224,8 @@ export function AuctionsPage() {
     <>
       <div className="pt-1 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="w-full mx-auto text-center mb-4">
-          <h1 className="text-6xl md:text-7xl font-bold mb-2">Aukcje Gołębi</h1>
-          <p className="text-3xl md:text-4xl text-white/90 mb-2 max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold uppercase tracking-[0.15em] text-white/80 mb-3">Nasze Aukcje</h1>
+          <p className="text-lg md:text-xl lg:text-2xl text-white/90 mb-4 max-w-2xl mx-auto">
             Licytuj ekskluzywne gołębie pocztowe z rodowodami championów
           </p>
         </div>
@@ -301,176 +302,166 @@ export function AuctionsPage() {
               </UnifiedCard>
             </motion.section>
 
-            {/* Auctions Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            {/* Auctions List View */}
+            <div className="flex flex-col space-y-4">
               {statusFilteredAuctions.length > 0 ? (
                 statusFilteredAuctions.map((auction, index) => (
                   <motion.div
                     key={auction.id}
-                    initial={{ opacity: 0, y: 50, rotateY: -10 }}
-                    whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
-                    transition={{ duration: 0.8, delay: index * 0.05, type: 'spring' }}
-                    viewport={{ once: true, margin: '-100px' }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                    viewport={{ once: true, margin: '-50px' }}
                     className="group"
                   >
-                    <Link href={`/auctions/${auction.id}`} className="block h-full">
+                    <Link href={`/auctions/${auction.id}`} className="block">
                       <UnifiedCard
                         variant="glass"
                         glow={true}
                         hover={true}
-                        className="overflow-hidden h-full flex flex-col cursor-pointer"
+                        className="overflow-hidden hover:border-blue-500/30 transition-colors"
                       >
-                        {/* Image - Większe zdjęcie z możliwością fullscreen */}
-                        <div
-                          className="relative w-full h-64 bg-gray-100 overflow-hidden rounded-t-lg cursor-pointer group"
-                          onClick={e => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            openFullscreen(auction);
-                          }}
-                        >
-                          {auction.images?.[0] ? (
-                            <>
-                              <Image
-                                src={auction.images[0]}
-                                alt={auction.title}
-                                fill
-                                className="object-cover transition-transform group-hover:scale-105"
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                onError={() => {
-                                  console.error('Auction image failed to load:', auction.images[0]);
-                                }}
-                              />
-                              {/* Hover overlay z ikoną powiększenia */}
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-3">
-                                  <svg
-                                    className="w-6 h-6 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                                    />
-                                  </svg>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-500">
-                              <div className="text-center">
-                                <div className="text-4xl mb-2">📷</div>
-                                <p className="text-sm">Brak zdjęcia</p>
-                              </div>
-                            </div>
-                          )}
-                          {/* Status Badge */}
-                          <div className="absolute top-4 left-4">
-                            <span
-                              className={`inline-block px-3 py-1.5 rounded-full text-sm font-medium text-white shadow-lg
-                                                        ${auction.status === 'ACTIVE' ? 'bg-emerald-600' : ''}
-                                                        ${auction.status === 'PENDING' ? 'bg-amber-600' : ''}
-                                                        ${auction.status === 'CANCELLED' ? 'bg-gray-500' : ''}
-                                                        ${auction.status === 'ENDED' ? 'bg-rose-600' : ''}
-                                                    `}
-                            >
-                              {auction.status === 'ACTIVE' && 'Aktywna'}
-                              {auction.status === 'PENDING' && 'Oczekuje'}
-                              {auction.status === 'CANCELLED' && 'Anulowana'}
-                              {auction.status === 'ENDED' && 'Zakończona'}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Content - Uproszczony */}
-                        <div className="p-6 flex flex-col grow">
-                          {/* Tytuł */}
-                          <h3 className="text-lg font-bold text-white line-clamp-2 mb-4">
-                            {auction.title}
-                          </h3>
-
-                          {/* Kwota i czas */}
-                          <div className="space-y-3 mb-4">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-white/70">Aktualna cena:</span>
-                              <span className="text-xl font-bold text-white">
-                                {`${Math.round(auction.currentPrice / useAppStore.getState().ratePLNperEUR)} EUR`}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-white/70">Czas do końca:</span>
-                              <span
-                                className={`text-sm font-semibold flex items-center gap-2 ${isEndingSoon(auction.endTime) ? 'text-red-400' : 'text-white'}`}
-                              >
-                                <Calendar
-                                  className={`w-4 h-4 ${isEndingSoon(auction.endTime) ? 'text-red-400' : 'text-white/70'}`}
+                        <div className="flex flex-col md:flex-row">
+                          {/* Left: Image Section */}
+                          <div
+                            className="relative w-full md:w-64 lg:w-80 aspect-[4/3] md:aspect-auto md:h-auto bg-gray-900 flex-shrink-0 cursor-pointer group/image border-r border-white/10"
+                            onClick={e => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              openFullscreen(auction);
+                            }}
+                          >
+                            {auction.images?.[0] ? (
+                              <>
+                                <Image
+                                  src={auction.images[0]}
+                                  alt={auction.title}
+                                  fill
+                                  className="object-cover"
+                                  sizes="(max-width: 768px) 100vw, 320px"
+                                  priority={index < 2}
                                 />
-                                {formatTimeLeft(auction.endTime)}
+                                {/* Hover overlay */}
+                                <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover/image:opacity-100">
+                                  <div className="bg-black/50 rounded-full p-2 backdrop-blur-sm">
+                                    <Search className="w-5 h-5 text-white" />
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-white/30">
+                                <div className="text-center">
+                                  <div className="text-3xl mb-2">📷</div>
+                                  <p className="text-xs">Brak zdjęcia</p>
+                                </div>
+                              </div>
+                            )}
+                            {/* Status Badge - Absolute on image */}
+                            <div className="absolute top-2 left-2">
+                              <span
+                                className={`inline-block px-2 py-1 rounded text-xs font-bold text-white shadow-md uppercase tracking-wider
+                                  ${auction.status === 'ACTIVE' ? 'bg-emerald-600' : ''}
+                                  ${auction.status === 'PENDING' ? 'bg-amber-600' : ''}
+                                  ${auction.status === 'CANCELLED' ? 'bg-gray-500' : ''}
+                                  ${auction.status === 'ENDED' ? 'bg-rose-600' : ''}
+                                `}
+                              >
+                                {auction.status === 'ACTIVE' && 'Aktywna'}
+                                {auction.status === 'PENDING' && 'Oczekuje'}
+                                {auction.status === 'CANCELLED' && 'Anulowana'}
+                                {auction.status === 'ENDED' && 'Zakończona'}
                               </span>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Action Buttons - Większe i bardziej widoczne */}
-                        <div className="p-6 pt-0" onClick={e => e.stopPropagation()}>
-                          {auction.status === 'ENDED' ? (
-                            <div className="text-center text-white/70 py-4">Aukcja zakończona</div>
-                          ) : (
-                            <div className="space-y-3">
-                              {/* Przyciski funkcjonalne pokazujące i obsługujące typ aukcji */}
-                              {auction.startingPrice > 0 && auction.buyNowPrice ? (
-                                // Aukcja z obiema opcjami: licytacja + kup teraz
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      // Przekieruj do strony aukcji dla licytacji
-                                      router.push(`/auctions/${auction.id}`);
-                                    }}
-                                    className="inline-flex items-center justify-center flex-1 h-10 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
-                                  >
-                                    Licytuj
-                                  </button>
-                                  <button
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      handleBuyNow(auction.id);
-                                    }}
-                                    className="inline-flex items-center justify-center flex-1 h-10 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors"
-                                  >
-                                    Kup teraz
-                                  </button>
-                                </div>
-                              ) : auction.startingPrice > 0 ? (
-                                // Aukcja tylko z licytacją
-                                <button
-                                  onClick={e => {
-                                    e.stopPropagation();
-                                    // Przekieruj do strony aukcji dla licytacji
-                                    router.push(`/auctions/${auction.id}`);
-                                  }}
-                                  className="inline-flex items-center justify-center w-full h-10 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
-                                >
-                                  Licytuj
-                                </button>
-                              ) : auction.buyNowPrice ? (
-                                // Aukcja tylko z kup teraz
-                                <button
-                                  onClick={e => {
-                                    e.stopPropagation();
-                                    handleBuyNow(auction.id);
-                                  }}
-                                  className="inline-flex items-center justify-center w-full h-10 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors"
-                                >
-                                  Kup teraz
-                                </button>
-                              ) : null}
+                          {/* Middle: Info Section */}
+                          <div className="flex-1 p-4 md:p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/10 bg-gradient-to-r from-white/5 to-transparent">
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-blue-400 font-bold text-lg">
+                                  #{String(index + 1).padStart(2, '0')}
+                                </span>
+                                <h3 className="text-xl md:text-2xl font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
+                                  {auction.title}
+                                </h3>
+                              </div>
+                              
+                              {/* Pigeon specific info if available (from description or fields) */}
+                              <div className="mb-4">
+                                <p className="text-lg font-mono text-white/90 mb-2 bg-white/10 inline-block px-2 py-0.5 rounded border border-white/10">
+                                  {/* Próba wyciągnięcia nr obrączki z opisu lub pola - placeholder */}
+                                  {/* W przyszłości warto dodać pole ringNumber do obiektu aukcji na liście */}
+                                  PL-DE-BE-NL
+                                </p>
+                                <p className="text-sm text-white/70 line-clamp-2 md:line-clamp-3 leading-relaxed">
+                                  {auction.description}
+                                </p>
+                              </div>
                             </div>
-                          )}
+
+                            {/* Footer Info */}
+                            <div className="flex items-center gap-4 text-xs text-white/50 mt-auto pt-4 border-t border-white/10">
+                              <div className="flex items-center gap-1">
+                                <span className="font-semibold text-white/70">Sprzedawca:</span>
+                                <span>{auction.sellerId}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-semibold text-white/70">ID:</span>
+                                <span>{auction.id.substring(0, 8)}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right: Price & Action Section */}
+                          <div className="w-full md:w-72 lg:w-80 p-4 md:p-6 bg-black/20 flex flex-col justify-center gap-4">
+                            {/* Timer */}
+                            <div className="text-center pb-4 border-b border-white/10">
+                              <div className="text-xs uppercase tracking-widest text-white/50 mb-1">Czas do końca</div>
+                              <div className={`text-xl font-mono font-bold flex items-center justify-center gap-2 ${isEndingSoon(auction.endTime) ? 'text-red-400' : 'text-white'}`}>
+                                <Calendar className="w-4 h-4" />
+                                {formatTimeLeft(auction.endTime)}
+                              </div>
+                            </div>
+
+                            {/* Price */}
+                            <div className="text-center">
+                              <div className="text-xs uppercase tracking-widest text-white/50 mb-1">Aktualna cena</div>
+                              <div className="text-3xl font-bold text-white mb-1">
+                                {`${Math.round(auction.currentPrice / useAppStore.getState().ratePLNperEUR)} EUR`}
+                              </div>
+                              <div className="text-xs text-white/40">
+                                {auction.currentPrice.toLocaleString()} PLN
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="pt-2" onClick={e => e.stopPropagation()}>
+                              {auction.status === 'ENDED' ? (
+                                <div className="w-full py-3 bg-gray-700/50 text-white/50 text-center rounded font-medium cursor-not-allowed">
+                                  Aukcja zakończona
+                                </div>
+                              ) : (
+                                <div className="space-y-2">
+                                  <button
+                                    onClick={() => router.push(`/auctions/${auction.id}`)}
+                                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded transition-colors uppercase tracking-wide text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20"
+                                  >
+                                    <Gavel className="w-4 h-4" />
+                                    Licytuj teraz
+                                  </button>
+                                  
+                                  {auction.buyNowPrice && (
+                                    <button
+                                      onClick={() => handleBuyNow(auction.id)}
+                                      className="w-full py-2 bg-green-600/90 hover:bg-green-500/90 text-white font-semibold rounded transition-colors text-xs uppercase tracking-wide"
+                                    >
+                                      Kup teraz: {Math.round(auction.buyNowPrice / useAppStore.getState().ratePLNperEUR)} EUR
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </UnifiedCard>
                     </Link>

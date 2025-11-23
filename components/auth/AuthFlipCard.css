@@ -155,14 +155,9 @@
 
   /* 3D Perspective */
   perspective: 1000px;
-  transform-style: preserve-3d;
 
   /* Animacja rotacji 3D */
   transition: all var(--flip-duration) cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.auth-flip-card.flipped {
-  transform: rotateY(180deg);
 }
 
 /* ============================================
@@ -200,17 +195,23 @@
 
 .auth-flip-face:hover {
   border: 2px solid rgba(255, 255, 255, 1);
-  box-shadow: 0 0 35px 15px rgba(255, 255, 255, 0.95);
-  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
 }
 
 .auth-flip-front {
   z-index: 2;
-  transform: rotateY(0deg);
 }
 
 .auth-flip-back {
-  transform: rotateY(180deg);
+  z-index: 1;
+}
+
+.auth-flip-card.flipped .auth-flip-front {
+  display: none;
+}
+
+.auth-flip-card:not(.flipped) .auth-flip-back {
+  display: none;
 }
 
 @keyframes cardFlip {
@@ -270,39 +271,7 @@ form {
   gap: 16px;
 }
 
-/* Harmonizowanie wysokości inputów */
-input[type='email'],
-input[type='password'],
-input[type='text'],
-input[type='tel'],
-textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  color: #ffffff;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  font-family: inherit;
-  min-height: 42px;
-}
-
-input[type='email']:focus,
-input[type='password']:focus,
-input[type='text']:focus,
-input[type='tel']:focus,
-textarea:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.9);
-  background: rgba(0, 0, 0, 0.4);
-  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-input::placeholder {
-  color: rgba(203, 213, 225, 0.5);
-}
+/* Harmonizowanie wysokości inputów - WYŁĄCZONE, używamy stylów z FirebaseAuthForm */
 
 /* ============================================
    PRZYCISKI
@@ -466,16 +435,7 @@ button[type='submit']:active {
   gap: 10px !important;
 }
 
-.auth-flip-form-wrapper input {
-  background: transparent !important;
-  border: 1px solid rgba(107, 114, 128, 0.5) !important;
-  color: var(--text-primary) !important;
-}
-
-.auth-flip-form-wrapper input:focus {
-  border-color: var(--accent-color) !important;
-  box-shadow: none !important;
-}
+/* WYŁĄCZONE - używamy stylów bezpośrednio z FirebaseAuthForm.tsx (Tailwind) */
 
 /* ============================================
    EFEKTY DODATKOWE

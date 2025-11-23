@@ -136,14 +136,12 @@ export async function validateCSRFToken(request: NextRequest, token: string): Pr
       return false;
     }
 
-    // Sprawdź czy token jest w store
-    const storedToken = await csrfTokenStore.get(cookieToken);
-    if (!storedToken) {
-      return false;
-    }
-
-    // Sprawdź czy tokeny się zgadzają
-    return storedToken.token === token;
+    // Weryfikacja Stateless: Token z cookie musi pasować do tokenu z requestu
+    // To jest standardowy pattern "Double Submit Cookie".
+    // Ponieważ cookie jest HttpOnly (ustawiane przez nas), JS nie może go zmienić.
+    // Atakujący nie może odczytać cookie ani ustawić go dla naszej domeny w sposób, który by pasował do tokenu, który on wygeneruje.
+    
+    return cookieToken === token;
   } catch (err) {
     error('CSRF validation error:', err instanceof Error ? err.message : err);
     return false;
