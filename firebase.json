@@ -47,7 +47,7 @@
   },
   "apphosting": [
     {
-      "backendId": "palka-mtm",
+      "backendId": "palkamtm",
       "rootDir": ".",
       "ignore": [
         "node_modules",
