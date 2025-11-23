@@ -340,7 +340,7 @@ finalConfig.webpack = (config, options) => {
     };
   }
 
-  config.externals = [...(config.externals || []), '@prisma/client', 'firebase-admin', 'redis'];
+  config.externals = [...(config.externals || []), '@prisma/client', 'firebase-admin', 'redis', '@grpc/grpc-js'];
 
   // --- KONIEC NASZYCH MODYFIKACJI ---
 

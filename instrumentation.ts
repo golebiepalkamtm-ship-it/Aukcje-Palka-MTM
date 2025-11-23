@@ -1,23 +1,8 @@
 export async function register() {
-  // W development wyłącz Sentry - usuwa webpack warnings
-  if (process.env.NODE_ENV === 'production') {
-    // Dynamic import - only loads in production, avoids webpack processing in dev
-    const Sentry = await import('@sentry/nextjs');
-
-    if (process.env.NEXT_RUNTIME === 'nodejs') {
-      await import('./sentry.server.config');
-    }
-
-    if (process.env.NEXT_RUNTIME === 'edge') {
-      await import('./sentry.edge.config');
-    }
-
-    // Export onRequestError only in production
-    return {
-      onRequestError: Sentry.captureRequestError,
-    };
-  }
+  // WYŁĄCZONE w build i dev - Sentry powoduje błędy webpack
+  // Sentry będzie załadowany tylko w runtime w produkcji
+  return {};
 }
 
-// Export undefined in development to avoid importing Sentry
+// Export undefined w development i build
 export const onRequestError = undefined;

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server.js';
 import { ZodError } from 'zod';
-import { PrismaClientInitializationError, PrismaClientKnownRequestError, PrismaClientUnknownRequestError } from '@prisma/client/runtime/library';
 import { captureError } from './sentry-helpers';
 
 // Typy błędów
@@ -427,11 +426,8 @@ export function handleApiError(
     );
   }
 
-  // Prisma errors
+  // Prisma errors - check by code pattern or error structure
   if (
-    error instanceof PrismaClientInitializationError ||
-    error instanceof PrismaClientKnownRequestError ||
-    error instanceof PrismaClientUnknownRequestError ||
     (typeof error === 'object' &&
       error !== null &&
       'code' in error &&

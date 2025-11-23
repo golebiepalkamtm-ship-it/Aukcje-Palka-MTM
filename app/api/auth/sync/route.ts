@@ -2,7 +2,6 @@ import { handleApiError } from '@/lib/error-handling';
 import { getAdminAuth } from '@/lib/firebase-admin';
 import { requireFirebaseAuth } from '@/lib/firebase-auth';
 import { prisma } from '@/lib/prisma';
-import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Cache dla zapobieżenia race condition - przechowujemy DANE, nie Response
@@ -114,7 +113,7 @@ export async function POST(req: NextRequest) {
                 }),
               });
             } catch (emailSendError) {
-              Sentry.captureException(emailSendError);
+              console.error('Email send error:', emailSendError);
             }
           }
         }
@@ -141,13 +140,12 @@ export async function POST(req: NextRequest) {
               updatedAt: new Date(),
             },
           });
-          Sentry.captureMessage(`User ${freshUser.email} elevated to USER_FULL_VERIFIED`);
+          console.log(`User ${freshUser.email} elevated to USER_FULL_VERIFIED`);
         }
         // Zwróć aktualnego usera
         return { success: true, user: freshUser };
       } catch (error) {
         console.error('❌ Sync error:', error);
-        Sentry.captureException(error);
         throw error;
       }
     })();
