@@ -69,8 +69,6 @@ export const UnifiedButton = memo(function UnifiedButton({
       ? {
           scale: currentIntensity.scale,
           y: currentIntensity.y,
-          rotateX: 5,
-          rotateY: 5,
         }
       : {},
     whileTap: !disabled

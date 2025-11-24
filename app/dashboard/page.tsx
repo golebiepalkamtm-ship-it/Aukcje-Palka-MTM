@@ -33,7 +33,7 @@ export default function DashboardPage() {
   // Wszystkie komponenty weryfikacyjne są teraz obsługiwane wewnątrz UserDashboard lub wcześniej
   return (
     <UnifiedLayout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 -mt-24 pb-8">
         <UserDashboard />
       </div>
     </UnifiedLayout>

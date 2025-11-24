@@ -72,8 +72,12 @@ export async function POST(request: NextRequest) {
     const adminAuth = getAdminAuth();
     if (!adminAuth) {
       console.error('❌ [REGISTER] Firebase Admin Auth nie jest zainicjalizowany');
+      console.error('❌ [REGISTER] Sprawdź zmienne środowiskowe: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY');
       return NextResponse.json(
-        { error: 'Serwis tymczasowo niedostępny. Spróbuj ponownie później.' },
+        { 
+          error: 'Serwis tymczasowo niedostępny. Spróbuj ponownie później.',
+          details: 'Firebase Admin SDK nie jest zainicjalizowany. Sprawdź konfigurację serwera.'
+        },
         { status: 503 }
       );
     }
@@ -90,7 +94,24 @@ export async function POST(request: NextRequest) {
       console.log('✅ [REGISTER] Utworzono nowego użytkownika w Firebase:', firebaseUser.uid);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (firebaseError: any) {
-      console.log('⚠️ [REGISTER] Firebase error:', firebaseError?.code);
+      console.error('⚠️ [REGISTER] Firebase error:', firebaseError?.code, firebaseError?.message);
+      
+      // Sprawdź czy to błąd credentials
+      if (
+        firebaseError?.message?.includes('invalid_grant') ||
+        firebaseError?.message?.includes('account not found') ||
+        firebaseError?.code === 'auth/invalid-credential'
+      ) {
+        console.error('❌ [REGISTER] Firebase credentials error - klucz został odwołany lub jest nieprawidłowy');
+        return NextResponse.json(
+          {
+            error: 'Błąd konfiguracji serwera. Skontaktuj się z administratorem.',
+            details: 'Firebase credentials są nieprawidłowe lub zostały odwołane.'
+          },
+          { status: 503 }
+        );
+      }
+      
       // Jeśli użytkownik już istnieje w Firebase, to nie można się zarejestrować
       if (
         firebaseError?.code === 'auth/email-already-exists' ||

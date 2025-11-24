@@ -53,7 +53,18 @@ export function PedigreeModal({ champion, isOpen, onClose }: PedigreeModalProps)
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[99999] p-4"
         onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pedigree-modal-title"
+        aria-describedby="pedigree-modal-description"
       >
+        {/* Hidden title and description for accessibility */}
+        <h2 id="pedigree-modal-title" className="sr-only">
+          Rodowód - {champion.name}
+        </h2>
+        <p id="pedigree-modal-description" className="sr-only">
+          Modal wyświetlający rodowód gołębia. Kliknij poza modalem lub przycisk zamknij, aby zamknąć.
+        </p>
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}

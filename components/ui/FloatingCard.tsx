@@ -28,18 +28,15 @@ export function FloatingCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.9, rotateX: -10 }}
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
       animate={{
         opacity: 1,
         y: 0,
         scale: 1,
-        rotateX: 0,
       }}
       whileHover={{
         y: -8,
         scale: 1.02,
-        rotateX: 5,
-        rotateY: 5,
         transition: { duration: 0.3, type: 'spring', stiffness: 300 },
       }}
       transition={{
@@ -57,8 +54,6 @@ export function FloatingCard({
       <motion.div
         animate={{
           y: [0, -currentIntensity.y, 0],
-          rotateX: [0, 2, 0],
-          rotateY: [0, 1, 0],
         }}
         transition={{
           duration: currentIntensity.duration,

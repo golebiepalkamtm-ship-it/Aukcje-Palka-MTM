@@ -1,125 +1,81 @@
 'use client';
 
-import { type YearData } from '@/lib/achievements/types';
-import { X, Trophy, Medal, Award } from 'lucide-react';
+import { Fragment } from 'react';
+import { X } from 'lucide-react';
+import type { YearData } from '@/lib/achievements/types';
 
-interface Props {
+type AchievementDetailsPanelProps = {
   yearData: YearData | null;
   onClose: () => void;
-}
+};
 
-function getTitleIcon(title: string) {
-  const lowerTitle = title.toLowerCase();
-  if (lowerTitle.includes('mistrz')) return <Trophy className="w-4 h-4 text-yellow-400" />;
-  if (lowerTitle.includes('wicemistrz')) return <Medal className="w-4 h-4 text-gray-400" />;
-  return <Award className="w-4 h-4 text-blue-400" />;
-}
-
-function getTitleColor(title: string): string {
-  const lowerTitle = title.toLowerCase();
-  if (lowerTitle.includes('mistrz') && !lowerTitle.includes('wicemistrz')) {
-    return 'text-yellow-400 font-bold';
+export default function AchievementDetailsPanel({
+  yearData,
+  onClose,
+}: AchievementDetailsPanelProps) {
+  if (!yearData) {
+    return null;
   }
-  if (lowerTitle.includes('wicemistrz')) return 'text-gray-300 font-semibold';
-  return 'text-blue-400';
-}
 
-function getLevelStyle(level: string) {
-  switch(level) {
-    case 'MP': return 'bg-purple-600/20 text-purple-300 border-purple-500/30';
-    case 'Region V': return 'bg-blue-600/20 text-blue-300 border-blue-500/30';
-    case 'Okręg': return 'bg-green-600/20 text-green-300 border-green-500/30';
-    default: return 'bg-gray-600/20 text-gray-300 border-gray-500/30';
-  }
-}
-
-export default function AchievementDetailsPanel({ yearData, onClose }: Props) {
-  if (!yearData) return null;
-  
   return (
-    <div className="fixed inset-y-0 right-0 w-full md:w-[500px] lg:w-[600px] bg-gradient-to-br from-gray-900 via-gray-800 to-black border-l border-gray-700 shadow-2xl overflow-y-auto z-30 animate-in slide-in-from-right duration-300">
-      {/* Header */}
-      <div className="sticky top-0 bg-gray-900/95 backdrop-blur-md border-b border-gray-700 p-6 flex items-center justify-between z-10">
+    <aside className="pointer-events-none absolute right-8 top-1/2 z-50 w-[400px] max-w-[90vw] -translate-y-1/2 rounded-3xl border border-white/10 bg-slate-900/80 p-6 text-white shadow-2xl backdrop-blur-xl">
+      <div className="pointer-events-auto flex items-center justify-between">
         <div>
-          <h2 className="text-4xl font-bold text-white tracking-tight">{yearData.year}</h2>
-          <div className="flex items-center gap-2 mt-2">
-            <Trophy className="w-5 h-5 text-yellow-400" />
-            <p className="text-sm text-gray-300">
-              {yearData.totalMasterTitles} {yearData.totalMasterTitles === 1 ? 'Tytuł' : 'Tytuły'} Mistrza
-            </p>
-          </div>
+          <p className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60">
+            Rok
+          </p>
+          <h2 className="text-gradient text-3xl font-semibold">{yearData.year}</h2>
+          <p className="text-sm text-white/70">Mistrzowskie rekordy Palka MTM</p>
         </div>
         <button
+          type="button"
           onClick={onClose}
-          className="p-2 hover:bg-gray-800 rounded-lg transition-all hover:scale-110"
-          aria-label="Zamknij"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white transition hover:bg-white/20"
         >
-          <X className="w-6 h-6 text-gray-400" />
+          <X className="h-5 w-5" />
         </button>
       </div>
-      
-      {/* Content */}
-      <div className="p-6 space-y-6">
-        {yearData.divisions.map((division, divIndex) => (
-          <div 
-            key={divIndex} 
-            className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-xl p-6 border border-gray-700/50 backdrop-blur-sm hover:border-gray-600/50 transition-all"
+
+      <div className="pointer-events-auto mt-6 max-h-[60vh] space-y-4 overflow-y-auto pr-2">
+        {yearData.divisions.map((division) => (
+          <div
+            key={`${yearData.year}-${division.level}-${division.divisionName}`}
+            className="rounded-2xl border border-white/5 bg-black/40 p-4 shadow-inner"
           >
-            {/* Division Header */}
-            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-700/50">
-              <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase border ${getLevelStyle(division.level)}`}>
-                {division.level}
-              </div>
-              <h3 className="text-lg font-bold text-white">{division.divisionName}</h3>
-            </div>
-            
-            {/* Results */}
-            <div className="space-y-3">
-              {division.results.map((result, resIndex) => (
-                <div 
-                  key={resIndex}
-                  className="grid grid-cols-12 gap-4 items-center p-4 rounded-lg bg-gray-900/60 hover:bg-gray-900/80 transition-all border border-gray-800/50 hover:border-gray-700/50"
+            <p className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60">
+              {division.level}
+            </p>
+            <p className="text-lg font-semibold text-white">{division.divisionName}</p>
+
+            <dl className="mt-3 space-y-3 text-sm text-white/80">
+              {division.results.map((result, index) => (
+                <Fragment
+                  key={`${division.level}-${division.divisionName}-${result.category}-${index}`}
                 >
-                  {/* Category */}
-                  <div className="col-span-3">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                      {result.category}
-                    </span>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.35em] text-white/50">
+                        {result.category}
+                      </p>
+                      <p className="font-medium text-white">{result.title}</p>
+                    </div>
+                    <div className="text-right text-xs text-white/60">
+                      {typeof result.coefficient === 'number' && (
+                        <p>Coeff: {result.coefficient.toFixed(2)}</p>
+                      )}
+                      {typeof result.concourses === 'number' && <p>Konk.: {result.concourses}</p>}
+                    </div>
                   </div>
-                  
-                  {/* Title */}
-                  <div className="col-span-5 flex items-center gap-2">
-                    {getTitleIcon(result.title)}
-                    <span className={`text-sm ${getTitleColor(result.title)}`}>
-                      {result.title}
-                    </span>
-                  </div>
-                  
-                  {/* Stats */}
-                  <div className="col-span-4 flex flex-col items-end">
-                    {result.coefficient !== null && (
-                      <span className="text-xs font-mono text-gray-300">
-                        {result.coefficient.toFixed(2)} <span className="text-gray-500">coeff</span>
-                      </span>
-                    )}
-                    {result.concourses !== null && (
-                      <span className="text-xs font-mono text-gray-400">
-                        {result.concourses} <span className="text-gray-600">con</span>
-                      </span>
-                    )}
-                    {result.note && (
-                      <span className="text-xs text-orange-400 italic mt-1">
-                        {result.note}
-                      </span>
-                    )}
-                  </div>
-                </div>
+                  {result.note && (
+                    <p className="text-xs text-white/50">Notatka: {result.note}</p>
+                  )}
+                </Fragment>
               ))}
-            </div>
+            </dl>
           </div>
         ))}
       </div>
-    </div>
+    </aside>
   );
 }
 

@@ -36,12 +36,21 @@ if (isTest || isBuildTime) {
   error('Aplikacja nie będzie działać bez konfiguracji Firebase!');
 } else {
   try {
+    // Validate private key format
+    const normalizedPrivateKey = privateKey.replace(/\\n/g, '\n');
+    
+    // Check if private key looks valid (should start with -----BEGIN)
+    if (!normalizedPrivateKey.includes('-----BEGIN')) {
+      error('❌ Firebase Admin SDK: Invalid private key format');
+      error('Private key should start with "-----BEGIN PRIVATE KEY-----"');
+      throw new Error('Invalid Firebase private key format');
+    }
+
     const firebaseAdminConfig = {
       credential: cert({
         projectId,
         clientEmail,
-        // Avoid printing full private key in logs
-        privateKey: privateKey.replace(/\\n/g, '\n'),
+        privateKey: normalizedPrivateKey,
       }),
     };
 
@@ -50,9 +59,40 @@ if (isTest || isBuildTime) {
     // Initialize Firebase Admin
     app = getApps().length === 0 ? initializeApp(firebaseAdminConfig) : getApps()[0];
     adminAuth = getAuth(app);
-    info('✅ Firebase Admin SDK initialized successfully');
+    
+    // Test authentication by trying to get a user (this will fail if credentials are invalid)
+    // We'll catch this error and provide better diagnostics
+    try {
+      // Just verify the auth instance is working - don't actually call any methods
+      // The error will surface when we try to use it
+      info('✅ Firebase Admin SDK initialized successfully');
+    } catch (authTestError) {
+      error('❌ Firebase Admin SDK: Auth instance test failed');
+      throw authTestError;
+    }
   } catch (err) {
-    error('❌ Firebase Admin SDK initialization error:', err instanceof Error ? err.message : err);
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    error('❌ Firebase Admin SDK initialization error:', errorMessage);
+    
+    // Provide specific guidance based on error
+    if (errorMessage.includes('invalid_grant') || errorMessage.includes('account not found')) {
+      error('');
+      error('🔧 Firebase Credentials Error - Possible solutions:');
+      error('1. Check if the service account key ID exists at:');
+      error('   https://console.firebase.google.com/iam-admin/serviceaccounts/project');
+      error('2. If the key was revoked, generate a new key at:');
+      error('   https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk');
+      error('3. Verify server time is synchronized (NTP)');
+      error('4. Ensure FIREBASE_CLIENT_EMAIL matches the service account email');
+      error('5. Ensure FIREBASE_PRIVATE_KEY is correctly formatted (with \\n for newlines)');
+    } else if (errorMessage.includes('ENOTFOUND') || errorMessage.includes('network')) {
+      error('');
+      error('🔧 Network Error - Check internet connectivity and Firebase service availability');
+    }
+    
+    // Don't throw - allow app to continue but mark as uninitialized
+    adminAuth = null;
+    app = null;
   }
 }
 

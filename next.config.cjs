@@ -176,6 +176,13 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Firebase App Hosting
+      {
+        protocol: 'https',
+        hostname: '*.us-east4.hosted.app',
+        port: '',
+        pathname: '/**',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -184,6 +191,8 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     unoptimized: true, // Wyłączone dla Firebase App Hosting (standalone mode)
+    loader: 'custom',
+    loaderFile: './lib/image-loader.ts',
   },
 };
 
@@ -281,7 +290,17 @@ finalConfig.webpack = (config, options) => {
     };
   }
 
-  // 2. Ignoruj wszystkie ostrzeżenia o critical dependencies (działa w dev i production)
+  // 2. Konfiguracja dla React Three Fiber - musi być po stronie klienta
+  if (!options.isServer) {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      crypto: false,
+    };
+  }
+
+  // 3. Ignoruj wszystkie ostrzeżenia o critical dependencies (działa w dev i production)
   config.ignoreWarnings = [
     ...(config.ignoreWarnings || []),
     // Wycisz wszystkie ostrzeżenia o critical dependencies z OpenTelemetry/Prisma instrumentation

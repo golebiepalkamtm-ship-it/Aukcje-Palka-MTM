@@ -39,8 +39,8 @@ async function main() {
     }
 
     const adminAuth = admin.auth();
-    const email = 'admin@mtm.local';
-    const password = 'SuperAdmin123!';
+    const email = 'admin@palkamtm.pl';
+    const password = 'Milosz1205';
 
     // Check if user already exists in Prisma
     console.log('\n🔍 Checking if admin already exists...');

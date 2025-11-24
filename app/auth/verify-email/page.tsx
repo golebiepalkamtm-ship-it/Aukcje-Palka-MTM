@@ -126,6 +126,10 @@ function VerifyEmailContent() {
         // Wyślij event do innych kart przez localStorage
         localStorage.setItem('email-verified', Date.now().toString());
 
+        // 🔄 KRYTYCZNE: Wymuś odświeżenie Firebase User w AuthContext
+        window.dispatchEvent(new Event('email-verified-complete'));
+        console.log('🔄 Wysłano event: email-verified-complete');
+
         // ✅✅✅ KRYTYCZNE: TYLKO TUTAJ ustawiamy sukces - na samym końcu!
         console.log('✅✅✅ USTAWIAM STATUS SUCCESS');
         setStatus('success');

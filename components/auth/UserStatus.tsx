@@ -5,7 +5,8 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { LogOut, Mail, Phone, Shield, Settings, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
 const navItemVariants = {
   hidden: { opacity: 0, x: -50, rotate: -90 },
@@ -18,18 +19,32 @@ const navItemVariants = {
 };
 
 export function UserStatus() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, refetchDbUser } = useAuth();
   const { isAdmin } = useAdminAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   // console.log('UserStatus render:', { user: user?.email, loading })
+
+  // Nasłuchuj na event weryfikacji emaila i odśwież stan użytkownika
+  useEffect(() => {
+    const handleEmailVerified = () => {
+      console.log('UserStatus: Email verified event detected - refreshing user data');
+      // Wymuszamy refetch danych użytkownika po weryfikacji
+      refetchDbUser();
+    };
+
+    window.addEventListener('email-verified-complete', handleEmailVerified);
+    return () => {
+      window.removeEventListener('email-verified-complete', handleEmailVerified);
+    };
+  }, [refetchDbUser]);
 
   // Usuń długotrwały loader - jeśli loading trwa, pokaż po prostu ikonę logowania
   if (loading) {
     return (
       <motion.div variants={navItemVariants} initial="hidden" animate="visible">
-        <Link href="/auth/register" className="glass-nav-button" title="Zarejestruj się">
+        <Link href="/auth/register" className="glass-nav-button" title="Konto">
           <User className="relative z-10 w-8 h-8" />
-          <span className="relative z-10 text-sm">Zarejestruj się</span>
+          <span className="relative z-10 text-sm">Konto</span>
         </Link>
       </motion.div>
     );
@@ -38,9 +53,9 @@ export function UserStatus() {
   if (!user) {
     return (
       <motion.div variants={navItemVariants} initial="hidden" animate="visible">
-        <Link href="/auth/register" className="glass-nav-button" title="Zarejestruj się">
+        <Link href="/auth/register" className="glass-nav-button" title="Konto">
           <User className="relative z-10 w-8 h-8" />
-          <span className="relative z-10 text-sm">Zarejestruj się</span>
+          <span className="relative z-10 text-sm">Konto</span>
         </Link>
       </motion.div>
     );
@@ -79,7 +94,10 @@ export function UserStatus() {
                 <User className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-white font-semibold">{user.displayName || 'Użytkownik'}</h3>
+                <h3 className="text-white font-semibold flex items-center">
+                  {user.displayName || 'Użytkownik'}
+                  <InfoTooltip text="To Twoje konto. Kliknij opcje poniżej, aby zarządzać." />
+                </h3>
                 <p className="text-white/70 text-sm">{user.email}</p>
               </div>
             </div>
@@ -111,7 +129,10 @@ export function UserStatus() {
                     user?.emailVerified ? 'bg-green-400' : 'bg-yellow-400'
                   }`}
                 ></div>
-                <span className="text-white/70">Status:</span>
+                <span className="text-white/70 flex items-center">
+                  Status:
+                  <InfoTooltip text="Zielony ptaszek oznacza pełną weryfikację. Możesz licytować i sprzedawać." />
+                </span>
                 <span className={`${user?.emailVerified ? 'text-green-400' : 'text-yellow-400'}`}>
                   {user?.emailVerified ? 'Aktywny' : 'Wymaga weryfikacji'}
                 </span>

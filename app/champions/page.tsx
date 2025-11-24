@@ -1,29 +1,33 @@
-import { SimpleChampionsList } from '@/components/champions/SimpleChampionsList';
-
-export const metadata = {
-  title: 'Championy Gołębi - Lista Wszystkich Championów',
-  description:
-    'Poznaj wszystkich championów gołębi pocztowych. Zobacz ich osiągnięcia, rodowody i galerie zdjęć.',
-};
-
+ 'use client';
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
+import { motion } from 'framer-motion';
+import { SimpleChampionsList } from '@/components/champions/SimpleChampionsList';
 
 export default function ChampionsPage() {
   return (
     <UnifiedLayout>
-      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 py-0">
-        <div className="text-center mb-4">
-          <h1
-            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-2 drop-shadow-2xl text-gradient-animated"
+      {/* Hero Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 0.6 }}
+        className="relative z-10 -mt-24 pb-12 px-4 sm:px-6 lg:px-8"
+      >
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">nasze chempiony</h1>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1 }}
+            className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
           >
-            Nasze Championy
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-blue-100 max-w-4xl mx-auto leading-relaxed">
             Poznaj nasze wybitne championy gołębi pocztowych. Każdy z nich to wyjątkowy
             przedstawiciel naszej linii hodowlanej PAŁKA MTM.
-          </p>
+          </motion.p>
         </div>
+      </motion.section>
 
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-0">
         <SimpleChampionsList />
       </div>
     </UnifiedLayout>

@@ -14,6 +14,9 @@ interface VerificationStatus {
 export function VerificationIndicator() {
   const { user, dbUser, loading } = useAuth();
 
+  // Administratorzy nie potrzebują weryfikacji
+  if (dbUser?.role === 'ADMIN') return null;
+
   // Użyj danych z AuthContext zamiast osobnego wywołania API
   const status: VerificationStatus = {
     emailVerified: !!user?.emailVerified,
@@ -91,6 +94,9 @@ export function VerificationIndicator() {
 
 export function VerificationBanner() {
   const { user, dbUser, loading } = useAuth();
+
+  // Administratorzy nie potrzebują weryfikacji - automatyczny dostęp do wszystkich funkcji
+  if (dbUser?.role === 'ADMIN') return null;
 
   // Użyj danych z AuthContext zamiast osobnego wywołania API
   const status: VerificationStatus = {

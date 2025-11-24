@@ -29,29 +29,41 @@ export const UnifiedCard = memo(function UnifiedCard({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      whileHover={
-        hover
-          ? {
-              transition: { duration: 0.3 },
-            }
-          : {}
-      }
-      transition={{
-        duration: 0.8,
-        delay,
-        type: 'spring' as const,
-        stiffness: 100,
-      }}
-      className={`
-        ${variantClasses[variant]}
-        ${glow ? 'animate-glow3D' : ''}
-        ${className}
-      `}
-    >
-      {children}
-    </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        whileHover={
+          hover
+            ? {
+                transition: { duration: 0.3 },
+              }
+            : {}
+        }
+        transition={{
+          duration: 0.8,
+          delay,
+          type: 'spring' as const,
+          stiffness: 100,
+        }}
+        className={`
+          ${variantClasses[variant]}
+          ${glow ? 'animate-glow3D' : ''}
+          ${hover ? 'unified-card-hover-highlight' : ''}
+          ${className}
+          card-glow-effect
+        `}
+        style={{ position: 'relative', overflow: 'hidden' }}
+        onMouseMove={e => {
+          const card = e.currentTarget;
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty('--card-glow-x', `${x}px`);
+          card.style.setProperty('--card-glow-y', `${y}px`);
+        }}
+      >
+        <div className="card-glow-animated-border" aria-hidden="true" />
+        {children}
+      </motion.div>
   );
 });

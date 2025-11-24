@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 
 export function HeroSection() {
   return (
@@ -36,35 +35,23 @@ export function HeroSection() {
           initial={{ opacity: 0, scale: 0.8, y: 50 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 1.5, delay: 0.9 }}
-          className="flex justify-center relative z-20 mt-64"
+          className="flex justify-center relative z-20 mt-16"
         >
-          <Image
-            src="/1360bez tla.png"
-            alt="Piękny gołąb pocztowy - symbol hodowli Pałka MTM"
-            width={200}
-            height={200}
-            priority
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/pigeon.gif"
+            alt="Gołębie pocztowe w locie - Pałka MTM"
+            width="600"
+            height="600"
             style={{
-              width: '200px',
-              height: '200px',
+              width: '600px',
+              height: '600px',
               objectFit: 'contain',
               filter: 'drop-shadow(0 20px 13px rgb(0 0 0 / 0.3))',
             }}
           />
         </motion.div>
 
-        {/* Dodatkowy tekst pod gołębiem */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, delay: 1.2 }}
-          className="mt-12"
-        >
-          <p className="text-secondary-300 text-base sm:text-lg max-w-2xl mx-auto">
-            Odkryj świat najlepszych gołębi pocztowych w Polsce. Każdy ptak to historia, każdy lot
-            to legenda.
-          </p>
-        </motion.div>
       </div>
     </section>
   );

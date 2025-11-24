@@ -10,6 +10,7 @@ import {
 } from '@/lib/optimized-queries';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import type { Prisma } from '@prisma/client';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,25 @@ import { NextRequest, NextResponse } from 'next/server';
 
 async function getAuctionsHandler(request: NextRequest) {
   try {
+    // Sprawdź dostępność bazy danych
+    const { isDatabaseConfigured } = await import('@/lib/prisma');
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        {
+          auctions: [],
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+          },
+        },
+        { status: 200 }
+      );
+    }
+
     // Pobierz parametry z URL
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1');
@@ -207,8 +227,8 @@ async function createAuctionHandler(request: NextRequest) {
     throw AppErrors.validation('Data zakończenia musi być po dacie rozpoczęcia');
   }
 
-  // Utwórz aukcję w transakcji
-  const result = await prisma.$transaction(async tx => {
+  // Utwórz aukcję w transakcji z poprawnym typowaniem
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     let pigeonId: string | undefined;
 
     // Jeśli to aukcja gołębia, utwórz rekord gołębia najpierw

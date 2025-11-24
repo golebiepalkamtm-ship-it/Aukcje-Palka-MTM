@@ -36,6 +36,37 @@ services:
       timeout: 10s
       retries: 3
 
+  # Prisma Migrations & Client Generation (Production)
+  prisma:
+    image: node:20-alpine
+    container_name: palkamtm-prisma-prod
+    restart: 'no'
+    working_dir: /app
+    environment:
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-palkamtm_production}
+      # Next.js telemetry
+      NEXT_TELEMETRY_DISABLED: 1
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    entrypoint: sh
+    command: >
+      -c "
+        echo '📦 Installing dependencies...' &&
+        npm ci --silent --omit=dev &&
+        echo '🔄 Generating Prisma Client...' &&
+        npx prisma generate &&
+        echo '🚀 Running database migrations...' &&
+        npx prisma migrate deploy &&
+        echo '✅ Prisma setup completed!'
+      "
+
   # Next.js Application (Production)
   app:
     build:
@@ -96,6 +127,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      prisma:
+        condition: service_completed_successfully
     networks:
       - app-network
     healthcheck:

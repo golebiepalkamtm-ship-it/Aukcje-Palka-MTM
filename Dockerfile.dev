@@ -1,5 +1,5 @@
 # Development Dockerfile for Next.js application
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Install dependencies only when needed
 RUN apk add --no-cache libc6-compat
@@ -7,11 +7,12 @@ RUN apk add --no-cache libc6-compat
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
+# Copy package files and npm config
+COPY package.json package-lock.json* .npmrc ./
 
-# Install dependencies
-RUN npm ci
+# Align npm with lockfile generator and install dependencies
+RUN npm install -g npm@11.6.2 \
+    && npm ci
 
 # Copy the rest of the application
 COPY . .
