@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database (Production)
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: palkamtm-postgres-prod
     restart: always
     environment:
@@ -22,10 +20,10 @@ services:
 
   # Redis for caching (Production)
   redis:
-    image: redis:7-alpine
+    image: redis:7.4-alpine
     container_name: palkamtm-redis-prod
     restart: always
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_prod_data:/data
     networks:
@@ -59,7 +57,7 @@ services:
     command: >
       -c "
         echo '📦 Installing dependencies...' &&
-        npm ci --silent --omit=dev &&
+        npm ci --silent --omit=dev --legacy-peer-deps || npm install --omit=dev --legacy-peer-deps &&
         echo '🔄 Generating Prisma Client...' &&
         npx prisma generate &&
         echo '🚀 Running database migrations...' &&
@@ -76,6 +74,8 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    volumes:
+      - ./firebase-key.json:/app/firebase-key.json:ro
     environment:
       # Database
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-palkamtm_production}
@@ -122,6 +122,11 @@ services:
       
       # Disable telemetry
       NEXT_TELEMETRY_DISABLED: 1
+      
+      # Sentry (optional)
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN:-}
+      
     depends_on:
       postgres:
         condition: service_healthy
@@ -132,7 +137,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost:3000/api/health || exit 1']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -140,7 +145,7 @@ services:
 
   # Nginx Reverse Proxy (Production)
   nginx:
-    image: nginx:alpine
+    image: nginx:1.27-alpine
     container_name: palkamtm-nginx-prod
     restart: always
     ports:
@@ -154,10 +159,49 @@ services:
     networks:
       - app-network
 
+  # Prometheus - Metrics Collection (Production)
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: palkamtm-prometheus-prod
+    restart: always
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_prod_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - app-network
+
+  # Grafana - Dashboards & Visualization (Production)
+  grafana:
+    image: grafana/grafana:11.5.0
+    container_name: palkamtm-grafana-prod
+    restart: always
+    ports:
+      - '4000:3000'
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana_prod_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
 volumes:
   postgres_prod_data:
     driver: local
   redis_prod_data:
+    driver: local
+  prometheus_prod_data:
+    driver: local
+  grafana_prod_data:
     driver: local
 
 networks:

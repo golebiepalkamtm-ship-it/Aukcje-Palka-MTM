@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database (Development - Alternative ports)
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: pigeon-auction-postgres-dev-alt
     restart: unless-stopped
     environment:
@@ -24,7 +22,7 @@ services:
 
   # Redis for caching and sessions (Development - Alternative ports)
   redis:
-    image: redis:7-alpine
+    image: redis:7.4-alpine
     container_name: pigeon-auction-redis-dev-alt
     restart: unless-stopped
     command: redis-server --appendonly yes --requirepass redis123
@@ -64,7 +62,7 @@ services:
     command: >
       -c "
         echo '📦 Installing dependencies...' &&
-        npm ci --silent &&
+        npm ci --silent --legacy-peer-deps || npm install --legacy-peer-deps &&
         echo '🔄 Generating Prisma Client...' &&
         npx prisma generate &&
         echo '🚀 Running database migrations...' &&
@@ -86,8 +84,9 @@ services:
       - /app/node_modules
       - /app/.next
       - ./firebase-key.json:/app/firebase-key.json:ro
+      - /app/.turbo
     healthcheck:
-      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost:3000/api/health || exit 1']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -141,7 +140,7 @@ services:
 
   # Prometheus - Metrics Collection (Development)
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.52.0
     container_name: pigeon-auction-prometheus-dev-alt
     restart: unless-stopped
     ports:
@@ -157,7 +156,7 @@ services:
 
   # Grafana - Dashboards & Visualization (Development)
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.5.0
     container_name: pigeon-auction-grafana-dev-alt
     restart: unless-stopped
     ports:
@@ -176,7 +175,7 @@ services:
 
   # pgAdmin - PostgreSQL Management (Development)
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:9.2
     container_name: pigeon-auction-pgadmin-dev-alt
     restart: unless-stopped
     ports:
@@ -205,7 +204,7 @@ services:
 
   # MinIO - S3-Compatible Object Storage (Development)
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2024-12-13T16-22-46Z
     container_name: pigeon-auction-minio-dev-alt
     restart: unless-stopped
     ports:
@@ -216,7 +215,12 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin123
     volumes:
       - minio_dev_data_alt:/data
-    command: server /data --console-address ":9001"
+      healthcheck:
+        test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+        interval: 30s
+        timeout: 10s
+        retries: 3
+      command: server /data --console-address ":9001"
     networks:
       - pigeon-network-alt
 

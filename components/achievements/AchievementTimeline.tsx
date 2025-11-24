@@ -87,8 +87,7 @@ function TimelineCard({ item, align }: TimelineCardProps) {
       <article
         ref={ref}
         className={mergeClasses(
-          'glass-morphism relative z-10 w-full overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-8 pl-14 text-white shadow-2xl transition-all duration-500 hover:border-white hover:shadow-[0_0_60px_20px_rgba(255,255,255,1),0_0_100px_30px_rgba(255,255,255,0.7)]',
-          'backdrop-blur-2xl',
+          'glass-morphism relative z-10 w-full p-8 pl-14 text-white',
           'before:absolute before:inset-0 before:skew-x-12 before:bg-white/10 before:opacity-0 before:transition-all before:duration-700 hover:before:animate-[shimmer_1.5s_infinite]',
           align === 'left'
             ? 'md:col-start-1 md:justify-self-end md:pr-16 md:text-right'

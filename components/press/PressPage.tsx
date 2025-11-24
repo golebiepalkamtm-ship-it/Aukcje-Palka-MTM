@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { SmartImage } from '@/components/ui/SmartImage';
 import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { motion } from 'framer-motion';
@@ -78,24 +79,17 @@ export function PressPage() {
     <div className="relative">
       {/* Hero Section */}
       <motion.section
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.6 }}
         className="relative z-10 -mt-24 pb-20 px-4 sm:px-6 lg:px-8"
       >
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">
-            Prasa i Media
-          </h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
-          >
-            Opinie hodowców o naszych gołębiach, artykuły, wywiady i materiały prasowe o hodowli MTM
-            Pałka
-          </motion.p>
+        <div className="max-w-4xl mx-auto">
+          <PageHeader
+            title="Prasa i Media"
+            subtitle="Artykuły prasowe, wywiady i materiały medialne o hodowli gołębi pocztowych MTM Pałka"
+            variant="stylized"
+          />
         </div>
       </motion.section>
 

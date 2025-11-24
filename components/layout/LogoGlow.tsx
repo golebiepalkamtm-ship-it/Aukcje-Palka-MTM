@@ -8,6 +8,14 @@ export function LogoGlow() {
   return (
     <motion.div
       className="relative z-[100]"
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{
+        duration: 2.0,
+        ease: [0.25, 0.46, 0.45, 0.94],
+        delay: 0.3,
+      }}
+      style={{ transformOrigin: 'center' }}
     >
       <Link href="/">
         <motion.div 
@@ -20,9 +28,10 @@ export function LogoGlow() {
             ]
           }}
           transition={{
-            duration: 2,
+            duration: 4,
             repeat: Infinity,
-            ease: 'easeInOut'
+            ease: 'easeInOut',
+            delay: 2.3, // Start glow animation after scale animation completes
           }}
         >
           {/* Główne logo z podświetleniem */}

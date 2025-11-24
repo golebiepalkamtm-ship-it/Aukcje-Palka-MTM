@@ -173,16 +173,24 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 
-  /* Stylizacja karty - dokładnie jak na stronie O nas */
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  /* Stylizacja karty - efekt wypukłości jak na stronie kontaktów */
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 2px solid rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-radius: 24px;
   padding: 32px 28px;
-  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 60px 180px rgba(0, 0, 0, 0.95), 0 40px 120px rgba(0, 0, 0, 0.85), 0 20px 60px rgba(0, 0, 0, 0.8), 0 -8px 30px rgba(255, 255, 255, 0.4), inset 0 8px 0 rgba(255, 255, 255, 0.85), inset 0 -4px 0 rgba(0, 0, 0, 0.7), inset 0 4px 12px rgba(255, 255, 255, 0.4), inset 0 -2px 8px rgba(0, 0, 0, 0.6), 0 0 0 4px rgba(255, 255, 255, 0.5) !important;
+  filter: brightness(1.15);
+  transform: translateZ(180px) perspective(1000px);
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition: all 0.5s ease-out;
-  overflow: visible;
+  overflow: hidden;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 
   display: flex;
   flex-direction: column;
@@ -193,9 +201,29 @@
   animation: cardFlip 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
+.auth-flip-face::before {
+  content: '';
+  background: rgba(255, 255, 255, 0.4);
+  width: 60%;
+  height: 100%;
+  top: 0%;
+  left: -125%;
+  transform: skew(45deg);
+  position: absolute;
+  transition: left 1s ease-out;
+  pointer-events: none;
+  z-index: 1;
+}
+
 .auth-flip-face:hover {
-  border: 2px solid rgba(255, 255, 255, 1);
-  box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 2px solid rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 80px 220px rgba(0, 0, 0, 1), 0 60px 180px rgba(0, 0, 0, 0.95), 0 40px 120px rgba(0, 0, 0, 0.9), 0 -10px 35px rgba(255, 255, 255, 0.5), inset 0 10px 0 rgba(255, 255, 255, 0.95), inset 0 -5px 0 rgba(0, 0, 0, 0.8), inset 0 5px 15px rgba(255, 255, 255, 0.5), inset 0 -3px 10px rgba(0, 0, 0, 0.7), 0 0 0 5px rgba(255, 255, 255, 0.6) !important;
+  transform: translateZ(200px) perspective(1000px);
+}
+
+.auth-flip-face:hover::before {
+  left: 150%;
 }
 
 .auth-flip-front {

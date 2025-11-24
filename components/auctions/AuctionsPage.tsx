@@ -2,6 +2,7 @@
 
 import CreateAuctionForm from '@/components/auctions/CreateAuctionForm';
 import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -223,11 +224,13 @@ export function AuctionsPage() {
   return (
     <>
       <div className="pt-1 pb-8 px-4 sm:px-6 lg:px-8">
-        <div className="w-full mx-auto text-center mb-4">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold uppercase tracking-[0.15em] text-white/80 mb-3">Nasze Aukcje</h1>
-          <p className="text-lg md:text-xl lg:text-2xl text-white/90 mb-4 max-w-2xl mx-auto">
-            Licytuj ekskluzywne gołębie pocztowe z rodowodami championów
-          </p>
+        <div className="w-full mx-auto mb-4">
+          <PageHeader
+            title="Nasze Aukcje"
+            subtitle="Licytuj ekskluzywne gołębie pocztowe z rodowodami championów"
+            variant="stylized"
+            className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[0.15em]"
+          />
         </div>
 
         {/* Content */}

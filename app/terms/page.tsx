@@ -4,17 +4,17 @@ export const metadata = {
 };
 
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function TermsPage() {
   return (
     <UnifiedLayout>
       <div className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-white mb-4">Regulamin</h1>
-            <p className="text-xl text-white/90">Regulamin Serwisu Aukcyjnego Gołębie Pocztowe</p>
-          </div>
+          <PageHeader 
+            title="Regulamin" 
+            subtitle="Regulamin Serwisu Aukcyjnego Gołębie Pocztowe"
+          />
 
           {/* Terms Content */}
           <div

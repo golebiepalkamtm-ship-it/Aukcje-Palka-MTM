@@ -5,17 +5,18 @@ export const metadata = {
 };
 
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function SalesTermsPage() {
   return (
     <UnifiedLayout>
       <div className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-3xl font-bold text-white mb-4">Warunki Sprzedaży</h1>
-            <p className="text-xl text-white">Warunki Sprzedaży w Serwisie Gołębie Pocztowe</p>
-          </div>
+          <PageHeader 
+            title="Warunki Sprzedaży" 
+            subtitle="Warunki Sprzedaży w Serwisie Gołębie Pocztowe"
+            variant="default"
+          />
 
           {/* Sales Terms Content */}
           <div className="rounded-lg border-2 border-white p-8 bg-white/10 backdrop-blur-sm shadow-[0_8px_32px_rgba(255,255,255,0.4),0_16px_64px_rgba(255,255,255,0.2),0_24px_96px_rgba(255,255,255,0.1)]">

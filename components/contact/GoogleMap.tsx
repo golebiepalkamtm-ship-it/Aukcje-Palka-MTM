@@ -19,24 +19,31 @@ export default function GoogleMap() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Mapa */}
-        <div className="relative">
-          <div
-            className="aspect-video rounded-2xl overflow-hidden border border-white/20 bg-white/10 backdrop-blur-xl"
-            style={{
-              boxShadow: 'none',
-            }}
-          >
-            <iframe
-              src="https://maps.google.com/maps?q=ul.+Stawowa+6,+59-800+Lubań,+Poland&t=&z=16&ie=UTF8&iwloc=&output=embed"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Mapa hodowli MTM Pałka - ul. Stawowa 6, Lubań"
-            />
-          </div>
+        <div 
+          className="relative h-full rounded-2xl overflow-hidden"
+          style={{
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '2px solid rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)',
+            minHeight: '500px',
+            height: '100%',
+            boxShadow: '0 50px 150px rgba(0, 0, 0, 0.9), 0 30px 100px rgba(0, 0, 0, 0.7), 0 -5px 20px rgba(255, 255, 255, 0.3), inset 0 6px 0 rgba(255, 255, 255, 0.7), inset 0 -6px 0 rgba(0, 0, 0, 0.8), inset 0 3px 10px rgba(255, 255, 255, 0.3), inset 0 -3px 10px rgba(0, 0, 0, 0.6), 0 0 0 3px rgba(255, 255, 255, 0.4)',
+            filter: 'brightness(1.15)',
+            transform: 'translateZ(120px) perspective(1000px)',
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          <iframe
+            src="https://maps.google.com/maps?q=ul.+Stawowa+6,+59-800+Lubań,+Poland&t=&z=16&ie=UTF8&iwloc=&output=embed"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Mapa hodowli MTM Pałka - ul. Stawowa 6, Lubań"
+          />
         </div>
 
         {/* Informacje o dojeździe */}
@@ -77,7 +84,7 @@ export default function GoogleMap() {
                   <ExternalLink className="w-4 h-4 ml-2 text-slate-300" />
                 </div>
               </a>
-            </UnifiedCard>
+              </UnifiedCard>
 
             <UnifiedCard
               variant="glass"
@@ -97,7 +104,7 @@ export default function GoogleMap() {
                   <ExternalLink className="w-4 h-4 ml-2 text-slate-300" />
                 </div>
               </a>
-            </UnifiedCard>
+              </UnifiedCard>
           </div>
 
           {/* Dodatkowe informacje */}
@@ -105,7 +112,7 @@ export default function GoogleMap() {
             variant="glass"
             glow={true}
             hover={true}
-            className="mt-8 p-6"
+            className="p-6"
           >
             <h4 className="text-lg font-semibold text-white mb-4">Wskazówki dojazdu</h4>
             <ul className="space-y-2 text-slate-200 text-sm">

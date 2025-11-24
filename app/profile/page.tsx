@@ -54,8 +54,8 @@ export default function ProfilePage() {
               <User className="w-12 h-12 text-white" />
             </div>
 
-            <h1 className="text-4xl font-bold text-white mb-4">Mój Profil</h1>
-            <p className="text-white/70 mb-8 text-lg">
+            <h1 className="page-title text-4xl font-bold text-white/45 mb-4">Mój Profil</h1>
+            <p className="text-white mb-8 text-lg">
               Twój profil został przeniesiony do Panelu Użytkownika
             </p>
 

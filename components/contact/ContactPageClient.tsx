@@ -1,6 +1,7 @@
 'use client';
 
 import GoogleMap from '@/components/contact/GoogleMap';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Text3D } from '@/components/ui/Text3D';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import { UnifiedCard } from '@/components/ui/UnifiedCard';
@@ -61,21 +62,17 @@ export default function ContactPageClient() {
     <>
       {/* Hero Section */}
       <motion.section
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.6 }}
         className="relative z-10 -mt-24 px-4 sm:px-6 lg:px-8"
       >
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Kontakt</h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
-          >
-            Skontaktuj się z nami, aby dowiedzieć się więcej o naszych gołębiach i hodowli
-          </motion.p>
+        <div className="max-w-4xl mx-auto">
+          <PageHeader
+            title="Kontakt"
+            subtitle="Skontaktuj się z nami, aby dowiedzieć się więcej o naszych gołębiach i hodowli"
+            variant="stylized"
+          />
         </div>
       </motion.section>
 
@@ -90,12 +87,26 @@ export default function ContactPageClient() {
             viewport={{ once: true }}
             className="mb-20"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.15,
+                    delayChildren: 0.3,
+                  },
+                },
+              }}
+            >
               <UnifiedCard
                 variant="glass"
                 glow={true}
                 hover={true}
-                className="p-8 text-center"
+                className="p-8 text-center w-full h-full flex flex-col"
               >
                 <div className="w-16 h-16 glass-morphism-strong rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-white">
                   <Phone className="w-8 h-8 text-white/60" />
@@ -111,7 +122,7 @@ export default function ContactPageClient() {
                 variant="glass"
                 glow={true}
                 hover={true}
-                className="p-8 text-center"
+                className="p-8 text-center w-full h-full flex flex-col"
               >
                 <div className="w-16 h-16 glass-morphism-strong rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-white">
                   <Mail className="w-8 h-8 text-white/60" />
@@ -127,7 +138,7 @@ export default function ContactPageClient() {
                 variant="glass"
                 glow={true}
                 hover={true}
-                className="p-8 text-center"
+                className="p-8 text-center w-full h-full flex flex-col"
               >
                 <div className="w-16 h-16 glass-morphism-strong rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-white">
                   <MapPin className="w-8 h-8 text-slate-300" />
@@ -145,7 +156,7 @@ export default function ContactPageClient() {
                 </p>
                 <p className="text-slate-200 text-sm">Wizyty po umówieniu</p>
               </UnifiedCard>
-            </div>
+            </motion.div>
           </motion.section>
 
           {/* Google Map */}
@@ -153,8 +164,8 @@ export default function ContactPageClient() {
 
           {/* Contact Form */}
           <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
             className="mb-20"
@@ -268,13 +279,13 @@ export default function ContactPageClient() {
                   </UnifiedButton>
                 </div>
               </form>
-            </UnifiedCard>
+              </UnifiedCard>
           </motion.section>
 
           {/* Additional Info */}
           <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: true }}
           >

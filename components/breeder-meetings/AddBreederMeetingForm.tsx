@@ -131,8 +131,8 @@ export default function AddBreederMeetingForm() {
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-4xl mx-auto card-glass p-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4 text-white">Dodaj Zdjęcia ze Spotkania</h1>
-          <p className="text-white/80 text-lg">
+          <h1 className="page-title text-4xl font-bold mb-4 text-white/45">Dodaj Zdjęcia ze Spotkania</h1>
+          <p className="text-white text-lg">
             Podziel się zdjęciami z naszych spotkań z hodowcami
           </p>
         </div>

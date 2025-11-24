@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Text3D } from '@/components/ui/Text3D';
 import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { motion } from 'framer-motion';
@@ -9,21 +10,17 @@ export default function AboutPageClient() {
     <>
       {/* Hero Section */}
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.9, delay: 0.4 }}
         className="relative z-10 pt-4 pb-12 px-4 sm:px-6 lg:px-8"
       >
-        <div className="w-full mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-white">O nas</h1>
-          <motion.p
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.7 }}
-            className="text-lg md:text-xl text-blue-100 mb-6 max-w-3xl mx-auto"
-          >
-            Poznaj historię i pasję stojącą za hodowlą gołębi pocztowych MTM Pałka
-          </motion.p>
+        <div className="w-full mx-auto">
+          <PageHeader
+            title="O nas"
+            subtitle="Poznaj historię i pasję stojącą za hodowlą gołębi pocztowych MTM Pałka"
+            className="text-4xl md:text-5xl"
+          />
         </div>
       </motion.section>
 
