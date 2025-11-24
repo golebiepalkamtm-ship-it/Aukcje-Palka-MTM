@@ -176,16 +176,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Nasłuchuj na custom event "email-verified-complete" - wymuszaj reload Firebase User
     const handleEmailVerified = async () => {
+      if (!auth) {
+        error('AuthContext: Email verified event received but auth is not initialized');
+        return;
+      }
+
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        info('AuthContext: Email verified event ignored - no current user');
+        return;
+      }
+
       info('AuthContext: Email verified event - force reload Firebase User');
-      if (auth.currentUser) {
-        try {
-          await auth.currentUser.reload();
-          await auth.currentUser.getIdToken(true);
-          setUser({ ...auth.currentUser });
-          info('AuthContext: Firebase User reloaded, emailVerified:', auth.currentUser.emailVerified);
-        } catch (err) {
-          error('AuthContext: Error reloading Firebase User:', err instanceof Error ? err.message : err);
-        }
+      try {
+        await currentUser.reload();
+        await currentUser.getIdToken(true);
+        setUser({ ...currentUser });
+        info('AuthContext: Firebase User reloaded, emailVerified:', currentUser.emailVerified);
+      } catch (err) {
+        error('AuthContext: Error reloading Firebase User:', err instanceof Error ? err.message : err);
       }
     };
 

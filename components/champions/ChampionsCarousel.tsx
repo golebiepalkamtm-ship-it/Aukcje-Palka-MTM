@@ -206,12 +206,13 @@ export function ChampionsCarousel({
                   <SmartImage
                     src={imageData.imageSrc}
                     alt={`Champion ${champion.id} - Zdjęcie ${imageData.imageIndex + 1}`}
-                    width={0}
-                    height={0}
+                    width={612}
+                    height={460}
                     fitMode="cover"
                     aspectRatio="auto"
                     className={`w-full h-full transition-all duration-500 ${position === 0 ? 'grayscale-0' : 'grayscale'}`}
-                    sizes="100vw"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 612px"
+                    priority={position === 0}
                   />
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />

@@ -1,14 +1,40 @@
 const path = require('path');
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  // ...existing code...
+const instrumentationAliases = {
+  '@prisma/instrumentation': path.resolve(__dirname, 'lib/stubs/prisma-instrumentation-stub.ts'),
+  'require-in-the-middle': path.resolve(__dirname, 'lib/stubs/require-in-the-middle-stub.ts'),
+  '@opentelemetry/instrumentation': path.resolve(
+    __dirname,
+    'lib/stubs/opentelemetry-instrumentation-stub.ts'
+  ),
+};
 
+const ASSET_CDN_BASE_URL = (process.env.NEXT_PUBLIC_ASSET_BASE_URL || '').replace(/\/$/, '');
+const ASSET_PROXY_ROOTS = [
+  '/uploads',
+  '/champions',
+  '/press',
+  '/models',
+  '/golden-pair',
+  '/meetings%20with%20breeders',
+];
+
+const buildAssetRewrites = () =>
+  ASSET_CDN_BASE_URL
+    ? ASSET_PROXY_ROOTS.map(root => ({
+        source: `${root}/:path*`,
+        destination: `${ASSET_CDN_BASE_URL}${root}/:path*`,
+      }))
+    : [];
+
+/** @type {import('next').NextConfig} */
+const LONG_TERM_CACHE = 'public, max-age=31536000, immutable';
+const EDGE_CACHE = 'public, s-maxage=31536000, max-age=31536000, immutable';
+
+const nextConfig = {
   // Podstawowa konfiguracja Next.js
   reactStrictMode: true,
 
-  // Wyłącz problematyczne funkcje
-  generateEtags: false,
   poweredByHeader: false,
 
   // Egzekwuj ESLint i TypeScript podczas build
@@ -27,9 +53,28 @@ const nextConfig = {
   // Output mode dla Firebase App Hosting
   output: 'standalone',
 
-  // Eksperymentalne funkcje
   experimental: {
     instrumentationHook: true,
+    optimizePackageImports: [
+      'lucide-react',
+      'lodash-es',
+      'date-fns',
+      '@headlessui/react',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-dialog',
+    ],
+    optimizeServerReact: true,
+    typedRoutes: true,
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
+    reactCompiler: true,
+    turbo: {
+      rules: {
+        '*.ts': { loaders: ['swc'] },
+        '*.tsx': { loaders: ['swc'] },
+      },
+    },
   },
 
   // Ustawienia dla stabilności na Windows
@@ -96,26 +141,61 @@ const nextConfig = {
 
   // Headers bezpieczeństwa
   async headers() {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'strict-dynamic' 'unsafe-inline' https: http:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: https://res.cloudinary.com https://cdn.pixabay.com https://cdn.buymeacoffee.com https://palkamtm.pl https://www.palkamtm.pl https://*.us-east4.hosted.app https://storage.googleapis.com https://firebasestorage.googleapis.com",
+      "connect-src 'self' https://palkamtm.pl https://www.palkamtm.pl https://*.firebaseio.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ');
+
     return [
       {
         source: '/(.*)',
         headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
-          },
+          { key: 'Content-Security-Policy', value: csp },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value: 'accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=self, geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=()',
           },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+        ],
+      },
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: LONG_TERM_CACHE },
+          { key: 'CDN-Cache-Control', value: EDGE_CACHE },
+        ],
+      },
+      {
+        source: '/_next/image(.*)',
+        headers: [
+          { key: 'Cache-Control', value: LONG_TERM_CACHE },
+          { key: 'CDN-Cache-Control', value: EDGE_CACHE },
+        ],
+      },
+      {
+        source: '/fonts/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: LONG_TERM_CACHE },
+          { key: 'CDN-Cache-Control', value: EDGE_CACHE },
+        ],
+      },
+      {
+        source: '/(.*\\.(?:js|css|ico|gif|svg|png|jpg|jpeg|webp|avif|mp4|woff|woff2|ttf|otf))',
+        headers: [
+          { key: 'Cache-Control', value: LONG_TERM_CACHE },
+          { key: 'CDN-Cache-Control', value: EDGE_CACHE },
         ],
       },
       {
@@ -123,11 +203,15 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate',
+            value: 'no-store, no-cache, must-revalidate, max-age=0',
           },
         ],
       },
     ];
+  },
+
+  async rewrites() {
+    return buildAssetRewrites();
   },
 
   // Optymalizacja obrazów - Next.js 15 format
@@ -180,6 +264,19 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '*.us-east4.hosted.app',
+        port: '',
+        pathname: '/**',
+      },
+      // Firebase Storage
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
         port: '',
         pathname: '/**',
       },
@@ -249,44 +346,37 @@ finalConfig.webpack = (config, options) => {
 
   // 1. W development - zignoruj moduły instrumentation używając IgnorePlugin
   // To eliminuje webpack warnings poprzez całkowite pominięcie tych modułów
-  if (options.dev && options.isServer) {
+  if (options.isServer) {
     const webpack = require('webpack');
-    
-    // Ignoruj moduły instrumentation - całkowicie pomija ich kompilację
+
     config.plugins = [
       ...(config.plugins || []),
-      // Ignoruj Prisma instrumentation i jego zależności
       new webpack.IgnorePlugin({
         resourceRegExp: /@prisma\/instrumentation/,
       }),
-      // Ignoruj require-in-the-middle
       new webpack.IgnorePlugin({
         resourceRegExp: /require-in-the-middle/,
       }),
-      // Ignoruj OpenTelemetry instrumentation
       new webpack.IgnorePlugin({
         resourceRegExp: /@opentelemetry\/instrumentation/,
       }),
-      // Ignoruj Sentry integrations które używają instrumentation (prisma, postgresjs)
       new webpack.IgnorePlugin({
         resourceRegExp: /@sentry\/node\/.*\/integrations\/tracing\/(prisma|postgresjs)/,
       }),
     ];
 
-    // Dodatkowo zastąp aliasami jako fallback
     config.resolve.alias = {
       ...config.resolve.alias,
-      // Zastąp cały sentry-helpers stubem w development (eliminuje wszystkie warnings)
+      ...instrumentationAliases,
+    };
+  }
+
+  if (options.dev && options.isServer) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
       '@/lib/sentry-helpers': path.resolve(__dirname, 'lib/stubs/sentry-helpers-stub.ts'),
-      // Zastąp Sentry stubem w development (eliminuje wszystkie warnings z instrumentation)
       '@sentry/nextjs': path.resolve(__dirname, 'lib/stubs/sentry-stub.ts'),
       '@sentry/node': path.resolve(__dirname, 'lib/stubs/sentry-stub.ts'),
-      // Zastąp Prisma instrumentation pustym stubem w development
-      '@prisma/instrumentation': path.resolve(__dirname, 'lib/stubs/prisma-instrumentation-stub.ts'),
-      // Zastąp require-in-the-middle pustym stubem
-      'require-in-the-middle': path.resolve(__dirname, 'lib/stubs/require-in-the-middle-stub.ts'),
-      // Zastąp OpenTelemetry instrumentation pustym stubem
-      '@opentelemetry/instrumentation': path.resolve(__dirname, 'lib/stubs/opentelemetry-instrumentation-stub.ts'),
     };
   }
 

@@ -3,6 +3,8 @@
  * When unoptimized: true is set, this loader simply returns the original src
  * to bypass Next.js image optimization endpoint
  */
+import { buildAssetCdnUrl } from './asset-proxy';
+
 export default function imageLoader({
   src,
   width: _width,
@@ -12,18 +14,25 @@ export default function imageLoader({
   width?: number;
   quality?: number;
 }) {
-  // If src is already a full URL, return it as-is
-  if (src.startsWith('http://') || src.startsWith('https://')) {
-    return src;
+  // Remove any query parameters that might have been added
+  const cleanSrc = src.split('?')[0];
+
+  if (cleanSrc.startsWith('data:')) {
+    return cleanSrc;
   }
-  
-  // If src starts with /, it's a local path - return as-is
-  if (src.startsWith('/')) {
-    return src;
+
+  // Remote URLs stay untouched (including Firebase Storage URLs)
+  if (cleanSrc.startsWith('http://') || cleanSrc.startsWith('https://')) {
+    return cleanSrc;
   }
-  
-  // For any other cases, return the src directly
-  // This bypasses the _next/image endpoint when unoptimized: true
-  return src;
+
+  // Use asset proxy to build CDN URL (handles Firebase Storage format automatically)
+  const cdnUrl = buildAssetCdnUrl(cleanSrc);
+  if (cdnUrl) {
+    return cdnUrl;
+  }
+
+  // Fallback: serve local public asset
+  return cleanSrc.startsWith('/') ? cleanSrc : `/${cleanSrc}`;
 }
 

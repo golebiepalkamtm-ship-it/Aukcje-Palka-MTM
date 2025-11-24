@@ -19,10 +19,15 @@
       "rootDir": ".",
       "ignore": [
         "node_modules",
+        ".next",
         ".git",
+        ".venv",
+        ".venv1",
         "firebase-debug.log",
         "firebase-debug.*.log",
+        ".firebase-debug*",
         "functions",
+        "logs",
         ".next/cache",
         ".vercel"
       ],
