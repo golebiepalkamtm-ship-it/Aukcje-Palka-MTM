@@ -27,7 +27,7 @@ description: "CORE MEMORY: ALWAYS ACTIVE. CONTAINS PROJECT ARCHITECTURE & BEHAVI
 
 // 4. **OUTPUT FORMAT & DELIVERY**
 [cite_start]// a) **Omówienie Rozwiązania**: Krótkie i techniczne wyjaśnienie działania kodu (do 3 zdań). [cite: 13] Obejmij etapy, założenia i ograniczenia.
-[cite_start]// b) **Kompletny Kod**: ZAWSZE staraj się dostarczyć **kompletny, gotowy do skopiowania i wklejenia kod** z odpowiednimi importami i eksportami. [cite: 3, 14, 15]
+[cite_start]// b) **Kompletny Kod**: ZAWSZE staraj się dostarczyć *kod z odpowiednimi importami i eksportami. [cite: 3, 14, 15]
 [cite_start]// c) **Dokumentacja**: Używaj komentarzy w kodzie (np. JSDoc lub TS comments) zamiast obszernej prozy przed kodem. [cite: 5]
 // d) **Instrukcje Implementacji**: Podaj jedną zwięzłą instrukcję, np. [cite_start]"Wklej kod do `lib/auth/userRoles.ts`." [cite: 4, 15]
 zmi
