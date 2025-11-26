@@ -324,10 +324,8 @@ export function AuctionsPage() {
             >
               {(() => {
                 const FilterCard = () => {
-                  const cardRef = useRef<HTMLDivElement>(null);
-                  useCardGlow(cardRef);
                   return (
-                    <div ref={cardRef} className="achievement-card" style={{ position: 'relative', isolation: 'isolate', overflow: 'visible' }}>
+                    <div className="achievement-card" style={{ position: 'relative', isolation: 'isolate', overflow: 'visible' }}>
                       <div className="glow" />
                       <div className="relative z-10" style={{ overflow: 'hidden', borderRadius: '1rem' }}>
                         <UnifiedCard
@@ -398,7 +396,10 @@ export function AuctionsPage() {
             </motion.section>
 
             {/* Auctions List View */}
-            <div className="flex flex-col space-y-4">
+            <div className="achievement-card" style={{ position: 'relative', isolation: 'isolate', overflow: 'visible' }}>
+              <div className="glow" />
+              <div className="relative z-10 p-4" style={{ overflow: 'hidden', borderRadius: '1rem' }}>
+                <div className="flex flex-col space-y-4">
               {statusFilteredAuctions.length > 0 ? (
                 statusFilteredAuctions.map((auction, index) => {
                   const AuctionCard = () => {
@@ -560,12 +561,12 @@ export function AuctionsPage() {
                                     >
                                       Kup teraz: {Math.round(auction.buyNowPrice / useAppStore.getState().ratePLNperEUR)} EUR
                                     </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
                               </UnifiedCard>
                             </div>
                           </div>
