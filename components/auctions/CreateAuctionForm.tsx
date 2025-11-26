@@ -1033,7 +1033,7 @@ export default function CreateAuctionForm({
                   title="Zaznacz aby włączyć opcję Kup teraz"
                 />
                 <label className="text-sm font-medium text-white/70 flex items-center">
-                  Cena Kup teraz (zł)
+                  Cena Kup teraz (zł) <span className="text-white/40 text-xs ml-1">(opcjonalnie)</span>
                   <InfoTooltip text="Opcjonalnie: Kwota, za którą ktoś może kupić gołębia od razu, kończąc aukcję." />
                 </label>
               </div>

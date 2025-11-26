@@ -1,7 +1,9 @@
 import { AppErrors, handleApiError } from '@/lib/error-handling';
 import { requireFirebaseAuth } from '@/lib/firebase-auth';
+import { requireEmailVerification } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { apiRateLimit } from '@/lib/rate-limit';
+import { addSecurityHeaders } from '@/lib/security-headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -102,12 +104,15 @@ export async function GET(request: NextRequest) {
       console.log('✅ User found, returning data');
     }
 
-    return NextResponse.json({
-      user: {
-        ...user,
-        createdAt: user.createdAt.toISOString(),
-      },
-    });
+    // FIXED: Dodaj security headers do odpowiedzi
+    return addSecurityHeaders(
+      NextResponse.json({
+        user: {
+          ...user,
+          createdAt: user.createdAt.toISOString(),
+        },
+      })
+    );
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('❌ GET /api/profile error:', error);
@@ -137,7 +142,7 @@ export async function PATCH(request: NextRequest) {
       return rateLimitResponse;
     }
 
-    // Sprawdź autoryzację Firebase
+    // FIXED: Sprawdź autoryzację Firebase i weryfikację email (Poziom 2)
     const authResult = await requireFirebaseAuth(request);
     if (authResult instanceof NextResponse) {
       if (process.env.NODE_ENV === 'development') {
@@ -145,6 +150,13 @@ export async function PATCH(request: NextRequest) {
       }
       return authResult;
     }
+
+    // FIXED: Wymagaj weryfikacji email dla aktualizacji profilu
+    const emailVerificationError = await requireEmailVerification(request);
+    if (emailVerificationError) {
+      return emailVerificationError;
+    }
+
     const { decodedToken } = authResult;
     
     if (process.env.NODE_ENV === 'development') {
@@ -263,14 +275,17 @@ export async function PATCH(request: NextRequest) {
       console.log('✅ Profile updated successfully');
     }
 
-    return NextResponse.json({
-      message: 'Profil został zaktualizowany pomyślnie',
-      user: {
-        ...updatedUser,
-        updatedAt: updatedUser.updatedAt.toISOString(),
-      },
-      phoneVerificationReset: phoneChanged,
-    });
+    // FIXED: Dodaj security headers do odpowiedzi
+    return addSecurityHeaders(
+      NextResponse.json({
+        message: 'Profil został zaktualizowany pomyślnie',
+        user: {
+          ...updatedUser,
+          updatedAt: updatedUser.updatedAt.toISOString(),
+        },
+        phoneVerificationReset: phoneChanged,
+      })
+    );
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('❌ PATCH /api/profile error:', error);

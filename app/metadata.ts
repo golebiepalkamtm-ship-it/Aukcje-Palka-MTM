@@ -13,15 +13,7 @@ export const metadata: Metadata = {
     },
   ],
   icons: {
-    apple: [
-      {
-        url: '/logo.png',
-        sizes: '512x512',
-        type: 'image/png',
-      },
-    ],
     icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
   },
   openGraph: {
     title: 'Palka MTM - Mistrzowie Sprintu',

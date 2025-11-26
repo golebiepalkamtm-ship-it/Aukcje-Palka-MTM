@@ -6,7 +6,7 @@ import { useMessageNotifications } from '@/hooks/useMessageNotifications';
 export function useMessagePolling() {
   const { addNotification } = useMessageNotifications();
   const lastCheckRef = useRef<Date>(new Date());
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const checkForNewMessages = async () => {

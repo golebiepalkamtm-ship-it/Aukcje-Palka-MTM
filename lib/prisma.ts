@@ -46,6 +46,15 @@ export const prisma =
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
+// Check if database is available and throw error if not
+export function requireDatabase(): void {
+  if (!isDatabaseConfigured()) {
+    throw new Error(
+      'Database is not configured. Please set DATABASE_URL environment variable.'
+    );
+  }
+}
+
 // Database fallback utility function
 export async function withDatabaseFallback<T>(
   dbOperation: () => Promise<T>,

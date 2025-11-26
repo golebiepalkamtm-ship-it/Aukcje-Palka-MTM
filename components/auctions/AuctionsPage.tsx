@@ -12,7 +12,84 @@ import { Calendar, Gavel, LayoutGrid, List, Plus, Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+
+type GlowRef<T extends HTMLElement> = React.RefObject<T> | React.MutableRefObject<T | null>;
+
+const useCardGlow = <T extends HTMLElement>(cardRef: GlowRef<T>) => {
+  useEffect(() => {
+    const $card = cardRef.current;
+    if (!$card) return;
+
+    const centerOfElement = ($el: HTMLElement) => {
+      const { width, height } = $el.getBoundingClientRect();
+      return [width / 2, height / 2];
+    };
+
+    const pointerPositionRelativeToElement = ($el: HTMLElement, e: MouseEvent) => {
+      const pos = [e.clientX, e.clientY];
+      const { left, top, width, height } = $el.getBoundingClientRect();
+      const x = pos[0] - left;
+      const y = pos[1] - top;
+      const px = Math.min(Math.max((100 / width) * x, 0), 100);
+      const py = Math.min(Math.max((100 / height) * y, 0), 100);
+      return { pixels: [x, y], percent: [px, py] };
+    };
+
+    const angleFromPointerEvent = ($el: HTMLElement, dx: number, dy: number) => {
+      let angleDegrees = 0;
+      if (dx !== 0 || dy !== 0) {
+        const angleRadians = Math.atan2(dy, dx);
+        angleDegrees = angleRadians * (180 / Math.PI) + 90;
+        if (angleDegrees < 0) {
+          angleDegrees += 360;
+        }
+      }
+      return angleDegrees;
+    };
+
+    const distanceFromCenter = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      return [x - cx, y - cy];
+    };
+
+    const closenessToEdge = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      const [dx, dy] = distanceFromCenter($card, x, y);
+      let k_x = Infinity;
+      let k_y = Infinity;
+      if (dx !== 0) {
+        k_x = cx / Math.abs(dx);
+      }
+      if (dy !== 0) {
+        k_y = cy / Math.abs(dy);
+      }
+      return Math.min(Math.max(1 / Math.min(k_x, k_y), 0), 1);
+    };
+
+    const round = (value: number, precision = 3) => parseFloat(value.toFixed(precision));
+
+    const cardUpdate = (e: MouseEvent) => {
+      const position = pointerPositionRelativeToElement($card, e);
+      const [px, py] = position.pixels;
+      const [dx, dy] = distanceFromCenter($card, px, py);
+      const edge = closenessToEdge($card, px, py);
+      const angle = angleFromPointerEvent($card, dx, dy);
+      
+      $card.style.setProperty('--pointer-x', `${round(position.percent[0])}%`);
+      $card.style.setProperty('--pointer-y', `${round(position.percent[1])}%`);
+      $card.style.setProperty('--pointer-°', `${round(angle)}deg`);
+      $card.style.setProperty('--pointer-d', `${round(edge * 100)}`);
+      $card.classList.remove('animating');
+    };
+
+    $card.addEventListener('pointermove', cardUpdate);
+
+    return () => {
+      $card.removeEventListener('pointermove', cardUpdate);
+    };
+  }, [cardRef]);
+};
 
 export function AuctionsPage() {
   const { user } = useAuth();
@@ -223,13 +300,14 @@ export function AuctionsPage() {
 
   return (
     <>
-      <div className="pt-1 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="pt-32 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="w-full mx-auto mb-4">
           <PageHeader
             title="Nasze Aukcje"
             subtitle="Licytuj ekskluzywne gołębie pocztowe z rodowodami championów"
             variant="stylized"
-            className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[0.15em]"
+            className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter"
+            subtitleClassName="text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)] relative z-[1100]"
           />
         </div>
 
@@ -244,12 +322,20 @@ export function AuctionsPage() {
               viewport={{ once: true }}
               className="mb-12"
             >
-              <UnifiedCard
-                variant="glass"
-                glow={true}
-                hover={true}
-                className="p-6"
-              >
+              {(() => {
+                const FilterCard = () => {
+                  const cardRef = useRef<HTMLDivElement>(null);
+                  useCardGlow(cardRef);
+                  return (
+                    <div ref={cardRef} className="achievement-card" style={{ position: 'relative', isolation: 'isolate', overflow: 'visible' }}>
+                      <div className="glow" />
+                      <div className="relative z-10" style={{ overflow: 'hidden', borderRadius: '1rem' }}>
+                        <UnifiedCard
+                          variant="glass"
+                          glow={true}
+                          hover={true}
+                          className="p-6"
+                        >
                 <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
                   {/* Search */}
                   <div className="relative flex-1 max-w-md group">
@@ -302,28 +388,42 @@ export function AuctionsPage() {
                     <span>Dodaj aukcję</span>
                   </button>
                 </div>
-              </UnifiedCard>
+                        </UnifiedCard>
+                      </div>
+                    </div>
+                  );
+                };
+                return <FilterCard />;
+              })()}
             </motion.section>
 
             {/* Auctions List View */}
             <div className="flex flex-col space-y-4">
               {statusFilteredAuctions.length > 0 ? (
-                statusFilteredAuctions.map((auction, index) => (
-                  <motion.div
-                    key={auction.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.05 }}
-                    viewport={{ once: true, margin: '-50px' }}
-                    className="group"
-                  >
-                    <Link href={`/auctions/${auction.id}`} className="block">
-                      <UnifiedCard
-                        variant="glass"
-                        glow={true}
-                        hover={true}
-                        className="overflow-hidden hover:border-blue-500/30 transition-colors"
+                statusFilteredAuctions.map((auction, index) => {
+                  const AuctionCard = () => {
+                    const cardRef = useRef<HTMLDivElement>(null);
+                    useCardGlow(cardRef);
+
+                    return (
+                      <motion.div
+                        key={auction.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.05 }}
+                        viewport={{ once: true, margin: '-50px' }}
+                        className="group"
                       >
+                        <Link href={`/auctions/${auction.id}`} className="block">
+                          <div ref={cardRef} className="achievement-card" style={{ position: 'relative', isolation: 'isolate', overflow: 'visible' }}>
+                            <div className="glow" />
+                            <div className="relative z-10" style={{ overflow: 'hidden', borderRadius: '1rem' }}>
+                              <UnifiedCard
+                                variant="glass"
+                                glow={true}
+                                hover={true}
+                                className="overflow-hidden hover:border-blue-500/30 transition-colors"
+                              >
                         <div className="flex flex-col md:flex-row">
                           {/* Left: Image Section */}
                           <div
@@ -466,10 +566,15 @@ export function AuctionsPage() {
                             </div>
                           </div>
                         </div>
-                      </UnifiedCard>
-                    </Link>
-                  </motion.div>
-                ))
+                              </UnifiedCard>
+                            </div>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  };
+                  return <AuctionCard key={auction.id} />;
+                })
               ) : (
                 <div className="col-span-3 py-12">
                   <UnifiedCard

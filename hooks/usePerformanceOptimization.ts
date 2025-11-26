@@ -24,7 +24,7 @@ export function usePerformanceOptimization(componentName: string, config: Perfor
   const renderCount = useRef(0);
   const lastRenderTime = useRef(Date.now());
   const mountTime = useRef(Date.now());
-  const debounceTimeout = useRef<NodeJS.Timeout>();
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Śledzenie renderów
   useEffect(() => {

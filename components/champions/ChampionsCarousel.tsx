@@ -151,7 +151,7 @@ export function ChampionsCarousel({
 
       {/* Carousel Container */}
       <div
-        className="relative h-[480px] sm:h-[560px] overflow-hidden pb-8"
+        className="relative h-[380px] sm:h-[460px] overflow-hidden pb-6"
         style={{ perspective: '1200px' }}
       >
         <AnimatePresence>
@@ -183,10 +183,10 @@ export function ChampionsCarousel({
               <motion.div
                 className={`relative overflow-hidden shadow-2xl cursor-pointer ${
                   position === 0
-                    ? 'w-[612px] h-[460px]'
+                    ? 'w-[520px] h-[400px]'
                     : position === -1 || position === 1
-                      ? 'w-[508px] h-[380px]'
-                      : 'w-[372px] h-[280px]'
+                      ? 'w-[420px] h-[320px]'
+                      : 'w-[300px] h-[230px]'
                 }`}
                 whileHover={{
                   scale: position === 0 ? 1.02 : 0.97,
@@ -206,12 +206,12 @@ export function ChampionsCarousel({
                   <SmartImage
                     src={imageData.imageSrc}
                     alt={`Champion ${champion.id} - Zdjęcie ${imageData.imageIndex + 1}`}
-                    width={612}
-                    height={460}
+                    width={520}
+                    height={400}
                     fitMode="cover"
                     aspectRatio="auto"
                     className={`w-full h-full transition-all duration-500 ${position === 0 ? 'grayscale-0' : 'grayscale'}`}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 612px"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 520px"
                     priority={position === 0}
                   />
                   {/* Overlay */}

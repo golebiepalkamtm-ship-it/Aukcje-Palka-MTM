@@ -29,8 +29,13 @@ function HomePageContent() {
 
 export default function HomePage() {
   return (
-    <UnifiedLayout showNavigation={true} showFooter={true} showBackground={true}>
-      <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-white">Ładowanie...</div></div>}>
+    <UnifiedLayout
+      showNavigation={true}
+      showFooter={true}
+      showBackground={true}
+      contentPaddingTop="compact"
+    >
+      <Suspense fallback={null}>
         <HomePageContent />
       </Suspense>
     </UnifiedLayout>

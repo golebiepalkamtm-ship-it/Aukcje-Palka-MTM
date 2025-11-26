@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ReactDOM from 'react-dom';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { MouseEventHandler, useEffect, useState, useRef } from 'react';
@@ -38,10 +38,18 @@ export default function ImageModal({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isBrowser, setIsBrowser] = useState(false);
+  const [hasEntered, setHasEntered] = useState(false);
+  const [direction, setDirection] = useState(0); // -1 = left (previous), 1 = right (next)
+  const prevImageSrcRef = useRef<string>(image.src);
   const modalRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
+    // Reset animacji wejścia przy otwarciu modalu
+    setHasEntered(false);
+    setZoomLevel(1);
+    setImagePosition({ x: 0, y: 0 });
+    
     // Sprawdź czy jesteśmy w przeglądarce
     setIsBrowser(true);
 
@@ -121,8 +129,10 @@ export default function ImageModal({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft' && onPrevious && hasPrevious) {
+        setDirection(-1);
         onPrevious();
       } else if (event.key === 'ArrowRight' && onNext && hasNext) {
+        setDirection(1);
         onNext();
       }
     };
@@ -130,6 +140,18 @@ export default function ImageModal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onPrevious, onNext, hasPrevious, hasNext]);
+
+  // Wykryj zmianę zdjęcia i zresetuj zoom/pozycję
+  useEffect(() => {
+    if (prevImageSrcRef.current !== image.src && hasEntered) {
+      // Resetuj zoom i pozycję przy zmianie zdjęcia PRZED animacją
+      setZoomLevel(1);
+      setImagePosition({ x: 0, y: 0 });
+      prevImageSrcRef.current = image.src;
+    } else if (!hasEntered) {
+      prevImageSrcRef.current = image.src;
+    }
+  }, [image.src, hasEntered]);
 
   const handleZoomIn = () => {
     setZoomLevel((prev: number) => Math.min(prev + 0.5, 3));
@@ -186,10 +208,15 @@ export default function ImageModal({
 
   return ReactDOM.createPortal(
     <motion.div
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/95 p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
+      style={{
+        perspective: '1000px',
+        backgroundColor: hasEntered ? 'rgba(0, 0, 0, 0.95)' : 'rgba(0, 0, 0, 0)',
+        transition: 'background-color 0.8s ease-out',
+      }}
+      initial={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
+      animate={{ backgroundColor: hasEntered ? 'rgba(0, 0, 0, 0.95)' : 'rgba(0, 0, 0, 0)' }}
+      exit={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -207,15 +234,12 @@ export default function ImageModal({
         Modal do przeglądania zdjęć. Użyj przycisków nawigacji, aby przejść do poprzedniego lub następnego zdjęcia. Naciśnij Escape lub kliknij przycisk zamknij, aby zamknąć.
       </p>
 
-      <motion.div
+      <div
         ref={modalRef}
         className="relative w-full h-full max-w-none max-h-none overflow-hidden"
-        initial={{ scale: 0.9 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.9 }}
       >
         {/* Zoom Controls */}
-        <div className="absolute top-4 left-4 flex items-center space-x-2 z-10">
+        <div className={`absolute top-4 left-4 flex items-center space-x-2 z-10 transition-opacity duration-300 ${hasEntered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <button
             onClick={handleZoomOut}
             disabled={zoomLevel <= 0.5}
@@ -245,7 +269,7 @@ export default function ImageModal({
 
         {/* Image Counter */}
         {currentIndex !== undefined && totalImages && totalImages > 1 && (
-          <div className="absolute top-4 right-20 px-4 py-2 rounded-full bg-black/50 text-white text-sm font-medium z-10">
+          <div className={`absolute top-4 right-20 px-4 py-2 rounded-full bg-black/50 text-white text-sm font-medium z-10 transition-opacity duration-300 ${hasEntered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             {currentIndex + 1} / {totalImages}
           </div>
         )}
@@ -258,7 +282,7 @@ export default function ImageModal({
             if (isDev) debug('Close button clicked');
             onClose();
           }}
-          className="absolute top-4 right-4 p-2 rounded-full bg-black/70 text-white hover:bg-black/90 transition-colors z-[100] cursor-pointer"
+          className={`absolute top-4 right-4 p-2 rounded-full bg-black/70 text-white hover:bg-black/90 transition-all z-[100] cursor-pointer ${hasEntered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           aria-label="Zamknij"
         >
           <X size={24} />
@@ -266,9 +290,12 @@ export default function ImageModal({
 
         {/* Previous Button - Widoczny */}
         {onPrevious && hasPrevious && (
-          <div className="absolute left-0 top-0 w-20 h-full flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300 z-40 group">
+          <div className={`absolute left-0 top-0 w-20 h-full flex items-center justify-center transition-opacity duration-300 z-40 group ${hasEntered ? 'opacity-80 hover:opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <button
-              onClick={onPrevious}
+              onClick={() => {
+                setDirection(-1);
+                onPrevious();
+              }}
               className="p-4 rounded-full bg-black/80 text-white hover:bg-black/90 transition-all duration-200 hover:scale-110 shadow-lg"
               aria-label="Poprzednie zdjęcie"
             >
@@ -286,9 +313,12 @@ export default function ImageModal({
 
         {/* Next Button - Widoczny */}
         {onNext && hasNext && (
-          <div className="absolute right-0 top-0 w-20 h-full flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300 z-40 group">
+          <div className={`absolute right-0 top-0 w-20 h-full flex items-center justify-center transition-opacity duration-300 z-40 group ${hasEntered ? 'opacity-80 hover:opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <button
-              onClick={onNext}
+              onClick={() => {
+                setDirection(1);
+                onNext();
+              }}
               className="p-4 rounded-full bg-black/80 text-white hover:bg-black/90 transition-all duration-200 hover:scale-110 shadow-lg"
               aria-label="Następne zdjęcie"
             >
@@ -306,36 +336,109 @@ export default function ImageModal({
 
         {/* Image Container */}
         <div
-          className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing bg-black touch-none"
+          className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+          style={{ perspective: '1000px', transformStyle: 'preserve-3d', backgroundColor: 'transparent' }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           onWheel={handleWheel}
         >
-          <motion.img
-            src={image.src}
-            alt={image.alt}
-            className="max-w-full max-h-full object-contain"
-            animate={{
-              scale: zoomLevel,
-              x: imagePosition.x / zoomLevel,
-              y: imagePosition.y / zoomLevel,
-            }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            drag={isDragging}
-            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-            onDrag={(e, info) => {
-              if (zoomLevel > 1) {
-                setImagePosition({
-                  x: imagePosition.x + info.delta.x,
-                  y: imagePosition.y + info.delta.y,
-                });
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={hasEntered ? `${image.src}-${direction}` : `initial-${image.src}`}
+              src={image.src}
+              alt={image.alt}
+              className="max-w-full max-h-full object-contain"
+              style={direction !== 0 && hasEntered ? { scale: 1 } : {}}
+              initial={
+                !hasEntered ? {
+                  scale: 0.1,
+                  x: 0,
+                  opacity: 1,
+                  y: 0,
+                } : direction !== 0 ? {
+                  x: direction === -1 ? '100vw' : direction === 1 ? '-100vw' : 0,
+                  opacity: 0,
+                  scale: 1,
+                  y: 0,
+                } : {
+                  scale: 1,
+                  x: 0,
+                  y: 0,
+                  opacity: 1,
+                }
               }
-            }}
-          />
+              animate={
+                !hasEntered ? {
+                  scale: 1,
+                  x: 0,
+                  opacity: 1,
+                  y: 0,
+                } : direction !== 0 ? {
+                  x: 0,
+                  opacity: 1,
+                  scale: 1,
+                  y: 0,
+                } : {
+                  scale: zoomLevel,
+                  x: imagePosition.x / zoomLevel,
+                  y: imagePosition.y / zoomLevel,
+                  opacity: 1,
+                }
+              }
+              exit={direction !== 0 && hasEntered ? {
+                x: direction === -1 ? '-100vw' : direction === 1 ? '100vw' : 0,
+                opacity: 0,
+                scale: 1,
+                transition: {
+                  duration: 0.5,
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                  scale: { duration: 0 },
+                }
+              } : {}}
+              transition={
+                !hasEntered ? {
+                  scale: { 
+                    duration: 4.5,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  },
+                } : direction !== 0 ? {
+                  x: { 
+                    duration: 0.5,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  },
+                  opacity: { 
+                    duration: 0.5,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  },
+                  scale: { duration: 0 },
+                } : {
+                  scale: { type: 'spring', stiffness: 300, damping: 30 },
+                  x: { type: 'spring', stiffness: 300, damping: 30 },
+                  y: { type: 'spring', stiffness: 300, damping: 30 },
+                }
+              }
+              onAnimationComplete={() => {
+                if (!hasEntered) {
+                  setHasEntered(true);
+                }
+                setDirection(0); // Resetuj kierunek po zakończeniu animacji
+              }}
+              drag={isDragging && hasEntered}
+              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+              onDrag={(e, info) => {
+                if (zoomLevel > 1 && hasEntered) {
+                  setImagePosition({
+                    x: imagePosition.x + info.delta.x,
+                    y: imagePosition.y + info.delta.y,
+                  });
+                }
+              }}
+            />
+          </AnimatePresence>
         </div>
-      </motion.div>
+      </div>
     </motion.div>,
     document.body
   );

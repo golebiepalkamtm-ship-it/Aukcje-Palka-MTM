@@ -32,7 +32,7 @@ const socialLinks = [
 export function Footer() {
   return (
     <footer className="bg-gray-800/30 backdrop-blur-sm border-t border-white/20 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           {/* Company Info */}
           <div className="flex-1">
@@ -42,7 +42,7 @@ export function Footer() {
               </div>
               <span className="font-display font-bold text-xl">MTM Pałka</span>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed max-w-lg">
+            <p className="text-gray-400 text-xs leading-relaxed max-w-lg">
               Witamy w świecie MTM Pałka – hodowli gołębi pocztowych, której fundamentem jest
               historia trzech pokoleń, a siłą napędową bezgraniczna miłość do lotu. W sercu Dolnego
               Śląska, pod niebem Lubania, od ponad czterdziestu pięciu lat piszemy sagę, w której
@@ -122,7 +122,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-gray-800 mt-4 pt-4">
+        <div className="border-t border-gray-800 mt-2 pt-2">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
             <p className="text-gray-400 text-xs text-center sm:text-left">
               © 2024 MTM Pałka. Wszystkie prawa zastrzeżone.

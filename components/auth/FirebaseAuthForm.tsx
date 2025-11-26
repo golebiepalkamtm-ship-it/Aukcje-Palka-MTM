@@ -2,7 +2,6 @@
 
 import { auth } from '@/lib/firebase.client';
 import {
-  FacebookAuthProvider,
   GoogleAuthProvider,
   sendEmailVerification,
   signInWithEmailAndPassword,
@@ -282,78 +281,6 @@ export default function FirebaseAuthForm({
     }
   };
 
-  const handleFacebookSignIn = async () => {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      if (!auth) {
-        throw new Error('Firebase nie jest zainicjalizowany');
-      }
-
-      const provider = new FacebookAuthProvider();
-      // Dodaj dodatkowe zakresy jeśli potrzebujesz
-      provider.addScope('email');
-      provider.addScope('public_profile');
-
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
-
-      // Sprawdź czy to nowa rejestracja OAuth (email nie zweryfikowany)
-      if (!user.emailVerified) {
-        // Wyślij email weryfikacyjny dla nowej rejestracji OAuth
-        try {
-          await sendEmailVerification(user, {
-            url: `${window.location.origin}/auth/verify-email`,
-            handleCodeInApp: false,
-          });
-          setSuccess(
-            '✅ Rejestracja przez Facebook zakończona! Na Twój email wysłaliśmy link aktywacyjny. Sprawdź skrzynkę (także SPAM) i kliknij link, aby uzyskać dostęp do panelu użytkownika.'
-          );
-        } catch (emailError) {
-          logger.error('Błąd wysyłania email weryfikacyjnego dla OAuth:', emailError);
-          setSuccess(
-            '✅ Zalogowano przez Facebook! Aby uzyskać dostęp do panelu, zweryfikuj email. Sprawdź skrzynkę odbiorczą.'
-          );
-        }
-      }
-
-      // Użyj tej samej funkcji synchronizacji co inne metody
-      await syncUser('✅ Zalogowano pomyślnie przez Facebook! Witamy w panelu użytkownika.');
-    } catch (e: unknown) {
-      const error = e as { code?: string; message?: string };
-      logger.error('Błąd logowania przez Facebook:', error);
-
-      switch (error.code) {
-        case 'auth/popup-closed-by-user':
-          setError('Okno logowania zostało zamknięte');
-          break;
-        case 'auth/popup-blocked':
-          setError('Okno logowania zostało zablokowane przez przeglądarkę');
-          break;
-        case 'auth/cancelled-popup-request':
-          setError('Anulowano logowanie');
-          break;
-        case 'auth/account-exists-with-different-credential':
-          setError('Konto z tym emailem już istnieje z inną metodą logowania');
-          break;
-        case 'auth/facebook-auth-failed':
-          setError('Błąd autoryzacji Facebook');
-          break;
-        case 'auth/unauthorized-domain':
-          setError(
-            'Domena nie jest autoryzowana w Firebase Console. Dodaj domenę 192.168.177.1 do autoryzowanych domen OAuth w ustawieniach projektu Firebase.'
-          );
-          break;
-        default:
-          setError(
-            `Wystąpił błąd podczas logowania przez Facebook: ${error.message || error.code}`
-          );
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Usunięto funkcję handleSMSAuth - SMS służy tylko do autoryzacji już zarejestrowanych użytkowników
 
@@ -572,27 +499,6 @@ export default function FirebaseAuthForm({
             )}
           </motion.button>
 
-          {/* Facebook Sign In */}
-          <motion.button
-            onClick={handleFacebookSignIn}
-            disabled={isLoading}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full py-2 bg-[#1877F2] text-white font-semibold rounded-xl hover:bg-[#166FE5] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mb-3 flex items-center justify-center shadow-lg hover:shadow-xl text-sm"
-          >
-            <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-            {isLoading ? (
-              <div className="flex items-center">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Logowanie...
-              </div>
-            ) : (
-              'Zaloguj się przez Facebook'
-            )}
-          </motion.button>
-
           <div className="relative mb-3">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/20"></div>
@@ -632,7 +538,7 @@ export default function FirebaseAuthForm({
                 }}
                 placeholder="Email"
                 autoComplete="email"
-                className={`w-full pl-12 pr-4 py-3 bg-transparent border rounded-xl text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full pl-12 pr-4 py-1.5 bg-white border rounded-xl text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                   formErrors.email ? 'border-red-500' : 'border-white/20'
                 }`}
                 disabled={isLoading}
@@ -661,7 +567,7 @@ export default function FirebaseAuthForm({
                 }}
                 placeholder="Hasło"
                 autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                className={`w-full pl-12 pr-12 py-3 bg-transparent border rounded-xl text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full pl-12 pr-12 py-1.5 bg-white border rounded-xl text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                   formErrors.password ? 'border-red-500' : 'border-white/20'
                 }`}
                 disabled={isLoading}
@@ -701,7 +607,7 @@ export default function FirebaseAuthForm({
                   }}
                   placeholder="Potwierdź hasło"
                   autoComplete="new-password"
-                  className={`w-full pl-12 pr-4 py-3 bg-transparent border rounded-xl text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full pl-12 pr-4 py-1.5 bg-white border rounded-xl text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                     formErrors.confirmPassword ? 'border-red-500' : 'border-white/20'
                   }`}
                 />

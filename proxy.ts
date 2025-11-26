@@ -21,7 +21,7 @@ function isHttps(request: NextRequest): boolean {
   );
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Ignoruj znane przypadki, które mogą generować 404 (nie loguj ich)
@@ -81,26 +81,65 @@ export async function middleware(request: NextRequest) {
 
     const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
 
-    // Lekkie bramki na poziomie UI (bez walidacji tokenu w middleware):
-    // - jeśli wchodzimy na trasy tylko Poziomu 2/3, a brak cookie z potwierdzeniem poziomu, przekieruj do odpowiednich ekranów
-    // Uwaga: Rzeczywista autoryzacja jest w API routes. Middleware robi tylko UX redirect.
-
-    const cookies = request.cookies;
-    const level2Cookie = cookies.get('level2-ok')?.value;
-    const level3Cookie = cookies.get('level3-ok')?.value;
-
-    if (level2Routes.some(p => pathname.startsWith(p)) && !level2Cookie) {
-      const url = new URL('/auth/register', request.url);
-      url.searchParams.set('needs', 'email');
-      url.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(url);
+    // FIXED: Rzeczywista weryfikacja poziomów użytkownika z bazy danych zamiast cookies
+    // Importujemy funkcje weryfikacji (dynamic import aby uniknąć problemów z Edge Runtime)
+    const { verifyFirebaseToken } = await import('@/lib/firebase-auth');
+    const { prisma } = await import('@/lib/prisma');
+    
+    // FIXED: Utwórz request z tokenem w nagłówku Authorization dla weryfikacji
+    const requestWithAuth = new Request(request.url, {
+      method: request.method,
+      headers: {
+        ...Object.fromEntries(request.headers.entries()),
+        authorization: `Bearer ${token}`,
+      },
+    });
+    const nextRequestWithAuth = new NextRequest(requestWithAuth);
+    
+    const decodedToken = await verifyFirebaseToken(nextRequestWithAuth);
+    if (!decodedToken) {
+      const loginUrl = new URL('/auth/register', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
     }
 
-    if (level3Routes.some(p => pathname.startsWith(p)) && !level3Cookie) {
-      const url = new URL('/profile', request.url);
-      url.searchParams.set('needs', 'sms');
-      url.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(url);
+    // Pobierz użytkownika z bazy danych
+    const user = await prisma.user.findFirst({
+      where: { firebaseUid: decodedToken.uid },
+      select: { role: true },
+    });
+
+    if (!user) {
+      const loginUrl = new URL('/auth/register', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // FIXED: Sprawdź poziom 2 (USER_EMAIL_VERIFIED) dla /profile
+    if (level2Routes.some(p => pathname.startsWith(p))) {
+      const hasLevel2Access =
+        user.role === 'USER_EMAIL_VERIFIED' ||
+        user.role === 'USER_FULL_VERIFIED' ||
+        user.role === 'ADMIN';
+      
+      if (!hasLevel2Access) {
+        const url = new URL('/auth/register', request.url);
+        url.searchParams.set('needs', 'email');
+        url.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(url);
+      }
+    }
+
+    // FIXED: Sprawdź poziom 3 (USER_FULL_VERIFIED) dla /auctions/create, /seller
+    if (level3Routes.some(p => pathname.startsWith(p))) {
+      const hasLevel3Access = user.role === 'USER_FULL_VERIFIED' || user.role === 'ADMIN';
+      
+      if (!hasLevel3Access) {
+        const url = new URL('/profile', request.url);
+        url.searchParams.set('needs', 'sms');
+        url.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(url);
+      }
     }
 
     return NextResponse.next();

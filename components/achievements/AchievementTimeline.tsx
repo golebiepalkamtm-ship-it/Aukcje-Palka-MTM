@@ -2,6 +2,83 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+type GlowRef<T extends HTMLElement> = React.RefObject<T> | React.MutableRefObject<T | null>;
+
+const useCardGlow = <T extends HTMLElement>(cardRef: GlowRef<T>) => {
+  useEffect(() => {
+    const $card = cardRef.current;
+    if (!$card) return;
+
+    const centerOfElement = ($el: HTMLElement) => {
+      const { left, top, width, height } = $el.getBoundingClientRect();
+      return [width / 2, height / 2];
+    };
+
+    const pointerPositionRelativeToElement = ($el: HTMLElement, e: MouseEvent) => {
+      const pos = [e.clientX, e.clientY];
+      const { left, top, width, height } = $el.getBoundingClientRect();
+      const x = pos[0] - left;
+      const y = pos[1] - top;
+      const px = Math.min(Math.max((100 / width) * x, 0), 100);
+      const py = Math.min(Math.max((100 / height) * y, 0), 100);
+      return { pixels: [x, y], percent: [px, py] };
+    };
+
+    const angleFromPointerEvent = ($el: HTMLElement, dx: number, dy: number) => {
+      let angleDegrees = 0;
+      if (dx !== 0 || dy !== 0) {
+        const angleRadians = Math.atan2(dy, dx);
+        angleDegrees = angleRadians * (180 / Math.PI) + 90;
+        if (angleDegrees < 0) {
+          angleDegrees += 360;
+        }
+      }
+      return angleDegrees;
+    };
+
+    const distanceFromCenter = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      return [x - cx, y - cy];
+    };
+
+    const closenessToEdge = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      const [dx, dy] = distanceFromCenter($card, x, y);
+      let k_x = Infinity;
+      let k_y = Infinity;
+      if (dx !== 0) {
+        k_x = cx / Math.abs(dx);
+      }
+      if (dy !== 0) {
+        k_y = cy / Math.abs(dy);
+      }
+      return Math.min(Math.max(1 / Math.min(k_x, k_y), 0), 1);
+    };
+
+    const round = (value: number, precision = 3) => parseFloat(value.toFixed(precision));
+
+    const cardUpdate = (e: MouseEvent) => {
+      const position = pointerPositionRelativeToElement($card, e);
+      const [px, py] = position.pixels;
+      const [dx, dy] = distanceFromCenter($card, px, py);
+      const edge = closenessToEdge($card, px, py);
+      const angle = angleFromPointerEvent($card, dx, dy);
+      
+      $card.style.setProperty('--pointer-x', `${round(position.percent[0])}%`);
+      $card.style.setProperty('--pointer-y', `${round(position.percent[1])}%`);
+      $card.style.setProperty('--pointer-°', `${round(angle)}deg`);
+      $card.style.setProperty('--pointer-d', `${round(edge * 100)}`);
+      $card.classList.remove('animating');
+    };
+
+    $card.addEventListener('pointermove', cardUpdate);
+
+    return () => {
+      $card.removeEventListener('pointermove', cardUpdate);
+    };
+  }, [cardRef]);
+};
+
 type AchievementTimelineEntry = {
   label: string;
   value: string;
@@ -74,6 +151,17 @@ type TimelineCardProps = {
 
 function TimelineCard({ item, align }: TimelineCardProps) {
   const { ref, isVisible } = useScrollReveal();
+  const cardRef = useRef<HTMLDivElement>(null);
+  useCardGlow(cardRef);
+
+  const setRefs = (node: HTMLDivElement | null) => {
+    if (node) {
+      if (ref && typeof ref === 'object' && 'current' in ref) {
+        ref.current = node;
+      }
+      cardRef.current = node;
+    }
+  };
 
   return (
     <div className="relative md:grid md:grid-cols-2 md:gap-12 max-w-7xl mx-auto">
@@ -85,19 +173,18 @@ function TimelineCard({ item, align }: TimelineCardProps) {
       </span>
 
       <article
-        ref={ref}
+        ref={setRefs}
         className={mergeClasses(
-          'glass-morphism relative z-10 w-full p-8 pl-14 text-white',
+          'achievement-card glass-morphism relative z-10 w-full p-8 pl-14 text-white',
           'before:absolute before:inset-0 before:skew-x-12 before:bg-white/10 before:opacity-0 before:transition-all before:duration-700 hover:before:animate-[shimmer_1.5s_infinite]',
           align === 'left'
             ? 'md:col-start-1 md:justify-self-end md:pr-16 md:text-right'
             : 'md:col-start-2 md:justify-self-start md:pl-16',
-          // Jeśli niewidoczny, ustaw opacity-0 (żeby nie było go widać przed animacją).
-          // Jeśli widoczny, dodaj animację fade-in-fwd.
           !isVisible && 'opacity-0',
           isVisible && 'fade-in-fwd'
         )}
       >
+        <div className="glow" />
         <div className="flex flex-col gap-2 text-left md:text-inherit">
           <div
             className={mergeClasses(

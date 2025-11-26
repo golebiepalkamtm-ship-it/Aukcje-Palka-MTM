@@ -8,13 +8,15 @@ import {
   createAuctionSorting,
   createPagination,
 } from '@/lib/optimized-queries';
-import { prisma } from '@/lib/prisma';
+import { prisma, withDatabaseFallback } from '@/lib/prisma';
 import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 import { requireFirebaseAuth } from '@/lib/firebase-auth';
+import { requireFullVerification } from '@/lib/auth-middleware';
+import { addSecurityHeaders } from '@/lib/security-headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 async function getAuctionsHandler(request: NextRequest) {
@@ -22,19 +24,21 @@ async function getAuctionsHandler(request: NextRequest) {
     // Sprawdź dostępność bazy danych
     const { isDatabaseConfigured } = await import('@/lib/prisma');
     if (!isDatabaseConfigured()) {
-      return NextResponse.json(
-        {
-          auctions: [],
-          pagination: {
-            page: 1,
-            limit: 10,
-            total: 0,
-            totalPages: 0,
-            hasNext: false,
-            hasPrev: false,
+      return addSecurityHeaders(
+        NextResponse.json(
+          {
+            auctions: [],
+            pagination: {
+              page: 1,
+              limit: 10,
+              total: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrev: false,
+            },
           },
-        },
-        { status: 200 }
+          { status: 200 }
+        )
       );
     }
 
@@ -77,29 +81,43 @@ async function getAuctionsHandler(request: NextRequest) {
     const orderBy = createAuctionSorting(sortBy);
     const { skip, take } = createPagination(page, limit);
 
-    // Wykonaj zapytania równolegle
-    const [auctions, total] = await Promise.all([
-      prisma.auction.findMany({
-        where,
-        ...auctionQueries.withBasicRelations,
-        orderBy,
-        skip,
-        take,
-      }),
-      prisma.auction.count({ where }),
-    ]);
+    // Wykonaj zapytania równolegle z bezpiecznym fallbackiem
+    const { auctions, total } = await withDatabaseFallback(
+      async () => {
+        const [items, count] = await Promise.all([
+          prisma.auction.findMany({
+            where,
+            ...auctionQueries.withBasicRelations,
+            orderBy,
+            skip,
+            take,
+          }),
+          prisma.auction.count({ where }),
+        ]);
 
-    return NextResponse.json({
-      auctions,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page < Math.ceil(total / limit),
-        hasPrev: page > 1,
+        return { auctions: items, total: count };
       },
-    });
+      {
+        auctions: [],
+        total: 0,
+      },
+      '⚠️ Nie udało się pobrać aukcji z bazy – zwracam pustą listę.'
+    );
+
+    // FIXED: Dodaj security headers do odpowiedzi
+    return addSecurityHeaders(
+      NextResponse.json({
+        auctions,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+          hasNext: page < Math.ceil(total / limit),
+          hasPrev: page > 1,
+        },
+      })
+    );
   } catch (error) {
     return handleApiError(error, request, { endpoint: 'auctions', method: 'GET' });
   }
@@ -109,9 +127,16 @@ async function createAuctionHandler(request: NextRequest) {
   const body = await request.json();
   console.log('Received body:', body); // Dodaj to dla debugowania
 
-  // Autoryzacja Firebase
+  // FIXED: Użyj requireFullVerification middleware zamiast ręcznej weryfikacji
   const authResult = await requireFirebaseAuth(request);
   if (authResult instanceof NextResponse) return authResult;
+
+  // FIXED: Wymagaj pełnej weryfikacji (Poziom 3) dla tworzenia aukcji
+  const fullVerificationError = await requireFullVerification(request);
+  if (fullVerificationError) {
+    return fullVerificationError;
+  }
+
   const { decodedToken } = authResult;
 
   // Pobierz użytkownika z bazy po firebaseUid
@@ -120,8 +145,6 @@ async function createAuctionHandler(request: NextRequest) {
     select: {
       id: true,
       role: true,
-      isPhoneVerified: true,
-      isProfileVerified: true,
       firstName: true,
       lastName: true,
     },
@@ -130,18 +153,6 @@ async function createAuctionHandler(request: NextRequest) {
   if (!dbUser) {
     loggerError('Użytkownik nie znaleziony w bazie', { uid: decodedToken.uid });
     return NextResponse.json({ error: 'Użytkownik nie znaleziony' }, { status: 403 });
-  }
-
-  // Sprawdź pełną weryfikację (Level 3)
-  const isFullyVerified = dbUser.isProfileVerified && dbUser.isPhoneVerified;
-  if (!isFullyVerified && dbUser.role !== 'ADMIN') {
-    loggerError('Brak uprawnień do tworzenia aukcji', {
-      uid: decodedToken.uid,
-      role: dbUser.role,
-      isProfileVerified: dbUser.isProfileVerified,
-      isPhoneVerified: dbUser.isPhoneVerified,
-    });
-    return NextResponse.json({ error: 'Brak uprawnień do tworzenia aukcji' }, { status: 403 });
   }
 
   // Walidacja danych
@@ -315,11 +326,14 @@ async function createAuctionHandler(request: NextRequest) {
   // TODO: Add Prometheus metric for auction_create
   loggerError('Aukcja utworzona pomyślnie', { auctionId: result.id, sellerId: dbUser.id });
 
-  return NextResponse.json({
-    success: true,
-    message: 'Aukcja została utworzona i oczekuje na zatwierdzenie',
-    auctionId: result.id,
-  });
+  // FIXED: Dodaj security headers do odpowiedzi
+  return addSecurityHeaders(
+    NextResponse.json({
+      success: true,
+      message: 'Aukcja została utworzona i oczekuje na zatwierdzenie',
+      auctionId: result.id,
+    })
+  );
 }
 
 export const GET = createApiRoute(getAuctionsHandler, 'read');

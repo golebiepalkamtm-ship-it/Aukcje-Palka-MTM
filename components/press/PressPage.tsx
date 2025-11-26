@@ -5,7 +5,84 @@ import { SmartImage } from '@/components/ui/SmartImage';
 import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+
+type GlowRef<T extends HTMLElement> = React.RefObject<T> | React.MutableRefObject<T | null>;
+
+const useCardGlow = <T extends HTMLElement>(cardRef: GlowRef<T>) => {
+  useEffect(() => {
+    const $card = cardRef.current;
+    if (!$card) return;
+
+    const centerOfElement = ($el: HTMLElement) => {
+      const { width, height } = $el.getBoundingClientRect();
+      return [width / 2, height / 2];
+    };
+
+    const pointerPositionRelativeToElement = ($el: HTMLElement, e: MouseEvent) => {
+      const pos = [e.clientX, e.clientY];
+      const { left, top, width, height } = $el.getBoundingClientRect();
+      const x = pos[0] - left;
+      const y = pos[1] - top;
+      const px = Math.min(Math.max((100 / width) * x, 0), 100);
+      const py = Math.min(Math.max((100 / height) * y, 0), 100);
+      return { pixels: [x, y], percent: [px, py] };
+    };
+
+    const angleFromPointerEvent = ($el: HTMLElement, dx: number, dy: number) => {
+      let angleDegrees = 0;
+      if (dx !== 0 || dy !== 0) {
+        const angleRadians = Math.atan2(dy, dx);
+        angleDegrees = angleRadians * (180 / Math.PI) + 90;
+        if (angleDegrees < 0) {
+          angleDegrees += 360;
+        }
+      }
+      return angleDegrees;
+    };
+
+    const distanceFromCenter = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      return [x - cx, y - cy];
+    };
+
+    const closenessToEdge = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      const [dx, dy] = distanceFromCenter($card, x, y);
+      let k_x = Infinity;
+      let k_y = Infinity;
+      if (dx !== 0) {
+        k_x = cx / Math.abs(dx);
+      }
+      if (dy !== 0) {
+        k_y = cy / Math.abs(dy);
+      }
+      return Math.min(Math.max(1 / Math.min(k_x, k_y), 0), 1);
+    };
+
+    const round = (value: number, precision = 3) => parseFloat(value.toFixed(precision));
+
+    const cardUpdate = (e: MouseEvent) => {
+      const position = pointerPositionRelativeToElement($card, e);
+      const [px, py] = position.pixels;
+      const [dx, dy] = distanceFromCenter($card, px, py);
+      const edge = closenessToEdge($card, px, py);
+      const angle = angleFromPointerEvent($card, dx, dy);
+      
+      $card.style.setProperty('--pointer-x', `${round(position.percent[0])}%`);
+      $card.style.setProperty('--pointer-y', `${round(position.percent[1])}%`);
+      $card.style.setProperty('--pointer-°', `${round(angle)}deg`);
+      $card.style.setProperty('--pointer-d', `${round(edge * 100)}`);
+      $card.classList.remove('animating');
+    };
+
+    $card.addEventListener('pointermove', cardUpdate);
+
+    return () => {
+      $card.removeEventListener('pointermove', cardUpdate);
+    };
+  }, [cardRef]);
+};
 
 // Automatyczne wykrywanie gazet z folderów
 const newspaperFolders = [
@@ -49,6 +126,8 @@ const newspaperFolders = [
 ];
 
 export function PressPage() {
+  const cardRef = useRef<HTMLDivElement>(null);
+  useCardGlow(cardRef);
   const [selectedImagePair, setSelectedImagePair] = useState<{
     left: string;
     right: string;
@@ -89,6 +168,7 @@ export function PressPage() {
             title="Prasa i Media"
             subtitle="Artykuły prasowe, wywiady i materiały medialne o hodowli gołębi pocztowych MTM Pałka"
             variant="stylized"
+            subtitleClassName="text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
           />
         </div>
       </motion.section>
@@ -104,11 +184,14 @@ export function PressPage() {
             viewport={{ once: true }}
             className="mb-20"
           >
-            <UnifiedCard
-              variant="glass"
-              glow={false}
-              className="p-8 sm:p-12 lg:p-16 xl:p-20 2xl:p-24"
-            >
+            <div ref={cardRef} className="achievement-card" style={{ position: 'relative', isolation: 'isolate', overflow: 'visible' }}>
+              <div className="glow" />
+              <div className="relative z-10" style={{ overflow: 'hidden', borderRadius: '1rem' }}>
+                <UnifiedCard
+                  variant="glass"
+                  glow={false}
+                  className="p-8 sm:p-12 lg:p-16 xl:p-20 2xl:p-24"
+                >
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 2xl:gap-20 items-stretch w-full">
                 {/* Okładka DVD (dopasowana do proporcji pudełka DVD) */}
                 <motion.div
@@ -171,7 +254,9 @@ export function PressPage() {
                   </div>
                 </motion.div>
               </div>
-            </UnifiedCard>
+                </UnifiedCard>
+              </div>
+            </div>
           </motion.section>
 
           {/* Gazety Grid - na dole */}

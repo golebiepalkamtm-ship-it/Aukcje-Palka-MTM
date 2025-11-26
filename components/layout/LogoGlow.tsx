@@ -3,8 +3,9 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { memo } from 'react';
 
-export function LogoGlow() {
+export const LogoGlow = memo(function LogoGlow() {
   return (
     <motion.div
       className="relative z-[100]"
@@ -38,13 +39,9 @@ export function LogoGlow() {
           <Image
             src="/logo.png"
             alt="Pałka M.T.M. Mistrzowie Sprintu"
-            width={320}
-            height={320}
-            className="h-80 w-auto object-contain cursor-pointer"
-            style={{ 
-              width: 'auto', 
-              height: 'auto',
-            }}
+            width={240}
+            height={240}
+            className="h-48 w-auto object-contain cursor-pointer"
             unoptimized
             priority
           />
@@ -52,4 +49,4 @@ export function LogoGlow() {
       </Link>
     </motion.div>
   );
-}
+});

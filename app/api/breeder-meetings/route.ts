@@ -3,10 +3,20 @@ import { requireFirebaseAuth } from '@/lib/firebase-auth';
 import { requirePhoneVerification } from '@/lib/phone-verification';
 import { prisma, withDatabaseFallback } from '@/lib/prisma';
 import { apiRateLimit } from '@/lib/rate-limit';
+import { addSecurityHeaders } from '@/lib/security-headers';
 import { existsSync } from 'fs';
 import { mkdir, writeFile } from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import { join } from 'path';
+import { z } from 'zod';
+
+// FIXED: Zod schema dla walidacji danych spotkania
+const breederMeetingSchema = z.object({
+  title: z.string().min(3, 'Tytuł musi mieć co najmniej 3 znaki').max(200, 'Tytuł może mieć maksymalnie 200 znaków'),
+  description: z.string().max(2000, 'Opis może mieć maksymalnie 2000 znaków').optional(),
+  location: z.string().min(2, 'Lokalizacja musi mieć co najmniej 2 znaki').max(100, 'Lokalizacja może mieć maksymalnie 100 znaków'),
+  date: z.string().datetime('Nieprawidłowa data'),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +39,7 @@ export async function POST(request: NextRequest) {
       return phoneVerificationError;
     }
 
-    // Parsuj formularz
+    // FIXED: Parsuj i waliduj dane używając Zod
     const formData = await request.formData();
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
@@ -37,11 +47,34 @@ export async function POST(request: NextRequest) {
     const date = formData.get('date') as string;
     const images = formData.getAll('images') as File[];
 
-    // Walidacja
-    if (!title || !location || !date || images.length === 0) {
-      return NextResponse.json(
-        { error: 'Wszystkie wymagane pola muszą być wypełnione' },
-        { status: 400 }
+    // FIXED: Walidacja danych używając Zod schema
+    let validatedData;
+    try {
+      validatedData = breederMeetingSchema.parse({
+        title,
+        description: description || undefined,
+        location,
+        date,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return addSecurityHeaders(
+          NextResponse.json(
+            { error: error.issues[0].message },
+            { status: 400 }
+          )
+        );
+      }
+      throw error;
+    }
+
+    // Walidacja zdjęć
+    if (images.length === 0) {
+      return addSecurityHeaders(
+        NextResponse.json(
+          { error: 'Przynajmniej jedno zdjęcie jest wymagane' },
+          { status: 400 }
+        )
       );
     }
 
@@ -51,18 +84,22 @@ export async function POST(request: NextRequest) {
 
     for (const image of images) {
       if (image.size > maxFileSize) {
-        return NextResponse.json(
-          { error: `Zdjęcie ${image.name} jest za duże. Maksymalny rozmiar to 5MB.` },
-          { status: 400 }
+        return addSecurityHeaders(
+          NextResponse.json(
+            { error: `Zdjęcie ${image.name} jest za duże. Maksymalny rozmiar to 5MB.` },
+            { status: 400 }
+          )
         );
       }
 
       if (!allowedTypes.includes(image.type)) {
-        return NextResponse.json(
-          {
-            error: `Nieprawidłowy format zdjęcia ${image.name}. Dozwolone formaty: JPG, PNG, WebP.`,
-          },
-          { status: 400 }
+        return addSecurityHeaders(
+          NextResponse.json(
+            {
+              error: `Nieprawidłowy format zdjęcia ${image.name}. Dozwolone formaty: JPG, PNG, WebP.`,
+            },
+            { status: 400 }
+          )
         );
       }
     }
@@ -87,30 +124,33 @@ export async function POST(request: NextRequest) {
       imagePaths.push(`/meetings with breeders/${fileName}`);
     }
 
-    // Zapisz spotkanie do bazy danych
+    // FIXED: Zapisz spotkanie do bazy danych używając zwalidowanych danych
     const meeting = await prisma.breederMeeting.create({
       data: {
-        title,
-        description: description || '',
-        location,
-        date: new Date(date),
+        title: validatedData.title,
+        description: validatedData.description || '',
+        location: validatedData.location,
+        date: new Date(validatedData.date),
         images: JSON.stringify(imagePaths),
         userId: decodedToken.uid,
         isApproved: false, // Nowe spotkania wymagają zatwierdzenia
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Spotkanie zostało dodane i oczekuje na zatwierdzenie przez administratora',
-      meeting: {
-        id: meeting.id,
-        title: meeting.title,
-        location: meeting.location,
-        date: meeting.date,
-        imagesCount: imagePaths.length,
-      },
-    });
+    // FIXED: Dodaj security headers do odpowiedzi
+    return addSecurityHeaders(
+      NextResponse.json({
+        success: true,
+        message: 'Spotkanie zostało dodane i oczekuje na zatwierdzenie przez administratora',
+        meeting: {
+          id: meeting.id,
+          title: meeting.title,
+          location: meeting.location,
+          date: meeting.date,
+          imagesCount: imagePaths.length,
+        },
+      })
+    );
   } catch (error) {
     return handleApiError(error, request, { endpoint: 'breeder-meetings' });
   }
@@ -235,5 +275,6 @@ export async function GET() {
   // Połącz wszystkie spotkania
   const allMeetings = [...staticMeetings, ...dbMeetings];
 
-  return NextResponse.json(allMeetings);
+  // FIXED: Dodaj security headers do odpowiedzi
+  return addSecurityHeaders(NextResponse.json(allMeetings));
 }

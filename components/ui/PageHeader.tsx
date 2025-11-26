@@ -5,6 +5,7 @@ interface PageHeaderProps {
   subtitle?: string;
   variant?: 'default' | 'stylized' | 'compact';
   className?: string;
+  subtitleClassName?: string;
   children?: ReactNode;
 }
 
@@ -22,13 +23,14 @@ export function PageHeader({
   subtitle,
   variant = 'default',
   className = '',
+  subtitleClassName = '',
   children,
 }: PageHeaderProps) {
   const baseClasses = 'page-title font-bold text-white/45 mb-4';
   
   const variantClasses = {
     default: 'text-4xl',
-    stylized: 'text-4xl uppercase tracking-[0.5em] text-white/30 mb-6',
+    stylized: 'text-4xl uppercase text-white/30 mb-6',
     compact: 'text-3xl mb-4',
   };
 
@@ -38,9 +40,11 @@ export function PageHeader({
     <div className="text-center mb-12">
       <h1 className={titleClasses}>{title}</h1>
       {subtitle && (
-        <p className={`text-xl ${
-          variant === 'stylized' ? 'text-white/95' : 'text-white'
-        } ${variant === 'stylized' ? 'mb-8 max-w-3xl mx-auto' : ''}`}>
+        <p
+          className={`text-xl ${
+            variant === 'stylized' ? 'text-white/95' : 'text-white'
+          } ${variant === 'stylized' ? 'mb-8 max-w-3xl mx-auto' : ''} ${subtitleClassName}`.trim()}
+        >
           {subtitle}
         </p>
       )}
