@@ -127,108 +127,108 @@ export const UnifiedLayout = memo(function UnifiedLayout({
       {/* SEKCJA 1: Górna - Logo i Nawigacja */}
       <div className="relative z-[1000] h-32 flex-shrink-0">
         <div className="absolute inset-0">
-          {/* Logo w lewym górnym rogu */}
+        {/* Logo w lewym górnym rogu */}
           <div className="absolute top-4 left-8 fade-in-fwd w-fit origin-center" style={{ animationDelay: '0.1s' }}>
-            <LogoGlow />
-          </div>
+          <LogoGlow />
+        </div>
 
-          {/* Navigation Menu */}
-          {showNavigation && (
-            <>
+        {/* Navigation Menu */}
+        {showNavigation && (
+          <>
               <nav className="absolute top-8 left-[360px] pointer-events-auto">
-                <motion.div 
-                  className="flex items-center gap-3"
-                  initial="hidden"
-                  animate="visible"
-                  style={{ perspective: '1000px' }}
-                >
+              <motion.div 
+                className="flex items-center gap-3"
+                initial="hidden"
+                animate="visible"
+                style={{ perspective: '1000px' }}
+              >
                   {navItems.map((item) => {
                     const NavButton = memo(function NavButton() {
                       const cardRef = useRef<HTMLDivElement>(null);
                       useCardGlow(cardRef);
 
                       return (
-                        <motion.div 
+                  <motion.div 
                           ref={cardRef}
-                          key={item.href}
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ 
-                            opacity: 1, 
-                            scale: 1,
+                    key={item.href}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ 
+                      opacity: 1, 
+                      scale: 1,
                             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.4), 0 5px 15px rgba(0, 0, 0, 0.3), 0 -4px 15px rgba(255, 255, 255, 0.3), inset 0 8px 0 rgba(255, 255, 255, 0.85), inset 0 -2px 0 rgba(0, 0, 0, 0.2), inset 0 4px 12px rgba(255, 255, 255, 0.4), inset 0 -1px 4px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(255, 255, 255, 0.4)',
                             filter: 'brightness(1.2)',
-                          }}
-                          transition={{ 
-                            opacity: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
-                            scale: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
-                            boxShadow: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
-                            filter: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
-                          }}
+                    }}
+                    transition={{ 
+                      opacity: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
+                      scale: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
+                      boxShadow: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
+                      filter: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
+                    }}
                           className="achievement-card"
-                          style={{ 
-                            transformOrigin: 'center',
-                            transform: 'translateZ(180px) perspective(1000px)',
-                            willChange: 'transform, box-shadow',
-                            borderRadius: '1rem',
-                            WebkitFontSmoothing: 'antialiased',
-                            MozOsxFontSmoothing: 'grayscale',
-                            backfaceVisibility: 'hidden',
-                            WebkitBackfaceVisibility: 'hidden',
+                    style={{ 
+                      transformOrigin: 'center',
+                      transform: 'translateZ(180px) perspective(1000px)',
+                      willChange: 'transform, box-shadow',
+                      borderRadius: '1rem',
+                      WebkitFontSmoothing: 'antialiased',
+                      MozOsxFontSmoothing: 'grayscale',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
                             transformStyle: 'preserve-3d',
                             position: 'relative',
                             isolation: 'isolate',
                             overflow: 'visible',
-                          }}
-                        >
+                    }}
+                  >
                           <div className="glow" />
                           <div style={{ overflow: 'hidden', borderRadius: '1rem', position: 'relative', zIndex: 1 }}>
-                            <Link
-                              href={item.href as `/${string}`}
+                      <Link
+                        href={item.href as `/${string}`}
                               className="glass-nav-button relative z-10"
-                              title={item.title}
-                              onClick={() => {
-                                /* console.log('Clicked:', item.href) */
-                              }}
-                            >
-                              <i className={`${item.icon} relative z-10 text-3xl`}></i>
-                              <span className="relative z-10 text-sm">{item.label}</span>
-                            </Link>
+                        title={item.title}
+                        onClick={() => {
+                          /* console.log('Clicked:', item.href) */
+                        }}
+                      >
+                        <i className={`${item.icon} relative z-10 text-3xl`}></i>
+                      <span className="relative z-10 text-sm">{item.label}</span>
+                    </Link>
                           </div>
-                        </motion.div>
+                  </motion.div>
                       );
                     });
 
                     return <NavButton key={item.href} />;
                   })}
-                </motion.div>
-              </nav>
+              </motion.div>
+            </nav>
 
-              {/* User Status w prawym górnym rogu */}
+            {/* User Status w prawym górnym rogu */}
               <div className="absolute top-8 right-6 pointer-events-auto">
-                <div className="flex flex-col items-end space-y-2">
-                  <UserStatus />
-                  <VerificationIndicator />
-                </div>
+              <div className="flex flex-col items-end space-y-2">
+                <UserStatus />
+                <VerificationIndicator />
               </div>
-            </>
-          )}
+            </div>
+          </>
+        )}
         </div>
       </div>
 
       {/* SEKCJA 2: Środkowa - Główna zawartość (nagłówek, gołąb) */}
       <div className="flex-grow relative z-10">
-        {/* Globalny baner weryfikacji - widoczny na każdej podstronie jeśli użytkownik wymaga akcji */}
+          {/* Globalny baner weryfikacji - widoczny na każdej podstronie jeśli użytkownik wymaga akcji */}
         <div className={`max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 pt-4 pb-0`} suppressHydrationWarning>
-          <VerificationBanner />
+            <VerificationBanner />
+          </div>
+          {children}
         </div>
-        {children}
-      </div>
 
       {/* SEKCJA 3: Footer */}
       {showFooter && (
         <div className="relative z-20 mt-auto flex-shrink-0">
           <Footer />
-        </div>
+      </div>
       )}
     </div>
   );
