@@ -1,9 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+import { buildAssetCdnUrl } from '@/lib/asset-proxy';
 
 export function BackgroundImage() {
   const [isMounted, setIsMounted] = useState(false);
+  const backgroundSrc = useMemo(
+    () => buildAssetCdnUrl('/pigeon-lofts-background.jpg') ?? '/pigeon-lofts-background.jpg',
+    []
+  );
 
   useEffect(() => {
     setIsMounted(true);
@@ -22,15 +28,18 @@ export function BackgroundImage() {
   return (
     <div className="fixed inset-0 w-full h-full z-0">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/pigeon-lofts-background.jpg"
-        alt="Tło gołębnika Pałka MTM"
-        className="fixed inset-0 w-full h-full object-cover object-top"
-        style={{
-          filter: 'brightness(0.65)',
-          zIndex: 0,
-        }}
-      />
+      {backgroundSrc && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={backgroundSrc}
+          alt="Tło gołębnika Pałka MTM"
+          className="fixed inset-0 w-full h-full object-cover object-top"
+          style={{
+            filter: 'brightness(0.65)',
+            zIndex: 0,
+          }}
+        />
+      )}
       {/* Ciemny overlay */}
       <div className="absolute inset-0 bg-black/20" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)', zIndex: 1 }}></div>
     </div>
