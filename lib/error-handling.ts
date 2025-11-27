@@ -366,6 +366,8 @@ export function handleFirebaseError(error: unknown): AppError {
  *   return handleApiError(error, request);
  * }
  */
+import { addSecurityHeaders } from '@/lib/security-headers';
+
 export function handleApiError(
   error: unknown,
   request?: NextRequest,
@@ -377,13 +379,15 @@ export function handleApiError(
     if (request) {
       errorLogger.logApiError(zodError, request, context);
     }
-    return NextResponse.json(
+    // FIXED: Dodaj security headers do odpowiedzi
+    const response = NextResponse.json(
       {
         error: zodError.message,
         details: zodError.details,
       },
       { status: zodError.statusCode }
     );
+    return addSecurityHeaders(response);
   }
 
   // AppError (nasze własne błędy aplikacji)
@@ -404,7 +408,9 @@ export function handleApiError(
       responseBody.stack = error.stack;
     }
     
-    return NextResponse.json(responseBody, { status: error.statusCode });
+    // FIXED: Dodaj security headers do odpowiedzi
+    const response = NextResponse.json(responseBody, { status: error.statusCode });
+    return addSecurityHeaders(response);
   }
 
   // Firebase errors
@@ -419,12 +425,14 @@ export function handleApiError(
     if (request) {
       errorLogger.logApiError(firebaseError, request, context);
     }
-    return NextResponse.json(
+    // FIXED: Dodaj security headers do odpowiedzi
+    const response = NextResponse.json(
       {
         error: firebaseError.message,
       },
       { status: firebaseError.statusCode }
     );
+    return addSecurityHeaders(response);
   }
 
   // Prisma errors
@@ -442,12 +450,14 @@ export function handleApiError(
     if (request) {
       errorLogger.logApiError(prismaError, request, context);
     }
-    return NextResponse.json(
+    // FIXED: Dodaj security headers do odpowiedzi
+    const response = NextResponse.json(
       {
         error: prismaError.message,
       },
       { status: prismaError.statusCode }
     );
+    return addSecurityHeaders(response);
   }
 
   // Generic Error
@@ -456,7 +466,8 @@ export function handleApiError(
     if (request) {
       errorLogger.logApiError(appError, request, context);
     }
-    return NextResponse.json(
+    // FIXED: Dodaj security headers do odpowiedzi
+    const response = NextResponse.json(
       {
         error: appError.message,
         ...(process.env.NODE_ENV === 'development' && {
@@ -466,6 +477,7 @@ export function handleApiError(
       },
       { status: 500 }
     );
+    return addSecurityHeaders(response);
   }
 
   // Unknown error type
@@ -473,7 +485,8 @@ export function handleApiError(
   if (request) {
     errorLogger.logApiError(appError, request, { ...context, originalError: String(error) });
   }
-  return NextResponse.json(
+  // FIXED: Dodaj security headers do odpowiedzi
+  const response = NextResponse.json(
     {
       error: appError.message,
       ...(process.env.NODE_ENV === 'development' && {
@@ -482,4 +495,5 @@ export function handleApiError(
     },
     { status: 500 }
   );
+  return addSecurityHeaders(response);
 }

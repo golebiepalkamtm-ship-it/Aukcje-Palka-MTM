@@ -1,11 +1,11 @@
 # Settings for Backend (on Cloud Run).
 # See https://firebase.google.com/docs/app-hosting/configure#cloud-run
 runConfig:
-  minInstances: 0
-  # maxInstances: 100
-  # concurrency: 80
-  # cpu: 1
-  # memoryMiB: 512
+  minInstances: 8
+  maxInstances: 100
+  concurrency: 20
+  cpu: 2
+  memoryMiB: 4096
 
 # Cloud SQL connection configuration
 # See https://firebase.google.com/docs/app-hosting/configure#cloud-sql
@@ -64,10 +64,22 @@ env:
       - BUILD
       - RUNTIME
 
+  - variable: NEXT_PUBLIC_ASSET_BASE_URL
+    value: https://firebasestorage.googleapis.com/v0/b/m-t-m-62972.firebasestorage.app/o
+    availability:
+      - BUILD
+      - RUNTIME
+
   # Secrets from Cloud Secret Manager (configure in Firebase Console)
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
   - variable: DATABASE_URL
     secret: database-url
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: DIRECT_DATABASE_URL
+    secret: direct-database-url
     availability:
       - BUILD
       - RUNTIME

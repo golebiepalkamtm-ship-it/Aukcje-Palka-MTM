@@ -6,6 +6,7 @@ export const metadata = {
   description: 'Przeglądaj i licytuj ekskluzywne gołębie pocztowe z rodowodami.',
 };
 
+// Strona publiczna - nie wymaga logowania do przeglądania aukcji
 export default function Auctions() {
   return (
     <UnifiedLayout>

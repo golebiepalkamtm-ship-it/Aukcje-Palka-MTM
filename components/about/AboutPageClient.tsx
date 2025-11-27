@@ -1,29 +1,107 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Text3D } from '@/components/ui/Text3D';
 import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { motion } from 'framer-motion';
+import { useRef, useEffect } from 'react';
+
+type GlowRef<T extends HTMLElement> = React.RefObject<T> | React.MutableRefObject<T | null>;
+
+const useCardGlow = <T extends HTMLElement>(cardRef: GlowRef<T>) => {
+  useEffect(() => {
+    const $card = cardRef.current;
+    if (!$card) return;
+
+    const centerOfElement = ($el: HTMLElement) => {
+      const { width, height } = $el.getBoundingClientRect();
+      return [width / 2, height / 2];
+    };
+
+    const pointerPositionRelativeToElement = ($el: HTMLElement, e: MouseEvent) => {
+      const pos = [e.clientX, e.clientY];
+      const { left, top, width, height } = $el.getBoundingClientRect();
+      const x = pos[0] - left;
+      const y = pos[1] - top;
+      const px = Math.min(Math.max((100 / width) * x, 0), 100);
+      const py = Math.min(Math.max((100 / height) * y, 0), 100);
+      return { pixels: [x, y], percent: [px, py] };
+    };
+
+    const angleFromPointerEvent = ($el: HTMLElement, dx: number, dy: number) => {
+      let angleDegrees = 0;
+      if (dx !== 0 || dy !== 0) {
+        const angleRadians = Math.atan2(dy, dx);
+        angleDegrees = angleRadians * (180 / Math.PI) + 90;
+        if (angleDegrees < 0) {
+          angleDegrees += 360;
+        }
+      }
+      return angleDegrees;
+    };
+
+    const distanceFromCenter = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      return [x - cx, y - cy];
+    };
+
+    const closenessToEdge = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      const [dx, dy] = distanceFromCenter($card, x, y);
+      let k_x = Infinity;
+      let k_y = Infinity;
+      if (dx !== 0) {
+        k_x = cx / Math.abs(dx);
+      }
+      if (dy !== 0) {
+        k_y = cy / Math.abs(dy);
+      }
+      return Math.min(Math.max(1 / Math.min(k_x, k_y), 0), 1);
+    };
+
+    const round = (value: number, precision = 3) => parseFloat(value.toFixed(precision));
+
+    const cardUpdate = (e: MouseEvent) => {
+      const position = pointerPositionRelativeToElement($card, e);
+      const [px, py] = position.pixels;
+      const [dx, dy] = distanceFromCenter($card, px, py);
+      const edge = closenessToEdge($card, px, py);
+      const angle = angleFromPointerEvent($card, dx, dy);
+      
+      $card.style.setProperty('--pointer-x', `${round(position.percent[0])}%`);
+      $card.style.setProperty('--pointer-y', `${round(position.percent[1])}%`);
+      $card.style.setProperty('--pointer-°', `${round(angle)}deg`);
+      $card.style.setProperty('--pointer-d', `${round(edge * 100)}`);
+      $card.classList.remove('animating');
+    };
+
+    $card.addEventListener('pointermove', cardUpdate);
+
+    return () => {
+      $card.removeEventListener('pointermove', cardUpdate);
+    };
+  }, [cardRef]);
+};
 
 export default function AboutPageClient() {
+  const cardRef = useRef<HTMLDivElement>(null);
+  useCardGlow(cardRef);
   return (
     <>
       {/* Hero Section */}
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.9, delay: 0.4 }}
-        className="relative z-10 pt-4 pb-12 px-4 sm:px-6 lg:px-8"
+        className="relative z-10 -mt-28 sm:-mt-20 pb-6 px-4 sm:px-6 lg:px-8"
       >
-        <div className="w-full mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-white">O nas</h1>
-          <motion.p
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.7 }}
-            className="text-lg md:text-xl text-blue-100 mb-6 max-w-3xl mx-auto"
-          >
-            Poznaj historię i pasję stojącą za hodowlą gołębi pocztowych MTM Pałka
-          </motion.p>
+        <div className="w-full mx-auto">
+          <PageHeader
+            title="O nas"
+            subtitle="Poznaj historię i pasję stojącą za hodowlą gołębi pocztowych MTM Pałka"
+            className="text-4xl md:text-5xl"
+            subtitleClassName="text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
+          />
         </div>
       </motion.section>
 
@@ -38,7 +116,10 @@ export default function AboutPageClient() {
             viewport={{ once: true }}
             className="mb-20"
           >
-            <UnifiedCard variant="glass" glow={false} className="p-12">
+            <div ref={cardRef} className="achievement-card" style={{ position: 'relative', isolation: 'isolate', overflow: 'visible' }}>
+              <div className="glow" />
+              <div className="relative z-10" style={{ overflow: 'hidden', borderRadius: '1rem' }}>
+                <UnifiedCard variant="glass" glow={false} className="p-12">
               <Text3D
                 variant="gradient"
                 intensity="medium"
@@ -128,7 +209,9 @@ export default function AboutPageClient() {
                   wytrwałości i rodzinnych więzi.
                 </p>
               </div>
-            </UnifiedCard>
+                </UnifiedCard>
+              </div>
+            </div>
           </motion.section>
         </div>
       </div>

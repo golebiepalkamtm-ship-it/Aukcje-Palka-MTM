@@ -1,10 +1,87 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
 import FirebaseAuthForm from './FirebaseAuthForm';
 import './AuthFlipCard.css';
+
+type GlowRef<T extends HTMLElement> = React.RefObject<T> | React.MutableRefObject<T | null>;
+
+const useCardGlow = <T extends HTMLElement>(cardRef: GlowRef<T>) => {
+  useEffect(() => {
+    const $card = cardRef.current;
+    if (!$card) return;
+
+    const centerOfElement = ($el: HTMLElement) => {
+      const { width, height } = $el.getBoundingClientRect();
+      return [width / 2, height / 2];
+    };
+
+    const pointerPositionRelativeToElement = ($el: HTMLElement, e: MouseEvent) => {
+      const pos = [e.clientX, e.clientY];
+      const { left, top, width, height } = $el.getBoundingClientRect();
+      const x = pos[0] - left;
+      const y = pos[1] - top;
+      const px = Math.min(Math.max((100 / width) * x, 0), 100);
+      const py = Math.min(Math.max((100 / height) * y, 0), 100);
+      return { pixels: [x, y], percent: [px, py] };
+    };
+
+    const angleFromPointerEvent = ($el: HTMLElement, dx: number, dy: number) => {
+      let angleDegrees = 0;
+      if (dx !== 0 || dy !== 0) {
+        const angleRadians = Math.atan2(dy, dx);
+        angleDegrees = angleRadians * (180 / Math.PI) + 90;
+        if (angleDegrees < 0) {
+          angleDegrees += 360;
+        }
+      }
+      return angleDegrees;
+    };
+
+    const distanceFromCenter = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      return [x - cx, y - cy];
+    };
+
+    const closenessToEdge = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      const [dx, dy] = distanceFromCenter($card, x, y);
+      let k_x = Infinity;
+      let k_y = Infinity;
+      if (dx !== 0) {
+        k_x = cx / Math.abs(dx);
+      }
+      if (dy !== 0) {
+        k_y = cy / Math.abs(dy);
+      }
+      return Math.min(Math.max(1 / Math.min(k_x, k_y), 0), 1);
+    };
+
+    const round = (value: number, precision = 3) => parseFloat(value.toFixed(precision));
+
+    const cardUpdate = (e: MouseEvent) => {
+      const position = pointerPositionRelativeToElement($card, e);
+      const [px, py] = position.pixels;
+      const [dx, dy] = distanceFromCenter($card, px, py);
+      const edge = closenessToEdge($card, px, py);
+      const angle = angleFromPointerEvent($card, dx, dy);
+      
+      $card.style.setProperty('--pointer-x', `${round(position.percent[0])}%`);
+      $card.style.setProperty('--pointer-y', `${round(position.percent[1])}%`);
+      $card.style.setProperty('--pointer-°', `${round(angle)}deg`);
+      $card.style.setProperty('--pointer-d', `${round(edge * 100)}`);
+      $card.classList.remove('animating');
+    };
+
+    $card.addEventListener('pointermove', cardUpdate);
+
+    return () => {
+      $card.removeEventListener('pointermove', cardUpdate);
+    };
+  }, [cardRef]);
+};
 
 type AuthMode = 'login' | 'register';
 
@@ -14,6 +91,8 @@ interface AuthFlipCardProps {
 
 export function AuthFlipCard({ initialMode }: AuthFlipCardProps) {
   const searchParams = useSearchParams();
+  const cardRef = useRef<HTMLDivElement>(null);
+  useCardGlow(cardRef);
 
   // Ustal domyślny tryb na podstawie props, query params lub pathname
   const getInitialMode = (): AuthMode => {
@@ -77,7 +156,8 @@ export function AuthFlipCard({ initialMode }: AuthFlipCardProps) {
       </div>
 
       {/* 🔄 Główna karta flipująca 3D */}
-      <div className={`auth-flip-card ${mode === 'register' ? 'flipped' : ''}`}>
+      <div ref={cardRef} className={`achievement-card auth-flip-card ${mode === 'register' ? 'flipped' : ''}`} style={{ position: 'relative', isolation: 'isolate', overflow: 'visible' }}>
+        <div className="glow" />
         {/* STRONA 1: Logowanie */}
         <div className="auth-flip-face auth-flip-front">
           <div className="auth-flip-content">

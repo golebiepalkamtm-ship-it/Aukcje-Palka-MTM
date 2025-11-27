@@ -30,8 +30,12 @@ export const UnifiedCard = memo(function UnifiedCard({
 
   return (
       <motion.div
-        initial={{ opacity: 0, y: 50, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
+        initial={{ opacity: 0, scale: 0 }}
+        whileInView={{ 
+          opacity: 1, 
+          scale: 1,
+        }}
+        viewport={{ once: true }}
         whileHover={
           hover
             ? {
@@ -40,10 +44,8 @@ export const UnifiedCard = memo(function UnifiedCard({
             : {}
         }
         transition={{
-          duration: 0.8,
-          delay,
-          type: 'spring' as const,
-          stiffness: 100,
+          opacity: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: delay + 0.3 },
+          scale: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: delay + 0.3 },
         }}
         className={`
           ${variantClasses[variant]}
@@ -52,7 +54,11 @@ export const UnifiedCard = memo(function UnifiedCard({
           ${className}
           card-glow-effect
         `}
-        style={{ position: 'relative', overflow: 'hidden' }}
+        style={{ 
+          position: 'relative', 
+          overflow: 'hidden',
+          transformOrigin: 'center',
+        }}
         onMouseMove={e => {
           const card = e.currentTarget;
           const rect = card.getBoundingClientRect();

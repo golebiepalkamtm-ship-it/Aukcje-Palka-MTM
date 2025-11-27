@@ -10,7 +10,7 @@ export const metadata = {
 export default function LoginPage() {
   return (
     <UnifiedLayout showNavigation={true} showFooter={true}>
-      <div className="flex items-start justify-center pt-8 pb-12">
+      <div className="flex items-start justify-center pt-32 pb-32 min-h-[120vh]">
         <Suspense fallback={<div className="text-white">Ładowanie...</div>}>
           <AuthFlipCard initialMode="login" />
         </Suspense>

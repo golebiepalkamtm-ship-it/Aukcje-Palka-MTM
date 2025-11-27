@@ -1,12 +1,90 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { SmartImage } from '@/components/ui/SmartImage';
 import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+
+type GlowRef<T extends HTMLElement> = React.RefObject<T> | React.MutableRefObject<T | null>;
+
+const useCardGlow = <T extends HTMLElement>(cardRef: GlowRef<T>) => {
+  useEffect(() => {
+    const $card = cardRef.current;
+    if (!$card) return;
+
+    const centerOfElement = ($el: HTMLElement) => {
+      const { width, height } = $el.getBoundingClientRect();
+      return [width / 2, height / 2];
+    };
+
+    const pointerPositionRelativeToElement = ($el: HTMLElement, e: MouseEvent) => {
+      const pos = [e.clientX, e.clientY];
+      const { left, top, width, height } = $el.getBoundingClientRect();
+      const x = pos[0] - left;
+      const y = pos[1] - top;
+      const px = Math.min(Math.max((100 / width) * x, 0), 100);
+      const py = Math.min(Math.max((100 / height) * y, 0), 100);
+      return { pixels: [x, y], percent: [px, py] };
+    };
+
+    const angleFromPointerEvent = ($el: HTMLElement, dx: number, dy: number) => {
+      let angleDegrees = 0;
+      if (dx !== 0 || dy !== 0) {
+        const angleRadians = Math.atan2(dy, dx);
+        angleDegrees = angleRadians * (180 / Math.PI) + 90;
+        if (angleDegrees < 0) {
+          angleDegrees += 360;
+        }
+      }
+      return angleDegrees;
+    };
+
+    const distanceFromCenter = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      return [x - cx, y - cy];
+    };
+
+    const closenessToEdge = ($card: HTMLElement, x: number, y: number) => {
+      const [cx, cy] = centerOfElement($card);
+      const [dx, dy] = distanceFromCenter($card, x, y);
+      let k_x = Infinity;
+      let k_y = Infinity;
+      if (dx !== 0) {
+        k_x = cx / Math.abs(dx);
+      }
+      if (dy !== 0) {
+        k_y = cy / Math.abs(dy);
+      }
+      return Math.min(Math.max(1 / Math.min(k_x, k_y), 0), 1);
+    };
+
+    const round = (value: number, precision = 3) => parseFloat(value.toFixed(precision));
+
+    const cardUpdate = (e: MouseEvent) => {
+      const position = pointerPositionRelativeToElement($card, e);
+      const [px, py] = position.pixels;
+      const [dx, dy] = distanceFromCenter($card, px, py);
+      const edge = closenessToEdge($card, px, py);
+      const angle = angleFromPointerEvent($card, dx, dy);
+      
+      $card.style.setProperty('--pointer-x', `${round(position.percent[0])}%`);
+      $card.style.setProperty('--pointer-y', `${round(position.percent[1])}%`);
+      $card.style.setProperty('--pointer-°', `${round(angle)}deg`);
+      $card.style.setProperty('--pointer-d', `${round(edge * 100)}`);
+      $card.classList.remove('animating');
+    };
+
+    $card.addEventListener('pointermove', cardUpdate);
+
+    return () => {
+      $card.removeEventListener('pointermove', cardUpdate);
+    };
+  }, [cardRef]);
+};
 
 // References data from database
 
@@ -171,16 +249,13 @@ export function ReferencesPage() {
         transition={{ duration: 1, delay: 0.6 }}
         className="relative z-10 -mt-24 pb-12 px-4 sm:px-6 lg:px-8"
       >
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Opinie o Gołębiach</h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
-          >
-            Poznaj osiągnięcia gołębi, które super latają u innych hodowców
-          </motion.p>
+        <div className="max-w-4xl mx-auto">
+          <PageHeader
+            title="Opinie o Gołębiach"
+            subtitle="Poznaj historie sukcesu hodowców, którzy wybrali nasze gołębie pocztowe"
+            variant="stylized"
+            subtitleClassName="text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
+          />
         </div>
       </motion.section>
 
@@ -443,20 +518,28 @@ export function ReferencesPage() {
         <div className="max-w-7xl mx-auto">
           {references.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {references.map((reference, index) => (
-                <motion.div
-                  key={reference.id}
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <UnifiedCard
-                    variant="glass"
-                    glow={true}
-                    hover={true}
-                    className="p-6"
-                  >
+              {references.map((reference, index) => {
+                const ReferenceCard = () => {
+                  const cardRef = useRef<HTMLDivElement>(null);
+                  useCardGlow(cardRef);
+
+                  return (
+                    <motion.div
+                      key={reference.id}
+                      initial={{ opacity: 0, y: 50 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                    >
+                      <div ref={cardRef} className="achievement-card" style={{ position: 'relative', isolation: 'isolate', overflow: 'visible' }}>
+                        <div className="glow" />
+                        <div className="relative z-10" style={{ overflow: 'hidden', borderRadius: '1rem' }}>
+                          <UnifiedCard
+                            variant="glass"
+                            glow={true}
+                            hover={true}
+                            className="p-6"
+                          >
                     <div className="flex items-start mb-4">
                       <div className="flex-shrink-0">
                         <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
@@ -502,9 +585,15 @@ export function ReferencesPage() {
                     <div className="text-sm text-gray-400">
                       {new Date(reference.createdAt).toLocaleDateString('pl-PL')}
                     </div>
-                  </UnifiedCard>
-                </motion.div>
-              ))}
+                          </UnifiedCard>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                };
+
+                return <ReferenceCard key={reference.id} />;
+              })}
             </div>
           ) : (
             <div className="text-center text-white/70">

@@ -8,15 +8,6 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
-const navItemVariants = {
-  hidden: { opacity: 0, x: -50, rotate: -90 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    rotate: 0,
-    transition: { duration: 1.5, ease: [0.4, 0, 0.2, 1] as const },
-  },
-};
 
 export function UserStatus() {
   const { user, loading, signOut, refetchDbUser } = useAuth();
@@ -39,9 +30,41 @@ export function UserStatus() {
   }, [refetchDbUser]);
 
   // Usuń długotrwały loader - jeśli loading trwa, pokaż po prostu ikonę logowania
+  const flashAnimation = {
+    initial: { opacity: 0, scale: 0 },
+    animate: { 
+      opacity: 1, 
+      scale: 1,
+      boxShadow: '0 50px 150px rgba(0, 0, 0, 0.9), 0 30px 100px rgba(0, 0, 0, 0.7), 0 -5px 20px rgba(255, 255, 255, 0.3), inset 0 6px 0 rgba(255, 255, 255, 0.7), inset 0 -3px 0 rgba(0, 0, 0, 0.6), inset 0 3px 10px rgba(255, 255, 255, 0.3), inset 0 -2px 6px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.4)',
+      filter: 'brightness(1.15)',
+    },
+    transition: {
+      opacity: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
+      scale: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
+      boxShadow: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
+      filter: { duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] as const, delay: 0.3 },
+    },
+  };
+
   if (loading) {
     return (
-      <motion.div variants={navItemVariants} initial="hidden" animate="visible">
+      <motion.div 
+        initial={flashAnimation.initial}
+        animate={flashAnimation.animate}
+        transition={flashAnimation.transition}
+        style={{ 
+          transformOrigin: 'center',
+          transform: 'translateZ(120px) perspective(1000px)',
+          willChange: 'transform, box-shadow',
+          borderRadius: '1rem',
+          overflow: 'hidden',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          transformStyle: 'preserve-3d'
+        }}
+      >
         <Link href="/auth/register" className="glass-nav-button" title="Konto">
           <User className="relative z-10 w-8 h-8" />
           <span className="relative z-10 text-sm">Konto</span>
@@ -52,7 +75,23 @@ export function UserStatus() {
 
   if (!user) {
     return (
-      <motion.div variants={navItemVariants} initial="hidden" animate="visible">
+      <motion.div 
+        initial={flashAnimation.initial}
+        animate={flashAnimation.animate}
+        transition={flashAnimation.transition}
+        style={{ 
+          transformOrigin: 'center',
+          transform: 'translateZ(120px) perspective(1000px)',
+          willChange: 'transform, box-shadow',
+          borderRadius: '1rem',
+          overflow: 'hidden',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          transformStyle: 'preserve-3d'
+        }}
+      >
         <Link href="/auth/register" className="glass-nav-button" title="Konto">
           <User className="relative z-10 w-8 h-8" />
           <span className="relative z-10 text-sm">Konto</span>
@@ -62,7 +101,19 @@ export function UserStatus() {
   }
 
   return (
-    <div className="relative">
+    <motion.div 
+      className="relative"
+      initial={flashAnimation.initial}
+      animate={flashAnimation.animate}
+      transition={flashAnimation.transition}
+      style={{ 
+        transformOrigin: 'center',
+        transform: 'translateZ(30px)',
+        willChange: 'transform, box-shadow, filter',
+        borderRadius: '1rem',
+        overflow: 'hidden'
+      }}
+    >
       <button
         onClick={() => setShowUserMenu(!showUserMenu)}
         className="glass-nav-button"
@@ -189,6 +240,6 @@ export function UserStatus() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

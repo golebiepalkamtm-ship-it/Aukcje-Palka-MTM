@@ -46,3 +46,16 @@ JAK DODAĆ ZMIENNĄ:
 - Wybierz "RUNTIME" w Availability
 - Kliknij "Save"
 
+KONFIGURACJA CLOUD SQL (POSTGRES):
+- Nazwa połączenia (Connection name): mtm-62972:europe-west4:mtm-62972-instance
+- Prywatna łączność IP: Disabled (żadnego prywatnego IP w Cloud SQL Proxy)
+- Publiczny adres IP: 34.6.153.213 (musisz whitelistać w Firebase App Hosting / VPC)
+- Wychodzący adres IP instancji: 34.7.33.140 (użyj przy firewallowaniu ruchu z bazy)
+- Autoryzowane sieci: dodaj tylko jedną podsieć zarządzaną (lista w konsoli Cloud SQL)
+- Autoryzacja usług Google Cloud: Disabled (nie używamy IAM database auth)
+- Autoryzacja App Engine: Enabled (wymaganie projektu)
+- SSL/TLS Enforcement: Allow unsecured (połączenia SSL DOZWOLONE, ale nie wymagane)
+- Zaufane certyfikaty klientów: Disabled (brak cert auth po stronie klienta)
+- Tryb CA serwera: Internal Google-managed CA
+- Cert serwera wygasa: 31-10-2035 13:25:05 (odśwież przed tym terminem)
+

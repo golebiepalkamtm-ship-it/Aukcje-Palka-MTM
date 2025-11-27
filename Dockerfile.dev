@@ -1,28 +1,37 @@
 # Development Dockerfile for Next.js application
 FROM node:20-alpine
 
-# Install dependencies only when needed
-RUN apk add --no-cache libc6-compat
+# Install dependencies and build tools
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    wget \
+    curl \
+    git
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and npm config
-COPY package.json package-lock.json* .npmrc ./
+# Copy package files
+COPY package.json package-lock.json* ./
 
-# Align npm with lockfile generator and install dependencies
-RUN npm install -g npm@11.6.2 \
-    && npm ci
+# Install npm dependencies
+RUN npm ci --legacy-peer-deps
 
 # Copy the rest of the application
 COPY . .
+
+# Generate Prisma Client
+RUN npx prisma generate
 
 # Expose port
 EXPOSE 3000
 
 # Set environment variables
-# NODE_ENV is automatically set by Next.js - do not set it manually
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV WATCHPACK_POLLING=true
 
 # Start development server
 CMD ["npm", "run", "dev"]

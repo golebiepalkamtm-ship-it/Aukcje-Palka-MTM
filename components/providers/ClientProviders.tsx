@@ -1,11 +1,10 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
-export function ClientProviders({ children }: { children: React.ReactNode }) {
+export function ClientProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -18,11 +17,13 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
       })
   );
 
+  // ReactQueryDevtools wyłączone z powodu problemów z HMR w Turbopack
+  // Można włączyć poprzez zmianę NEXT_PUBLIC_ENABLE_QUERY_DEVTOOLS=true w .env.local
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         {children}
-        <ReactQueryDevtools initialIsOpen={false} />
       </AuthProvider>
     </QueryClientProvider>
   );

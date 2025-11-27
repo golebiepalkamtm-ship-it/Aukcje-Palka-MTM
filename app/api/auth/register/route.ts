@@ -5,9 +5,61 @@ export const dynamic = 'force-dynamic';
 import { getAdminAuth } from '@/lib/firebase-admin';
 import { handleApiError } from '@/lib/error-handling';
 import { prisma } from '@/lib/prisma';
-import { apiRateLimit } from '@/lib/rate-limit';
+import { authRateLimit } from '@/lib/rate-limit';
+import { addSecurityHeaders } from '@/lib/security-headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+
+const firebaseApiKey =
+  process.env.FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '';
+
+async function firebaseRestSignUp(email: string, password: string) {
+  if (!firebaseApiKey) {
+    throw new Error('Brak klucza API Firebase – nie można utworzyć użytkownika');
+  }
+
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseApiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, returnSecureToken: true }),
+    }
+  );
+
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = body?.error?.message || 'Firebase signUp failed';
+    throw new Error(message);
+  }
+
+  return {
+    uid: body.localId as string,
+    idToken: body.idToken as string,
+    emailVerified: Boolean(body.emailVerified),
+  };
+}
+
+async function firebaseRestDelete(idToken?: string) {
+  if (!firebaseApiKey || !idToken) return;
+  await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:delete?key=${firebaseApiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken }),
+  }).catch(() => undefined);
+}
+
+async function firebaseRestSendVerification(idToken?: string) {
+  if (!firebaseApiKey || !idToken) return;
+  await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${firebaseApiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestType: 'VERIFY_EMAIL', idToken }),
+    }
+  ).catch(() => undefined);
+}
 
 const registerSchema = z.object({
   email: z.string().email('Nieprawidłowy format email'),
@@ -29,10 +81,10 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting dla rejestracji
-    const rateLimitResponse = apiRateLimit(request);
+    // FIXED: Użyj authRateLimit dla rejestracji (5 prób na 15 minut)
+    const rateLimitResponse = authRateLimit(request);
     if (rateLimitResponse) {
-      return rateLimitResponse;
+      return addSecurityHeaders(rateLimitResponse);
     }
 
     // Parse request body with error handling
@@ -70,31 +122,36 @@ export async function POST(request: NextRequest) {
 
     // Najpierw próbuj utworzyć użytkownika w Firebase - to jest źródło prawdy
     const adminAuth = getAdminAuth();
-    if (!adminAuth) {
-      console.error('❌ [REGISTER] Firebase Admin Auth nie jest zainicjalizowany');
-      console.error('❌ [REGISTER] Sprawdź zmienne środowiskowe: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY');
-      return NextResponse.json(
-        { 
-          error: 'Serwis tymczasowo niedostępny. Spróbuj ponownie później.',
-          details: 'Firebase Admin SDK nie jest zainicjalizowany. Sprawdź konfigurację serwera.'
-        },
-        { status: 503 }
-      );
-    }
-    let firebaseUser;
+    let firebaseUser: { uid: string; idToken?: string };
 
     try {
       console.log('🔥 [REGISTER] Próba utworzenia użytkownika w Firebase...');
-      firebaseUser = await adminAuth.createUser({
-        email: validatedData.email,
-        password: validatedData.password,
-        emailVerified: false,
-        disabled: false,
-      });
-      console.log('✅ [REGISTER] Utworzono nowego użytkownika w Firebase:', firebaseUser.uid);
+      if (adminAuth) {
+        const userRecord = await adminAuth.createUser({
+          email: validatedData.email,
+          password: validatedData.password,
+          emailVerified: false,
+          disabled: false,
+        });
+        firebaseUser = { uid: userRecord.uid };
+        console.log('✅ [REGISTER] Utworzono nowego użytkownika przez Admin SDK:', userRecord.uid);
+      } else {
+        const restResult = await firebaseRestSignUp(
+          validatedData.email,
+          validatedData.password
+        );
+        firebaseUser = { uid: restResult.uid, idToken: restResult.idToken };
+        console.log('✅ [REGISTER] Utworzono nowego użytkownika przez REST:', restResult.uid);
+        await firebaseRestSendVerification(restResult.idToken);
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (firebaseError: any) {
-      console.error('⚠️ [REGISTER] Firebase error:', firebaseError?.code, firebaseError?.message);
+      console.error('⚠️ [REGISTER] Firebase error:', {
+        code: firebaseError?.code,
+        message: firebaseError?.message,
+        error: firebaseError,
+        stack: firebaseError?.stack
+      });
       
       // Sprawdź czy to błąd credentials
       if (
@@ -117,6 +174,7 @@ export async function POST(request: NextRequest) {
         firebaseError?.code === 'auth/email-already-exists' ||
         firebaseError?.code === 'auth/email-already-in-use'
       ) {
+        console.error('⚠️ [REGISTER] Email już istnieje w Firebase:', validatedData.email);
         return NextResponse.json(
           {
             error: 'Użytkownik z tym emailem już istnieje. Zaloguj się zamiast rejestrować.',
@@ -124,6 +182,14 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+      
+      // Loguj wszystkie inne błędy Firebase dla debugowania
+      console.error('❌ [REGISTER] Nieoczekiwany błąd Firebase:', {
+        code: firebaseError?.code,
+        message: firebaseError?.message,
+        email: validatedData.email
+      });
+      
       // Inny błąd Firebase - rzucamy dalej
       throw firebaseError;
     }
@@ -183,80 +249,30 @@ export async function POST(request: NextRequest) {
         );
         console.log('🔍 [REGISTER] Sprawdzam czy stary użytkownik istnieje w Firebase...');
 
-        let oldFirebaseUserExists = false;
-        try {
-          await adminAuth.getUser(existingUser.firebaseUid);
-          oldFirebaseUserExists = true;
-          console.log('⚠️ [REGISTER] Stary użytkownik istnieje w Firebase - konflikt');
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (getUserError: any) {
-          if (getUserError?.code === 'auth/user-not-found') {
-            oldFirebaseUserExists = false;
-            console.log(
-              '✅ [REGISTER] Stary użytkownik nie istnieje w Firebase - bezpieczna aktualizacja'
-            );
-          } else {
-            console.error('❌ [REGISTER] Błąd sprawdzania starego użytkownika:', getUserError);
-            // W przypadku błędu, lepiej nie podejmować działania - usuń nowego użytkownika
-            try {
-              await adminAuth.deleteUser(firebaseUser.uid);
-            } catch (deleteError) {
-              console.error('Błąd usuwania użytkownika z Firebase:', deleteError);
-            }
-            return NextResponse.json(
-              {
-                error: 'Wystąpił błąd podczas sprawdzania danych. Spróbuj ponownie.',
-              },
-              { status: 500 }
-            );
-          }
-        }
-
-        if (oldFirebaseUserExists) {
-          // Stary użytkownik istnieje - rzeczywiście konflikt
-          console.log(
-            '❌ [REGISTER] Konflikt: rekord z tym emailem ma inny firebaseUid i stary użytkownik istnieje w Firebase'
-          );
-          // Usuń nowo utworzonego użytkownika z Firebase
-          try {
-            await adminAuth.deleteUser(firebaseUser.uid);
-          } catch (deleteError) {
-            console.error('Błąd usuwania użytkownika z Firebase:', deleteError);
-          }
-          return NextResponse.json(
-            {
-              error:
-                'Użytkownik z tym emailem już istnieje z innym kontem. Skontaktuj się z administratorem.',
-            },
-            { status: 400 }
-          );
-        } else {
-          // Stary użytkownik nie istnieje - bezpieczna aktualizacja
-          console.log(
-            '🔄 [REGISTER] Aktualizowanie rekordu z nowym firebaseUid (stary użytkownik nie istnieje)'
-          );
-          user = await prisma.user.update({
-            where: { id: existingUser.id },
-            data: {
-              firebaseUid: firebaseUser.uid,
-              firstName:
-                validatedData.firstName && validatedData.firstName.trim() !== ''
-                  ? validatedData.firstName
-                  : existingUser.firstName,
-              lastName:
-                validatedData.lastName && validatedData.lastName.trim() !== ''
-                  ? validatedData.lastName
-                  : existingUser.lastName,
-              phoneNumber:
-                validatedData.phoneNumber && validatedData.phoneNumber.trim() !== ''
-                  ? validatedData.phoneNumber
-                  : existingUser.phoneNumber,
-              isActive: false,
-              emailVerified: null,
-            },
-          });
-          console.log('✅ [REGISTER] Zaktualizowano rekord w bazie z nowym firebaseUid');
-        }
+        console.log(
+          '🔄 [REGISTER] Aktualizacja rekordu z nowym firebaseUid (bez weryfikacji starego konta)'
+        );
+        user = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            firebaseUid: firebaseUser.uid,
+            firstName:
+              validatedData.firstName && validatedData.firstName.trim() !== ''
+                ? validatedData.firstName
+                : existingUser.firstName,
+            lastName:
+              validatedData.lastName && validatedData.lastName.trim() !== ''
+                ? validatedData.lastName
+                : existingUser.lastName,
+            phoneNumber:
+              validatedData.phoneNumber && validatedData.phoneNumber.trim() !== ''
+                ? validatedData.phoneNumber
+                : existingUser.phoneNumber,
+            isActive: false,
+            emailVerified: null,
+          },
+        });
+        console.log('✅ [REGISTER] Zaktualizowano rekord w bazie z nowym firebaseUid');
       }
     } else {
       // Sprawdź czy numer telefonu już istnieje (tylko jeśli podany)
@@ -268,10 +284,12 @@ export async function POST(request: NextRequest) {
         if (existingPhone && existingPhone.firebaseUid) {
           console.log('❌ [REGISTER] Numer telefonu już istnieje:', validatedData.phoneNumber);
           // Usuń użytkownika z Firebase bo nie można go zapisać w bazie
-          try {
-            await adminAuth.deleteUser(firebaseUser.uid);
-          } catch (deleteError) {
-            console.error('Błąd usuwania użytkownika z Firebase:', deleteError);
+          if (adminAuth) {
+            await adminAuth.deleteUser(firebaseUser.uid).catch(err =>
+              console.error('Błąd usuwania użytkownika z Firebase:', err)
+            );
+          } else {
+            await firebaseRestDelete(firebaseUser.idToken);
           }
           return NextResponse.json(
             { error: 'Użytkownik z tym numerem telefonu już istnieje' },
@@ -317,14 +335,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      {
-        message: 'Rejestracja zakończona pomyślnie. Sprawdź email w celu weryfikacji.',
-        userId: user.id,
-      },
-      { status: 201 }
+    // FIXED: Dodaj security headers do odpowiedzi
+    return addSecurityHeaders(
+      NextResponse.json(
+        {
+          message: 'Rejestracja zakończona pomyślnie. Sprawdź email w celu weryfikacji.',
+          userId: user.id,
+        },
+        { status: 201 }
+      )
     );
   } catch (error) {
+    console.error('❌ [REGISTER] Błąd w endpointzie rejestracji:', error);
+    if (error instanceof Error) {
+      console.error('❌ [REGISTER] Stack trace:', error.stack);
+    }
     return handleApiError(error, request, { endpoint: 'register' });
   }
 }

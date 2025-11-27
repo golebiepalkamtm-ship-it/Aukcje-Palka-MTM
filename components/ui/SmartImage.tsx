@@ -5,6 +5,8 @@ import { ImageIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
+import { buildAssetCdnUrl } from '@/lib/asset-proxy';
+
 interface SmartImageProps {
   src: string;
   alt: string;
@@ -132,36 +134,62 @@ export function SmartImage({
     return `${baseClasses} ${loadedClasses} ${fitClasses} ${aspectClasses}`;
   };
 
-  // Generuj optymalizowane parametry obrazu
-  const getOptimizedSrc = () => {
-    // Sprawdź czy src jest prawidłowy
+  const getObjectPosition = () => {
+    switch (cropFocus) {
+      case 'top':
+        return '50% 0%';
+      case 'bottom':
+        return '50% 100%';
+      case 'left':
+        return '0% 50%';
+      case 'right':
+        return '100% 50%';
+      case 'top-left':
+        return '0% 0%';
+      case 'top-right':
+        return '100% 0%';
+      case 'bottom-left':
+        return '0% 100%';
+      case 'bottom-right':
+        return '100% 100%';
+      default:
+        return '50% 50%';
+    }
+  };
+
+  const optimizedSrc = (() => {
     if (!src || typeof src !== 'string') {
       return '';
     }
 
-    if (src.startsWith('http') || src.startsWith('/api/')) {
-      return src;
+    const trimmed = src.trim();
+    if (!trimmed) {
+      return '';
     }
 
-    // Dodaj parametry optymalizacji dla lokalnych obrazów
-    try {
-      const params = new URLSearchParams();
-      if (width) params.set('w', width.toString());
-      if (height) params.set('h', height.toString());
-      if (quality) params.set('q', quality.toString());
-      if (sizes) params.set('sizes', sizes);
-      if (fitMode === 'cover') params.set('fit', 'cover');
-      if (cropFocus !== 'center') params.set('crop', cropFocus);
+    // Usuń query params z URL jeśli są (Next.js Image nie powinien ich mieć w src)
+    const [basePath, ...queryParts] = trimmed.split('?');
+    const cleanPath = basePath.trim();
 
-      const queryString = params.toString();
-      const encodedSrc = encodeURI(src);
-      return queryString ? `${encodedSrc}${encodedSrc.includes('?') ? '&' : '?'}${queryString}` : encodedSrc;
-    } catch {
-      return src;
+    if (
+      cleanPath.startsWith('http://') ||
+      cleanPath.startsWith('https://') ||
+      cleanPath.startsWith('data:') ||
+      cleanPath.startsWith('blob:') ||
+      cleanPath.startsWith('/api/')
+    ) {
+      return cleanPath;
     }
-  };
 
-  const optimizedSrc = getOptimizedSrc();
+    // Use asset proxy to build CDN URL (handles Firebase Storage format automatically)
+    const cdnUrl = buildAssetCdnUrl(cleanPath);
+    if (cdnUrl) {
+      return cdnUrl;
+    }
+
+    // Fallback: serve local public asset
+    return cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
+  })();
 
   // Nie renderuj jeśli nie ma prawidłowego src
   if (!optimizedSrc) {
@@ -209,20 +237,22 @@ export function SmartImage({
       )}
 
       {/* Actual image */}
-      {isInView && (
+      {isInView && optimizedSrc && (
         <Image
           src={optimizedSrc}
           alt={alt}
           width={width || 400}
           height={height || 300}
           className={getImageClasses()}
+          style={{ objectPosition: getObjectPosition() }}
           onLoad={handleLoad}
           onError={handleError}
           priority={priority}
           quality={quality}
-          sizes={sizes}
+          sizes={sizes || '100vw'}
           placeholder={placeholder === 'blur' && blurDataURL ? 'blur' : 'empty'}
           blurDataURL={blurDataURL}
+          unoptimized={true}
         />
       )}
 
