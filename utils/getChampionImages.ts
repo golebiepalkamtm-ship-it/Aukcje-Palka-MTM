@@ -1,5 +1,7 @@
 import { Dirent, promises as fs } from 'fs';
 import { join } from 'path';
+import { storage } from '@/lib/firebase';
+import { ref, listAll, getDownloadURL } from 'firebase/storage';
 
 export interface ChampionImageData {
   id: string;
@@ -20,8 +22,172 @@ export interface ChampionImageData {
   updatedAt: string;
 }
 
-// Funkcja do skanowania folderów championów
+// Funkcja do skanowania folderów championów z obsługą Firebase Storage
 export async function scanChampionFolders(): Promise<ChampionImageData[]> {
+  // Najpierw spróbuj pobrać z Firebase Storage
+  try {
+    const firebaseChampions = await scanFromFirebaseStorage();
+    if (firebaseChampions.length > 0) {
+      console.log(`Pobrano ${firebaseChampions.length} championów z Firebase Storage`);
+      return firebaseChampions;
+    }
+  } catch (error) {
+    console.log('Firebase Storage niedostępne, używam lokalnych plików:', error);
+  }
+
+  // Fallback do lokalnych plików
+  console.log('Używam lokalnych plików championów');
+  return scanFromLocalFiles();
+}
+
+// Pobierz championów z Firebase Storage
+async function scanFromFirebaseStorage(): Promise<ChampionImageData[]> {
+  const champions: ChampionImageData[] = [];
+  
+  if (!storage) {
+    throw new Error('Firebase Storage nie jest zainicjalizowany');
+  }
+
+  try {
+    // Referencja do folderu champions w Firebase Storage
+    const championsRef = ref(storage, 'champions');
+    
+    // Pobierz listę wszystkich folderów championów
+    const championsList = await listAll(championsRef);
+    
+    // Filtruj tylko foldery
+    const championFolders = championsList.items.filter(item => 
+      !item.name.includes('.') // Foldery nie mają rozszerzenia
+    );
+
+    console.log(`Znaleziono ${championFolders.length} folderów championów w Firebase Storage`);
+
+    for (const folderRef of championFolders) {
+      const championId = folderRef.name;
+      const champion = await scanFirebaseChampionFolder(championId);
+      
+      if (champion) {
+        champions.push(champion);
+      }
+    }
+
+    // Sortuj po ID
+    champions.sort((a, b) => {
+      const numA = parseInt(a.id) || 0;
+      const numB = parseInt(b.id) || 0;
+      return numA - numB;
+    });
+
+    return champions;
+  } catch (error) {
+    console.error('Błąd podczas pobierania z Firebase Storage:', error);
+    throw error;
+  }
+}
+
+// Pobierz dane championa z Firebase Storage
+async function scanFirebaseChampionFolder(folderId: string): Promise<ChampionImageData | null> {
+  try {
+    const champion: ChampionImageData = {
+      id: folderId,
+      name: `Champion ${folderId}`,
+      ringNumber: `PL-2024-${folderId.padStart(3, '0')}`,
+      bloodline: 'Janssen',
+      gender: 'MALE',
+      birthDate: '2023-01-01T00:00:00.000Z',
+      color: 'Blue',
+      weight: 450,
+      breeder: 'MTM Pałka',
+      description: `Champion ${folderId} z Firebase Storage`,
+      images: [],
+      videos: [],
+      achievements: ['Mistrz Polski 2023'],
+      pedigree: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Pobierz zdjęcia z folderu gallery
+    try {
+      if (!storage) {
+        throw new Error('Firebase Storage nie jest zainicjalizowany');
+      }
+      const galleryRef = ref(storage, `champions/${folderId}/gallery`);
+      const galleryList = await listAll(galleryRef);
+      
+      const galleryImages = await Promise.all(
+        galleryList.items.map(async (item, index) => {
+          const url = await getDownloadURL(item);
+          return {
+            url: url, // Firebase Storage URL
+            alt: `Champion ${folderId} - zdjęcie ${index + 1}`,
+          };
+        })
+      );
+
+      champion.images = galleryImages;
+      console.log(`Champion ${folderId}: ${galleryImages.length} zdjęć z Firebase Storage`);
+    } catch (error) {
+      console.log(`Champion ${folderId}: Brak folderu gallery w Firebase Storage`);
+    }
+
+    // Pobierz wideo z folderu videos
+    try {
+      if (!storage) {
+        throw new Error('Firebase Storage nie jest zainicjalizowany');
+      }
+      const videosRef = ref(storage, `champions/${folderId}/videos`);
+      const videosList = await listAll(videosRef);
+      
+      const videos = await Promise.all(
+        videosList.items.map(async (item, index) => {
+          const url = await getDownloadURL(item);
+          return {
+            url: url, // Firebase Storage URL
+            alt: `Champion ${folderId} - wideo ${index + 1}`,
+          };
+        })
+      );
+
+      champion.videos = videos;
+      console.log(`Champion ${folderId}: ${videos.length} wideo z Firebase Storage`);
+    } catch (error) {
+      console.log(`Champion ${folderId}: Brak folderu videos w Firebase Storage`);
+    }
+
+    // Pobierz zdjęcia rodowodu z folderu pedigree
+    try {
+      if (!storage) {
+        throw new Error('Firebase Storage nie jest zainicjalizowany');
+      }
+      const pedigreeRef = ref(storage, `champions/${folderId}/pedigree`);
+      const pedigreeList = await listAll(pedigreeRef);
+      
+      const pedigreeImages = await Promise.all(
+        pedigreeList.items.map(async (item) => {
+          return await getDownloadURL(item); // Firebase Storage URL
+        })
+      );
+
+      if (pedigreeImages.length > 0) {
+        champion.pedigree = {
+          images: pedigreeImages,
+        };
+        console.log(`Champion ${folderId}: ${pedigreeImages.length} zdjęć rodowodu z Firebase Storage`);
+      }
+    } catch (error) {
+      console.log(`Champion ${folderId}: Brak folderu pedigree w Firebase Storage`);
+    }
+
+    return champion;
+  } catch (error) {
+    console.error(`Błąd podczas pobierania championa ${folderId} z Firebase Storage:`, error);
+    return null;
+  }
+}
+
+// Fallback: skanuj lokalne pliki (oryginalna funkcja)
+async function scanFromLocalFiles(): Promise<ChampionImageData[]> {
   const championsDir = join(process.cwd(), 'public', 'champions');
   const champions: ChampionImageData[] = [];
 
@@ -42,7 +208,7 @@ export async function scanChampionFolders(): Promise<ChampionImageData[]> {
       }
 
       const championPath = join(championsDir, folderName);
-      const champion = await scanChampionFolder(folderName, championPath);
+      const champion = await scanLocalChampionFolder(folderName, championPath);
 
       if (champion) {
         champions.push(champion);
@@ -56,14 +222,14 @@ export async function scanChampionFolders(): Promise<ChampionImageData[]> {
       return numA - numB;
     });
   } catch (error) {
-    console.error('Błąd podczas skanowania folderów championów:', error);
+    console.error('Błąd podczas skanowania lokalnych folderów championów:', error);
   }
 
   return champions;
 }
 
-// Funkcja do skanowania pojedynczego folderu championa
-async function scanChampionFolder(
+// Funkcja do skanowania pojedynczego lokalnego folderu championa
+async function scanLocalChampionFolder(
   folderId: string,
   folderPath: string
 ): Promise<ChampionImageData | null> {

@@ -60,8 +60,6 @@ services:
         npm ci --silent --legacy-peer-deps &&
         echo '🔄 Generating Prisma Client...' &&
         npx prisma generate &&
-        echo '🚀 Running database migrations...' &&
-        npx prisma migrate deploy &&
         echo '✅ Prisma setup completed!'
       "
 

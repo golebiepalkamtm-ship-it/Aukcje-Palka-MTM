@@ -301,8 +301,3 @@ vi.mock('@/lib/session-validation', () => ({
   return new Response(JSON.stringify(data), { status });
 };
 
-// Clean up after each test
-import { afterEach } from 'vitest';
-afterEach(() => {
-  vi.clearAllMocks();
-});

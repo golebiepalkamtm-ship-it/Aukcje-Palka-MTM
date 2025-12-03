@@ -3,13 +3,25 @@ import { getActiveUser } from '@/lib/firebase-auth-helpers';
 import { prisma } from '@/lib/prisma';
 import { checkProfileCompleteness, getProfileCompletenessMessage } from '@/lib/profile-validation';
 import { apiRateLimit } from '@/lib/rate-limit';
-import { bidCreateSchema } from '@/lib/validations/schemas';
+import { createBidWithFeatures } from '@/lib/auction-service';
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// Schema walidacji z rozszerzeniem o maxBid
+const bidRequestSchema = z.object({
+  amount: z.number().min(0, 'Kwota licytacji nie może być ujemna'),
+  maxBid: z.number().min(0, 'Maksymalna kwota nie może być ujemna').optional(),
+});
+
 // POST /api/auctions/[id]/bids - Dodaj licytację
+// Funkcjonalności:
+// - Snipe Protection: automatyczne przedłużanie aukcji przy licytacji w ostatnich minutach
+// - Auto-outbid: automatyczne podbijanie do maksymalnej kwoty (jeśli podano maxBid)
+// - Powiadomienia: automatyczne powiadomienia o przebiciu
+// - Reserve Price: walidacja ceny minimalnej
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Rate limiting
@@ -41,113 +53,38 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = await request.json();
 
     // Walidacja danych
-    const validatedData = bidCreateSchema.parse(body);
+    const validatedData = bidRequestSchema.parse(body);
 
-    // Sprawdź czy aukcja istnieje i jest aktywna
-    const auction = await prisma.auction.findUnique({
-      where: { id: auctionId },
-      include: {
-        seller: true,
-        bids: {
-          orderBy: { amount: 'desc' },
-          take: 1,
-        },
-      },
+    // Użyj zaawansowanego serwisu aukcyjnego
+    const result = await createBidWithFeatures({
+      auctionId,
+      bidderId: authResult.userId,
+      amount: validatedData.amount,
+      maxBid: validatedData.maxBid,
     });
 
-    if (!auction) {
-      return NextResponse.json({ error: 'Aukcja nie została znaleziona' }, { status: 404 });
-    }
-
-    if (auction.status !== 'ACTIVE') {
-      return NextResponse.json({ error: 'Aukcja nie jest aktywna' }, { status: 400 });
-    }
-
-    if (!auction.isApproved) {
-      return NextResponse.json({ error: 'Aukcja nie została zatwierdzona' }, { status: 400 });
-    }
-
-    // Sprawdź czy użytkownik nie jest sprzedawcą
-    if (authResult.userId === auction.sellerId) {
-      return NextResponse.json({ error: 'Nie możesz licytować w swojej aukcji' }, { status: 400 });
-    }
-
-    // Sprawdź czy licytacja jest wyższa od aktualnej ceny
-    const currentPrice = auction.bids.length > 0 ? auction.bids[0].amount : auction.startingPrice;
-    if (validatedData.amount <= currentPrice) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: `Licytacja musi być wyższa od ${currentPrice} zł` },
+        { error: result.message },
         { status: 400 }
       );
     }
-
-    // Sprawdź czy licytacja nie przekracza ceny "kup teraz"
-    if (auction.buyNowPrice && validatedData.amount >= auction.buyNowPrice) {
-      return NextResponse.json(
-        { error: 'Użyj opcji "Kup teraz" zamiast licytacji' },
-        { status: 400 }
-      );
-    }
-
-    // Sprawdź czy aukcja nie zakończyła się
-    if (new Date() > auction.endTime) {
-      return NextResponse.json({ error: 'Aukcja już się zakończyła' }, { status: 400 });
-    }
-
-    // Utwórz licytację w transakcji
-    const result = await prisma.$transaction(async (tx: any) => {
-      // Utwórz nową licytację
-      const bid = await tx.bid.create({
-        data: {
-          auctionId: auctionId,
-          bidderId: authResult.userId,
-          amount: validatedData.amount,
-        },
-        include: {
-          bidder: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
-      });
-
-      // Zaktualizuj aktualną cenę aukcji
-      await tx.auction.update({
-        where: { id: auctionId },
-        data: {
-          currentPrice: validatedData.amount,
-        },
-      });
-
-      // Oznacz poprzednie licytacje jako nie-wygrywające
-      await tx.bid.updateMany({
-        where: {
-          auctionId: auctionId,
-          id: { not: bid.id },
-        },
-        data: {
-          isWinning: false,
-        },
-      });
-
-      // Oznacz nową licytację jako wygrywającą
-      await tx.bid.update({
-        where: { id: bid.id },
-        data: {
-          isWinning: true,
-        },
-      });
-
-      return bid;
-    });
 
     return NextResponse.json(
       {
-        message: 'Licytacja została dodana',
-        bid: result,
+        message: result.message,
+        bid: result.bid,
+        auction: {
+          id: result.auction?.id,
+          currentPrice: result.auction?.currentPrice,
+          endTime: result.auction?.endTime,
+        },
+        meta: {
+          wasExtended: result.wasExtended,
+          newEndTime: result.newEndTime,
+          autoBidTriggered: result.autoBidTriggered,
+          outbidNotificationsSent: result.outbidNotificationsSent,
+        },
       },
       { status: 201 }
     );

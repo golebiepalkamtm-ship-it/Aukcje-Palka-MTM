@@ -5,7 +5,6 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Endpoint aktualizuje status weryfikacji telefonu po pomyślnej weryfikacji przez Firebase Phone Auth.
  * Weryfikacja kodu została wykonana po stronie klienta przez PhoneAuthProvider.credential().
  * Tutaj tylko zapisujemy status weryfikacji w bazie danych.
  */
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Zaktualizuj status weryfikacji w bazie danych
-    // (Kod został już zweryfikowany po stronie klienta przez PhoneAuthProvider.credential())
     const dbUser = await prisma.user.findFirst({
       where: { firebaseUid: decodedToken.uid },
       select: { id: true, phoneNumber: true },

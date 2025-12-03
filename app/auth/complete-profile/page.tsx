@@ -133,7 +133,7 @@ function CompleteProfileContent() {
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-white mb-2">Uzupełnij swój profil</h1>
             <p className="text-white/70 text-sm">
-              Wypełnij poniższe informacje, aby móc korzystać z pełnej funkcjonalności platformy
+              Uzupełnij swoje dane, abyśmy mogli zweryfikować Twoje konto. Jest to niezbędne do wzięcia udziału w licytacjach.
             </p>
           </div>
 
@@ -264,7 +264,7 @@ function CompleteProfileContent() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-white/50 text-xs">Pola oznaczone * są wymagane</p>
+            <p className="text-white/50 text-xs">Pola oznaczone * są wymagane. Po uzupełnieniu danych, zostaniesz poproszony o weryfikację numeru telefonu.</p>
           </div>
         </div>
       </motion.div>

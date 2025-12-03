@@ -69,7 +69,7 @@ env:
       - RUNTIME
 
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    value: m-t-m-62972.firebasestorage.app
+    value: m-t-m-62972.appspot.com
     availability:
       - BUILD
       - RUNTIME

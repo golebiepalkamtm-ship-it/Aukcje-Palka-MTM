@@ -229,3 +229,4 @@ export const useFilteredAuctions = () => {
 };
 
 export const useFilteredChampions = () => useAppStore(state => state.getFilteredChampions());
+export const useRatePLNperEUR = () => useAppStore(state => state.ratePLNperEUR);

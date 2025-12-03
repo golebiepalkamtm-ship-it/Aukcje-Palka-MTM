@@ -5,14 +5,120 @@ import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal';
 import { SmartImage } from '@/components/ui/SmartImage';
 import { Text3D } from '@/components/ui/Text3D';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
-import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, Camera, CheckCircle, Upload, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+
+// Scroll reveal hook from AchievementTimeline
+const useScrollReveal = () => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (prefersReducedMotion.matches) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.35 }
+    );
+
+    observer.observe(node);
+
+    return () => {
+      if (node) {
+        observer.unobserve(node);
+      }
+    };
+  }, []);
+
+  return { ref, isVisible };
+};
+
+// Styled card component matching AchievementTimeline
+interface MeetingCardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+function MeetingCard({ children, className = '' }: MeetingCardProps) {
+  const { ref, isVisible } = useScrollReveal();
+
+  return (
+    <div className="relative">
+      {/* 3D Shadow layers */}
+      {[...Array(11)].map((_, i) => {
+        const layer = 11 - i;
+        const offset = layer * 1.5;
+        const opacity = Math.max(0.2, 0.7 - layer * 0.05);
+        
+        return (
+          <div
+            key={i}
+            className="absolute inset-0 rounded-3xl border-2 backdrop-blur-sm"
+            style={{
+              borderColor: `rgba(0, 0, 0, ${opacity})`,
+              backgroundColor: `rgba(0, 0, 0, ${opacity * 0.8})`,
+              transform: `translateX(${offset}px) translateY(${offset / 2}px) translateZ(-${offset}px)`,
+              zIndex: i + 1
+            }}
+            aria-hidden="true"
+          />
+        );
+      })}
+
+      <article
+        ref={ref}
+        className={`glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 text-white transition-all duration-[2000ms] overflow-hidden backdrop-blur-xl ${className} ${
+          !isVisible ? 'opacity-0' : 'opacity-100'
+        }`}
+        style={{
+          transform: !isVisible ? 'translateZ(-200px) scale(0.5)' : 'translateZ(0) scale(1)',
+          transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+          background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.4) 0%, rgba(133, 107, 56, 0.35) 25%, rgba(107, 91, 49, 0.32) 50%, rgba(89, 79, 45, 0.3) 75%, rgba(71, 61, 38, 0.28) 100%)',
+          borderColor: 'rgba(218, 182, 98, 1)',
+          boxShadow: '0 0 20px rgba(218, 182, 98, 1), 0 0 35px rgba(189, 158, 88, 0.8), 0 0 50px rgba(165, 138, 78, 0.5), inset 0 0 40px rgba(71, 61, 38, 0.15), inset 0 2px 0 rgba(218, 182, 98, 0.6), inset 0 -2px 0 rgba(61, 51, 33, 0.4)'
+        }}
+      >
+        {/* Inner light effects */}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-3xl"
+          style={{
+            background: `
+              radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255, 245, 200, 0.15) 0%, transparent 50%),
+              radial-gradient(ellipse 600px 500px at 80% 70%, rgba(218, 182, 98, 0.1) 0%, transparent 50%),
+              radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255, 235, 180, 0.08) 0%, transparent 60%)
+            `,
+            backdropFilter: 'blur(80px)',
+            mixBlendMode: 'soft-light',
+            zIndex: 1
+          }}
+        />
+        <div className="relative z-10">
+          {children}
+        </div>
+      </article>
+    </div>
+  );
+}
 
 interface BreederMeeting {
   id: string;
@@ -152,37 +258,32 @@ export default function BreederMeetingsPage() {
     return (
       <UnifiedLayout>
         <div className="min-h-screen flex items-center justify-center">
-          <UnifiedCard
-            variant="glass"
-            glow={true}
-            hover={true}
-            className="p-8 text-center"
-          >
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <MeetingCard className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mx-auto mb-4"></div>
             <Text3D variant="glow" intensity="medium" className="text-lg">
               Ładowanie zdjęć...
             </Text3D>
-          </UnifiedCard>
+          </MeetingCard>
         </div>
       </UnifiedLayout>
     );
   }
 
   return (
-    <UnifiedLayout>
-      {/* Hero Section */}
+    <UnifiedLayout isHomePage={true}>
+      {/* Hero Section - z padding-top dla miejsca na logo i nawigację, delay 0.8s czeka na animację fade-in-fwd */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.6 }}
-        className="relative z-10 -mt-24 pb-12 px-4 sm:px-6 lg:px-8"
+        transition={{ duration: 1, delay: 0.8 }}
+        className="relative z-10 pt-80 pb-12 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12"
       >
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="w-full mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Spotkania z Hodowcami</h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
+            transition={{ duration: 0.8, delay: 1.2 }}
             className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
           >
             Galeria zdjęć z naszych spotkań z hodowcami gołębi pocztowych
@@ -191,7 +292,7 @@ export default function BreederMeetingsPage() {
       </motion.section>
 
       {/* Content */}
-      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-20">
+      <div className="relative z-10 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12 pb-20">
         <div className="max-w-7xl mx-auto">
           {/* Add Meeting Form Section */}
           <motion.section
@@ -201,14 +302,9 @@ export default function BreederMeetingsPage() {
             viewport={{ once: true }}
             className="mb-20"
           >
-            <UnifiedCard
-              variant="glass"
-              glow={true}
-              hover={true}
-              className="p-8"
-            >
+            <MeetingCard>
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold mb-4 text-white">Dodaj Zdjęcia ze Spotkania</h2>
+                <h2 className="text-3xl font-bold mb-4 text-gradient">Dodaj Zdjęcia ze Spotkania</h2>
                 <p className="text-white/80 text-lg">
                   Podziel się zdjęciami z naszych spotkań z hodowcami
                 </p>
@@ -417,7 +513,7 @@ export default function BreederMeetingsPage() {
                   </UnifiedButton>
                 </div>
               )}
-            </UnifiedCard>
+            </MeetingCard>
           </motion.section>
 
           {/* Breeder Meetings Grid */}
@@ -438,19 +534,22 @@ export default function BreederMeetingsPage() {
                     transition={{ duration: 0.8, delay: index * 0.1 }}
                     viewport={{ once: true }}
                   >
-                    <UnifiedCard
-                      variant="glass"
-                      glow={true}
-                      hover={true}
-                      className="p-6"
-                    >
+                    <MeetingCard className="p-6">
                       {/* Meeting Title */}
-                      <div className="champion-profile-card-header">
-                        <h3 className="champion-profile-card-title text-center">{meeting.name}</h3>
+                      <div className="mb-6">
+                        <h3 className="text-2xl md:text-3xl font-bold text-gradient text-center">{meeting.name}</h3>
+                        {meeting.location && (
+                          <p className="text-base md:text-lg font-semibold uppercase tracking-[0.3em] text-white/60 text-center mt-2">
+                            {meeting.location}
+                          </p>
+                        )}
+                        {meeting.date && (
+                          <p className="text-white/50 text-center mt-1">{meeting.date}</p>
+                        )}
                       </div>
 
                       {/* Gallery Grid */}
-                      <div className="champion-profile-card-content">
+                      <div className="grid gap-5 rounded-2xl border border-white/10 bg-white/5 p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                           {meeting.images.map((image, imageIndex) => (
                             <motion.div
@@ -459,7 +558,7 @@ export default function BreederMeetingsPage() {
                               whileInView={{ opacity: 1, scale: 1 }}
                               transition={{ duration: 0.5, delay: imageIndex * 0.05 }}
                               viewport={{ once: true }}
-                              className="relative h-48 overflow-hidden rounded-xl cursor-pointer group"
+                              className="relative h-48 overflow-hidden rounded-xl cursor-pointer group border border-white/5 bg-black/20"
                               onClick={() => handleImageClick(meeting.id, imageIndex)}
                             >
                               <SmartImage
@@ -472,8 +571,8 @@ export default function BreederMeetingsPage() {
                                 className="w-full h-full transition-transform duration-500 group-hover:scale-110"
                               />
                               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                  <span className="text-white text-xs font-bold">
+                                <div className="w-8 h-8 bg-amber-500/30 backdrop-blur-sm rounded-full flex items-center justify-center border border-amber-400/50">
+                                  <span className="text-amber-200 text-xs font-bold">
                                     {imageIndex + 1}
                                   </span>
                                 </div>
@@ -482,19 +581,14 @@ export default function BreederMeetingsPage() {
                           ))}
                         </div>
                       </div>
-                    </UnifiedCard>
+                    </MeetingCard>
                   </motion.div>
                 ))}
             </div>
 
             {/* Empty State */}
             {breederMeetings.length === 0 && (
-              <UnifiedCard
-                variant="glass"
-                glow={true}
-                hover={true}
-                className="p-12 text-center"
-              >
+              <MeetingCard className="p-12 text-center">
                 <Text3D variant="gradient" intensity="medium" className="text-2xl font-bold mb-4">
                   Brak spotkań
                 </Text3D>
@@ -510,7 +604,7 @@ export default function BreederMeetingsPage() {
                     Dodaj Pierwsze Zdjęcie
                   </UnifiedButton>
                 )}
-              </UnifiedCard>
+              </MeetingCard>
             )}
           </motion.section>
         </div>

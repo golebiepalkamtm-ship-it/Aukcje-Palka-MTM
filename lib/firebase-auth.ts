@@ -1,6 +1,6 @@
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth } from './firebase-admin';
+import { getAdminAuth } from './firebase-admin';
 import { debug, info, error, isDev } from './logger';
 
 /**
@@ -10,6 +10,9 @@ import { debug, info, error, isDev } from './logger';
  */
 export async function verifyFirebaseToken(request: NextRequest): Promise<DecodedIdToken | null> {
   try {
+    // Pobierz Firebase Admin Auth z lazy initialization
+    const adminAuth = getAdminAuth();
+    
     // Sprawdź czy Firebase Admin jest skonfigurowany
     if (!adminAuth) {
       // Only log error if not in build time

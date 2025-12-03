@@ -46,11 +46,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Redirect HTTPS → HTTP dla localhost w development (zapobiega SSL_ERROR_RX_RECORD_TOO_LONG)
+  const host = request.headers.get('host') || '';
+  const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+  if (process.env.NODE_ENV === 'development' && isLocalhost && isHttps(request)) {
+    const httpUrl = `http://${host}${pathname}${request.url.split('?')[1] ? '?' + request.url.split('?')[1] : ''}`;
+    return NextResponse.redirect(httpUrl, 301);
+  }
+
   // Wymuszenie HTTPS w produkcji (TYLKO jeśli nie jesteśmy na Vercel - Vercel robi to automatycznie)
   // Vercel automatycznie obsługuje HTTPS, więc ten redirect może powodować problemy
   // Wyłączone dla localhost (Docker development/testing)
-  const host = request.headers.get('host') || '';
-  const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
   if (process.env.NODE_ENV === 'production' && !process.env.VERCEL && !isHttps(request) && !isLocalhost) {
     const httpsUrl = `https://${host}${pathname}${request.url.split('?')[1] ? '?' + request.url.split('?')[1] : ''}`;
     return NextResponse.redirect(httpsUrl, 301);

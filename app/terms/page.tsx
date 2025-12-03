@@ -7,8 +7,8 @@ import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 
 export default function TermsPage() {
   return (
-    <UnifiedLayout>
-      <div className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+    <UnifiedLayout isHomePage={true}>
+      <div className="relative z-10 pt-60 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">

@@ -1,23 +1,56 @@
 /* ========================================
-   AETHER DESIGNER: 3D FLIP CARD AUTH
-   Futurystyczny, hipernowoczesny design
+   3D CUBE AUTH - 4 STRONY OBROTOWE
+   Inspirowane: https://codepen.io/GreenSock/pen/raaJNav
+   Stylizacja: jak karty z osiągnięć
+   Efekt świecących krawędzi: https://codepen.io/simeydotme/pen/RNWoPRj
    ======================================== */
 
 :root {
   --flip-duration: 0.8s;
   --primary-color: #6b7280;
-  --accent-color: #3b82f6;
-  --accent-light: #60a5fa;
+  --accent-color: #dab662;
+  --accent-light: #e8c878;
   --dark-bg: #0f172a;
-  --card-bg: #1e293b;
-  --border-color: #334155;
+  --card-bg: rgba(139, 117, 66, 0.4);
+  --border-color: rgba(218, 182, 98, 1);
   --text-primary: #f1f5f9;
   --text-secondary: #cbd5e1;
+  
+  /* Glowing edge effect variables */
+  --glow-sens: 30;
+  --glow-color: 45deg 80% 70%;
+  --glow-boost: 0%;
+  --glow-blend: plus-lighter;
 }
 
 /* ============================================
-   KONTENER GŁÓWNY
+   KONTENER GŁÓWNY KOSTKI
    ============================================ */
+.auth-cube-container {
+  position: absolute;
+  top: 360px; /* Zwiększone aby nie nachodziło na nawigację */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  z-index: 1; /* Niższy niż nawigacja (z-index: 1001) */
+}
+
+/* Logo w lewym górnym rogu - na linii z nawigacją */
+.auth-logo-container {
+  position: fixed;
+  top: 32px;
+  left: 48px;
+  z-index: 1001;
+}
+
 .auth-flip-container {
   position: relative;
   width: 100%;
@@ -32,10 +65,236 @@
 }
 
 /* ============================================
+   3D SCENE - PERSPEKTYWA
+   DYNAMICZNE WYMIARY - CSS VARIABLES
+   ============================================ */
+.auth-cube-scene {
+  --cube-width: 400px;
+  --cube-height: 520px;
+  --cube-depth: calc(var(--cube-width) / 2);
+  
+  width: var(--cube-width);
+  height: var(--cube-height);
+  perspective: 1500px;
+  position: relative;
+  z-index: 10;
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.auth-cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+}
+
+/* ============================================
+   WRAPPER DLA EFEKTU STACKOWANYCH WARSTW
+   DYNAMICZNE WYMIARY
+   ============================================ */
+.auth-cube-face-wrapper {
+  position: absolute;
+  width: var(--cube-width);
+  height: var(--cube-height);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transition: width 0.4s ease, height 0.4s ease, transform 0.4s ease;
+}
+
+.auth-cube-front-wrapper {
+  transform: translateZ(var(--cube-depth));
+}
+
+.auth-cube-right-wrapper {
+  transform: rotateY(90deg) translateZ(var(--cube-depth));
+}
+
+.auth-cube-back-wrapper {
+  transform: rotateY(180deg) translateZ(var(--cube-depth));
+}
+
+.auth-cube-left-wrapper {
+  transform: rotateY(-90deg) translateZ(var(--cube-depth));
+}
+
+/* ============================================
+   STACKOWANE WARSTWY (jak w osiągnięciach)
+   ============================================ */
+.auth-cube-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  border: 3px solid;
+  /* USUNIĘTO ROZMYCIE - maksymalna ostrość */
+  pointer-events: none;
+}
+
+.auth-cube-face {
+  position: relative;
+  width: var(--cube-width);
+  height: var(--cube-height);
+  z-index: 12;
+  isolation: isolate;
+  overflow: visible;
+  transition: width 0.4s ease, height 0.4s ease;
+  
+  /* MAKSYMALNA WYRAZISTOŚĆ - solidne, nieprzezroczyste tło */
+  background:
+    linear-gradient(
+      135deg,
+      rgba(45, 38, 22, 0.98) 0%,
+      rgba(35, 30, 18, 0.97) 25%,
+      rgba(28, 24, 15, 0.96) 50%,
+      rgba(22, 19, 12, 0.95) 75%,
+      rgba(18, 15, 10, 0.94) 100%
+    );
+  border: 3px solid rgba(218, 182, 98, 1);
+  border-radius: 24px;
+  padding: 24px 18px;
+  /* WZMOCNIONY box-shadow dla głębi */
+  box-shadow:
+    0 0 25px rgba(218, 182, 98, 1),
+    0 0 45px rgba(189, 158, 88, 0.9),
+    0 0 65px rgba(165, 138, 78, 0.6),
+    inset 0 0 60px rgba(71, 61, 38, 0.3),
+    inset 0 3px 0 rgba(218, 182, 98, 0.8),
+    inset 0 -3px 0 rgba(61, 51, 33, 0.6);
+  /* USUNIĘTO backdrop-filter i animację - maksymalna ostrość */
+  transition: all 0.3s ease;
+  /* WYŁĄCZONO pulsującą animację: animation: goldenGlow 3s ease-in-out infinite; */
+  
+  /* DODANO - wyostrzenie renderowania */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* ============================================
+   GLOWING EDGE EFFECT (CodePen style)
+   https://codepen.io/simeydotme/pen/RNWoPRj
+   ============================================ */
+.auth-cube-face {
+  --pointer-°: 45deg;
+  --pointer-d: 0;
+}
+
+/* WYŁĄCZONO efekt glow - powodował niewyrazistość */
+.auth-cube-face > .glow {
+  display: none;
+}
+
+.auth-cube-face > .glow::before {
+  display: none;
+}
+
+/* WYŁĄCZONO - Warstwa świetlna powodowała niewyrazistość */
+/* .auth-cube-face::after - usunięto całkowicie */
+
+/* Tylko złoty styl - bez kolorowych efektów */
+
+.auth-cube-face:hover {
+  box-shadow:
+    /* MAKSYMALNY złoty glow */
+    0 0 40px rgba(218, 182, 98, 1),
+    0 0 60px rgba(189, 158, 88, 1),
+    0 0 90px rgba(165, 138, 78, 0.8),
+    0 0 120px rgba(218, 182, 98, 0.6),
+    /* Wzmocnione inset highlights */
+    inset 0 0 70px rgba(71, 61, 38, 0.35),
+    inset 0 4px 0 rgba(218, 182, 98, 0.9),
+    inset 0 -4px 0 rgba(61, 51, 33, 0.7);
+  /* Bez efektu unoszenia - tylko rotacja kostki 3D */
+}
+
+@keyframes goldenGlow {
+  0%, 100% {
+    box-shadow:
+      /* Złoty glow zewnętrzny */
+      0 0 20px rgba(218, 182, 98, 1),
+      0 0 35px rgba(189, 158, 88, 0.8),
+      0 0 50px rgba(165, 138, 78, 0.5),
+      /* 11-warstwowy cień 3D */
+      1.5px 0.75px 0 rgba(0, 0, 0, 0.65),
+      3px 1.5px 0 rgba(0, 0, 0, 0.60),
+      4.5px 2.25px 0 rgba(0, 0, 0, 0.55),
+      6px 3px 0 rgba(0, 0, 0, 0.50),
+      7.5px 3.75px 0 rgba(0, 0, 0, 0.45),
+      9px 4.5px 0 rgba(0, 0, 0, 0.40),
+      10.5px 5.25px 0 rgba(0, 0, 0, 0.35),
+      12px 6px 0 rgba(0, 0, 0, 0.30),
+      13.5px 6.75px 0 rgba(0, 0, 0, 0.25),
+      15px 7.5px 0 rgba(0, 0, 0, 0.20),
+      16.5px 8.25px 0 rgba(0, 0, 0, 0.15),
+      /* Inset highlights */
+      inset 0 0 40px rgba(71, 61, 38, 0.15),
+      inset 0 2px 0 rgba(218, 182, 98, 0.6),
+      inset 0 -2px 0 rgba(61, 51, 33, 0.4);
+  }
+  50% {
+    box-shadow:
+      /* Silniejszy złoty glow */
+      0 0 25px rgba(218, 182, 98, 1),
+      0 0 45px rgba(189, 158, 88, 0.9),
+      0 0 65px rgba(165, 138, 78, 0.6),
+      /* 11-warstwowy cień 3D - pulsujący */
+      2px 1px 0 rgba(0, 0, 0, 0.68),
+      4px 2px 0 rgba(0, 0, 0, 0.62),
+      6px 3px 0 rgba(0, 0, 0, 0.56),
+      8px 4px 0 rgba(0, 0, 0, 0.50),
+      10px 5px 0 rgba(0, 0, 0, 0.44),
+      12px 6px 0 rgba(0, 0, 0, 0.38),
+      14px 7px 0 rgba(0, 0, 0, 0.32),
+      16px 8px 0 rgba(0, 0, 0, 0.26),
+      18px 9px 0 rgba(0, 0, 0, 0.20),
+      20px 10px 0 rgba(0, 0, 0, 0.14),
+      22px 11px 0 rgba(0, 0, 0, 0.08),
+      /* Inset highlights */
+      inset 0 0 45px rgba(71, 61, 38, 0.18),
+      inset 0 2px 0 rgba(218, 182, 98, 0.7),
+      inset 0 -2px 0 rgba(61, 51, 33, 0.4);
+  }
+}
+
+@keyframes rainbow-shift {
+  0% {
+    filter: hue-rotate(0deg) brightness(1.1);
+  }
+  50% {
+    filter: hue-rotate(180deg) brightness(1.2);
+  }
+  100% {
+    filter: hue-rotate(360deg) brightness(1.1);
+  }
+}
+
+@keyframes rainbow-pulse {
+  0%, 100% {
+    filter: hue-rotate(0deg) brightness(1.15);
+  }
+  33% {
+    filter: hue-rotate(120deg) brightness(1.25);
+  }
+  66% {
+    filter: hue-rotate(240deg) brightness(1.2);
+  }
+}
+
+/* Pozycje ścian kostki - bez transformacji (wrapper ma transformacje) */
+.auth-cube-front,
+.auth-cube-right,
+.auth-cube-back,
+.auth-cube-left {
+  /* Transformacje są teraz na wrapperze */
+}
+
+/* ============================================
    TŁO GEOMETRYCZNE (DEKORACYJNE)
    ============================================ */
 .auth-flip-background {
-  position: absolute;
+  position: fixed;
   width: 100%;
   height: 100%;
   top: 0;
@@ -43,6 +302,7 @@
   z-index: 0;
   overflow: hidden;
   background: transparent;
+  pointer-events: none;
 }
 
 .geometric-grid {
@@ -175,8 +435,8 @@
 
   /* Stylizacja karty - dokładnie jak na stronie O nas */
   background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.9);
   border-radius: 24px;
   padding: 32px 28px;
@@ -195,7 +455,6 @@
 
 .auth-flip-face:hover {
   border: 2px solid rgba(255, 255, 255, 1);
-  box-shadow: 0 0 60px 20px rgba(255,255,255,1), 0 0 100px 30px rgba(255,255,255,0.7);
 }
 
 .auth-flip-front {
@@ -295,6 +554,7 @@ button.auth-flip-toggle-btn {
 button[type='submit'] {
   width: 100%;
   background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   color: white;
   text-transform: uppercase;
@@ -354,44 +614,37 @@ button[type='submit']:active {
   transform: scale(0.98);
 }
 
-/* ============================================
-   WSKAŹNIK STANU (INDICATOR)
-   ============================================ */
-.auth-flip-indicator {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: none;
-  gap: 12px;
-  z-index: 10;
-}
 
-.indicator-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(203, 213, 225, 0.3);
-  border: 2px solid rgba(203, 213, 225, 0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.indicator-dot.active {
-  background: var(--accent-color);
-  border-color: var(--accent-light);
-  box-shadow: none;
-  transform: scale(1.3);
-}
-
-.indicator-dot:hover {
-  border-color: var(--accent-color);
-}
 
 /* ============================================
    RESPONSYWNOŚĆ
    ============================================ */
+@media (max-width: 768px) {
+  .auth-cube-scene {
+    --cube-width: min(95vw, 380px);
+    --cube-depth: calc(var(--cube-width) / 2);
+    perspective: 1200px;
+  }
+
+  .auth-cube-face {
+    padding: 22px 16px;
+  }
+}
+
 @media (max-width: 640px) {
+  .auth-cube-container {
+    padding: 20px 10px;
+  }
+
+  .auth-cube-scene {
+    --cube-width: min(95vw, 340px);
+    --cube-depth: calc(var(--cube-width) / 2);
+  }
+
+  .auth-cube-face {
+    padding: 20px 14px;
+  }
+
   .auth-flip-container {
     padding: 10px;
   }
@@ -424,6 +677,53 @@ button[type='submit']:active {
 }
 
 /* ============================================
+   AUTH 3D FORM - ZAWARTOŚĆ ŚCIAN
+   MAKSYMALNA WYRAZISTOŚĆ I OSTROŚĆ
+   ============================================ */
+.auth-3d-form-content {
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0;
+  /* Wyostrzenie tekstu */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.auth-3d-form-content h2 {
+  font-size: 22px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow:
+    0 0 10px rgba(218, 182, 98, 0.8),
+    0 2px 15px rgba(218, 182, 98, 0.5),
+    0 0 30px rgba(218, 182, 98, 0.3);
+  margin-bottom: 4px;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+}
+
+.auth-3d-form-content p {
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.auth-3d-form-content form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ============================================
    INTEGRACJA Z FirebaseAuthForm
    ============================================ */
 .auth-flip-form-wrapper {
@@ -444,6 +744,10 @@ button[type='submit']:active {
 .auth-flip-face {
   animation: cardFlip 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
+
+/* ============================================
+   ANIMACJE I EFEKTY - WYŁĄCZONE
+   ============================================ */
 
 /* ============================================
    DARK MODE (Domyślnie)

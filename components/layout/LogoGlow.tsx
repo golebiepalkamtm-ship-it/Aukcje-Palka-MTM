@@ -1,46 +1,32 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export function LogoGlow() {
   return (
-    <motion.div
-      className="relative z-[100]"
-    >
+    <div className="relative z-[100]">
       <Link href="/">
-        <motion.div 
-          className="relative"
-          animate={{
-            filter: [
-              'drop-shadow(0 0 20px rgba(255, 255, 255, 0.8)) brightness(1.2)',
-              'drop-shadow(0 0 30px rgba(255, 255, 255, 1)) brightness(1.3)',
-              'drop-shadow(0 0 20px rgba(255, 255, 255, 0.8)) brightness(1.2)',
-            ]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeInOut'
-          }}
-        >
-          {/* Główne logo z podświetleniem */}
+        <div className="relative">
+          {/* Główne logo z podświetleniem - dopasowane */}
           <Image
             src="/logo.png"
             alt="Pałka M.T.M. Mistrzowie Sprintu"
-            width={320}
-            height={320}
-            className="h-80 w-auto object-contain cursor-pointer"
-            style={{ 
-              width: 'auto', 
-              height: 'auto',
+            width={220}
+            height={220}
+            className="object-contain cursor-pointer"
+            style={{
+              width: '220px',
+              height: '220px',
+              maxWidth: '220px',
+              maxHeight: '220px',
+              filter: 'drop-shadow(0 0 25px rgba(218, 182, 98, 0.9)) drop-shadow(0 0 40px rgba(189, 158, 88, 0.7)) brightness(1.15)',
             }}
             unoptimized
             priority
           />
-        </motion.div>
+        </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

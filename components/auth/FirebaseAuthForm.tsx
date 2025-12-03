@@ -15,7 +15,7 @@ import {
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import * as logger from '@/lib/logger';
@@ -34,6 +34,7 @@ export default function FirebaseAuthForm({
   minimal = false,
 }: FirebaseAuthFormProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [mode, setMode] = useState<AuthMode>(initialMode);
 
   // Ustaw mode na initialMode gdy się zmieni
@@ -69,6 +70,7 @@ export default function FirebaseAuthForm({
     password?: string;
     confirmPassword?: string;
   }>({});
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
 
   // Dodaj useEffect do monitorowania zmian success
   useEffect(() => {
@@ -79,7 +81,8 @@ export default function FirebaseAuthForm({
 
   // Funkcja pomocnicza do synchronizacji danych użytkownika
   // successMessage: opcjonalny komunikat, który zostanie ustawiony po sukcesie (jeśli null - brak komunikatu)
-  const syncUser = async (successMessage?: string | null) => {
+  // shouldRedirect: czy przekierować użytkownika po sukcesie (domyślnie true dla logowania)
+  const syncUser = async (successMessage?: string | null, shouldRedirect: boolean = true) => {
     try {
       if (!auth) {
         throw new Error('Firebase nie jest zainicjalizowany');
@@ -101,12 +104,20 @@ export default function FirebaseAuthForm({
         throw new Error(errorData.error || 'Synchronizacja nie powiodła się');
       }
 
-      await response.json();
+      const data = await response.json();
       if (logger.isDev) logger.debug('Synchronizacja udana.');
+      setIsProfileComplete(data.isProfileComplete);
 
       // Ustaw komunikat sukcesu tylko jeśli został podany (i nie jest null)
       if (successMessage !== null && successMessage !== undefined) {
         setSuccess(successMessage);
+      }
+
+      // Przekieruj na stronę główną po krótkim opóźnieniu, aby użytkownik mógł zobaczyć komunikat sukcesu
+      if (shouldRedirect) {
+        setTimeout(() => {
+          router.push('/');
+        }, 1500);
       }
     } catch (error) {
       logger.error('Błąd synchronizacji:', error instanceof Error ? error.message : error);
@@ -167,7 +178,7 @@ export default function FirebaseAuthForm({
           } as const;
           await sendEmailVerification(user, actionCodeSettings);
           setSuccess(
-            '⚠️ Twoje konto wymaga weryfikacji emaila. Wysłaliśmy ponownie link aktywacyjny - sprawdź skrzynkę (także SPAM). Po weryfikacji będziesz mógł uzupełnić dane i zweryfikować telefon.'
+            '⚠️ Twoje konto wymaga weryfikacji emaila. Wysłaliśmy ponownie link aktywacyjny - sprawdź skrzynkę (także SPAM). Po weryfikacji będziesz mógł uzupełnić dane i zweryfikować telefon, aby uzyskać pełny dostęp do licytacji.'
           );
         } catch (emailError) {
           logger.error('Błąd ponownego wysłania email weryfikacyjnego:', emailError);
@@ -181,8 +192,8 @@ export default function FirebaseAuthForm({
         // return; // USUNIĘTO RETURN
       }
 
-      // Synchronizuj dane
-      await syncUser('✅ Zalogowano pomyślnie! Witamy w panelu użytkownika.');
+      // Synchronizuj dane i przekieruj na stronę główną
+      await syncUser('✅ Zalogowano pomyślnie! Przekierowywanie na stronę główną...');
     } catch (e: unknown) {
       const error = e as { code?: string; message?: string };
       logger.error('Błąd logowania:', error);
@@ -240,7 +251,7 @@ export default function FirebaseAuthForm({
             handleCodeInApp: false,
           });
           setSuccess(
-            '✅ Rejestracja przez Google zakończona! Na Twój email wysłaliśmy link aktywacyjny. Sprawdź skrzynkę (także SPAM) i kliknij link, aby uzyskać dostęp do panelu użytkownika.'
+            '✅ Rejestracja przez Google zakończona! Na Twój email wysłaliśmy link aktywacyjny. Sprawdź skrzynkę (także SPAM) i kliknij link, aby uzyskać dostęp do panelu użytkownika i możliwości licytacji.'
           );
         } catch (emailError) {
           logger.error('Błąd wysyłania email weryfikacyjnego dla OAuth:', emailError);
@@ -250,8 +261,17 @@ export default function FirebaseAuthForm({
         }
       }
 
-      // Synchronizuj dane
-      await syncUser('✅ Zalogowano pomyślnie przez Google! Witamy w panelu użytkownika.');
+      // Synchronizuj dane i przekieruj na stronę główną
+      if (isProfileComplete) {
+        await syncUser('✅ Zalogowano pomyślnie przez Google! Przekierowywanie na stronę główną...');
+      } else {
+        setSuccess(
+          '✅ Zalogowano pomyślnie! Aby uzyskać pełny dostęp do aukcji, uzupełnij swój profil i zweryfikuj numer telefonu.'
+        );
+        setTimeout(() => {
+          router.push('/auth/complete-profile');
+        }, 3000);
+      }
     } catch (e: unknown) {
       const error = e as { code?: string; message?: string };
       logger.error('Błąd logowania przez Google:', error);
@@ -308,7 +328,7 @@ export default function FirebaseAuthForm({
             handleCodeInApp: false,
           });
           setSuccess(
-            '✅ Rejestracja przez Facebook zakończona! Na Twój email wysłaliśmy link aktywacyjny. Sprawdź skrzynkę (także SPAM) i kliknij link, aby uzyskać dostęp do panelu użytkownika.'
+            '✅ Rejestracja przez Facebook zakończona! Na Twój email wysłaliśmy link aktywacyjny. Sprawdź skrzynkę (także SPAM) i kliknij link, aby uzyskać dostęp do panelu użytkownika i możliwości licytacji.'
           );
         } catch (emailError) {
           logger.error('Błąd wysyłania email weryfikacyjnego dla OAuth:', emailError);
@@ -318,8 +338,8 @@ export default function FirebaseAuthForm({
         }
       }
 
-      // Użyj tej samej funkcji synchronizacji co inne metody
-      await syncUser('✅ Zalogowano pomyślnie przez Facebook! Witamy w panelu użytkownika.');
+      // Użyj tej samej funkcji synchronizacji co inne metody i przekieruj na stronę główną
+      await syncUser('✅ Zalogowano pomyślnie przez Facebook! Przekierowywanie na stronę główną...');
     } catch (e: unknown) {
       const error = e as { code?: string; message?: string };
       logger.error('Błąd logowania przez Facebook:', error);
@@ -447,10 +467,10 @@ export default function FirebaseAuthForm({
         logger.error('Błąd wysyłania email weryfikacyjnego:', emailError);
       }
 
-      // Synchronizuj użytkownika z bazą
-      await syncUser(null); // Nie ustawiaj komunikatu - zostanie ustawiony poniżej
+      // Synchronizuj użytkownika z bazą (bez przekierowania - użytkownik musi zweryfikować email)
+      await syncUser(null, false); // Nie ustawiaj komunikatu i nie przekierowuj - zostanie ustawiony poniżej
 
-      const successMessage = `✅ Rejestracja zakończona! Email weryfikacyjny został wysłany na adres: ${user.email}. Sprawdź skrzynkę odbiorczą (także SPAM) i kliknij link weryfikacyjny, aby uzyskać dostęp do panelu użytkownika.`;
+      const successMessage = `✅ Rejestracja zakończona! Email weryfikacyjny został wysłany na adres: ${user.email}. Sprawdź skrzynkę odbiorczą (także SPAM) i kliknij link weryfikacyjny, aby uzyskać dostęp do panelu użytkownika i możliwości licytacji.`;
       setSuccess(successMessage);
     } catch (e: unknown) {
       const error = e as { code?: string; message?: string };

@@ -10,6 +10,7 @@
     "skipLibCheck": true,
     "types": [],
     "strict": true,
+    "ignoreDeprecations": "5.0",
     "noEmit": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

@@ -1,6 +1,41 @@
-// W development ten plik jest zastępowany przez webpack alias stubem
+// W development używaj stub zamiast prawdziwego Sentry
 // W production ładuj prawdziwy Sentry
-import * as Sentry from '@sentry/nextjs';
+const isDev = process.env.NODE_ENV === 'development';
+
+let Sentry: any;
+if (isDev) {
+  // Stub dla development - wszystkie funkcje są no-op
+  const noop = () => {};
+  const createNoopScope = () => ({
+    setContext: noop,
+    setTag: noop,
+    setLevel: noop,
+    setUser: noop,
+    addBreadcrumb: noop,
+  });
+
+  Sentry = {
+    withScope: (callback: (scope: ReturnType<typeof createNoopScope>) => void) => {
+      callback(createNoopScope());
+    },
+    captureException: noop,
+    captureMessage: noop,
+    setUser: noop,
+    addBreadcrumb: noop,
+    setTag: noop,
+    setContext: noop,
+    startSpan: async <T>(
+      _options: { name: string; op?: string },
+      callback: () => Promise<T>
+    ): Promise<T> => {
+      return callback();
+    },
+  };
+} else {
+  // W production ładuj prawdziwy Sentry
+  Sentry = require('@sentry/nextjs');
+}
+
 import { AppError } from './error-handling';
 
 /**

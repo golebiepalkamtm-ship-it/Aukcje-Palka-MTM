@@ -18,7 +18,7 @@ interface ChampionData {
 }
 
 export function SimpleChampionsList() {
-  const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string; sourceEl?: HTMLElement } | null>(null);
   const [champions, setChampions] = useState<Champion[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -138,9 +138,10 @@ export function SimpleChampionsList() {
     loadChampions();
   }, []);
 
-  const handleImageClick = (imageSrc: string, index: number) => {
-    // Używamy lokalnego stanu zamiast kontekstu
-    setSelectedImage({ src: imageSrc, alt: `Zdjęcie ${index + 1}` });
+  const handleImageClick = (imageSrc: string, index: number, sourceEl?: HTMLElement) => {
+    // Store sourceEl together with image data to ensure they're in sync
+    console.log('handleImageClick - sourceEl:', sourceEl);
+    setSelectedImage({ src: imageSrc, alt: `Zdjęcie ${index + 1}`, sourceEl });
     setSelectedImageIndex(index);
   };
 
@@ -158,7 +159,7 @@ export function SimpleChampionsList() {
       {/* Champions Carousel */}
       <ChampionsCarousel
         champions={champions}
-        onImageClick={handleImageClick}
+        onImageClick={(src, idx, el) => handleImageClick(src, idx, el)}
         onPedigreeClick={pedigreeImage => {
           console.log('=== onPedigreeClick CALLED ===');
           console.log('Pedigree image received:', pedigreeImage);
@@ -184,19 +185,28 @@ export function SimpleChampionsList() {
           onPrevious={
             selectedImageIndex > 0
               ? () =>
-                  handleImageClick(allImages[selectedImageIndex - 1].src, selectedImageIndex - 1)
+                  handleImageClick(
+                    allImages[selectedImageIndex - 1].src,
+                    selectedImageIndex - 1,
+                    undefined
+                  )
               : undefined
           }
           onNext={
             selectedImageIndex < allImages.length - 1
               ? () =>
-                  handleImageClick(allImages[selectedImageIndex + 1].src, selectedImageIndex + 1)
+                  handleImageClick(
+                    allImages[selectedImageIndex + 1].src,
+                    selectedImageIndex + 1,
+                    undefined
+                  )
               : undefined
           }
           hasPrevious={selectedImageIndex > 0}
           hasNext={selectedImageIndex < allImages.length - 1}
           currentIndex={selectedImageIndex}
           totalImages={allImages.length}
+          sourceElement={selectedImage.sourceEl || null}
         />
       )}
 

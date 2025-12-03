@@ -275,6 +275,34 @@ export const passwordSchema = z
   })
 
 // ============================================
+// AUTH SCHEMAS
+// ============================================
+
+export const completeProfileSchema = z.object({
+  firstName: z.string().min(2, 'Imię musi mieć co najmniej 2 znaki').trim(),
+  lastName: z.string().min(2, 'Nazwisko musi mieć co najmniej 2 znaki').trim(),
+  address: z.string().min(5, 'Adres musi mieć co najmniej 5 znaków').trim(),
+  city: z.string().min(2, 'Miasto musi mieć co najmniej 2 znaki').trim().optional(),
+  postalCode: z.string().regex(/^\d{2}-\d{3}$/, 'Nieprawidłowy kod pocztowy (format: XX-XXX)').optional(),
+  phoneNumber: z.string().regex(/^\+?[1-9]\d{6,14}$/, 'Nieprawidłowy numer telefonu').optional(),
+})
+
+export const verifySmsCodeSchema = z.object({
+  code: z.string().length(6, 'Kod musi mieć 6 cyfr').regex(/^\d{6}$/, 'Kod musi składać się z 6 cyfr'),
+})
+
+export const sendVerificationCodeSchema = z.object({
+  phoneNumber: z.string().regex(/^\+?[1-9]\d{6,14}$/, 'Nieprawidłowy numer telefonu'),
+})
+
+export const registerSchema = z.object({
+  email: z.string().email('Nieprawidłowy format email.'),
+  password: z.string().min(8, 'Hasło musi mieć co najmniej 8 znaków.'),
+  firstName: z.string().min(2, 'Imię musi mieć co najmniej 2 znaki.').optional(),
+  lastName: z.string().min(2, 'Nazwisko musi mieć co najmniej 2 znaki.').optional(),
+})
+
+// ============================================
 // EXPORTED SCHEMAS
 // ============================================
 
@@ -289,6 +317,12 @@ export const schemas = {
   },
   bid: {
     create: bidCreateSchema,
+  },
+  auth: {
+    register: registerSchema,
+    completeProfile: completeProfileSchema,
+    verifySmsCode: verifySmsCodeSchema,
+    sendVerificationCode: sendVerificationCodeSchema,
   },
   search: searchSchema,
   fileUpload: fileUploadSchema,

@@ -145,7 +145,12 @@ async function createAuctionHandler(request: NextRequest) {
   }
 
   // Walidacja danych
-  // Użyj baseAuctionSchema który zawiera startTime i endTime
+  // Helper to convert NaN to undefined for optional number fields
+  const optionalNumber = z.preprocess(
+    (val) => (typeof val === 'number' && isNaN(val) ? undefined : val),
+    z.number().min(0, 'Wartość nie może być ujemna').optional()
+  );
+
   const baseAuctionSchema = z
     .object({
       title: z
@@ -157,9 +162,9 @@ async function createAuctionHandler(request: NextRequest) {
         .min(20, 'Opis musi mieć co najmniej 20 znaków')
         .max(2000, 'Opis może mieć maksymalnie 2000 znaków'),
       category: z.string().min(1, 'Kategoria jest wymagana'),
-      startingPrice: z.number().min(0, 'Cena startowa nie może być ujemna').optional(),
-      buyNowPrice: z.number().min(0, 'Cena kup teraz nie może być ujemna').optional(),
-      reservePrice: z.number().min(0, 'Cena rezerwowa nie może być ujemna').optional(),
+      startingPrice: optionalNumber,
+      buyNowPrice: optionalNumber,
+      reservePrice: optionalNumber,
       startTime: z.string().datetime('Nieprawidłowa data rozpoczęcia'),
       endTime: z.string().datetime('Nieprawidłowa data zakończenia'),
       images: z.array(z.string().min(1, 'URL obrazu nie może być pusty')).optional(),
@@ -175,6 +180,15 @@ async function createAuctionHandler(request: NextRequest) {
           eyeColor: z.string().optional(),
           featherColor: z.string().optional(),
           purpose: z.array(z.string()).optional(),
+          // Additional characteristics
+          vitality: z.string().optional(),
+          length: z.string().optional(),
+          endurance: z.string().optional(),
+          forkStrength: z.string().optional(),
+          forkAlignment: z.string().optional(),
+          muscles: z.string().optional(),
+          balance: z.string().optional(),
+          back: z.string().optional(),
         })
         .optional(),
       csrfToken: z.string().min(1, 'Token CSRF jest wymagany'),
@@ -249,6 +263,18 @@ async function createAuctionHandler(request: NextRequest) {
           images: validatedData.images?.join(',') || '',
           videos: validatedData.videos?.join(',') || '',
           isChampion: false,
+          // Additional characteristics
+          eyeColor: validatedData.pigeon.eyeColor,
+          featherColor: validatedData.pigeon.featherColor,
+          vitality: validatedData.pigeon.vitality,
+          length: validatedData.pigeon.length,
+          endurance: validatedData.pigeon.endurance,
+          forkStrength: validatedData.pigeon.forkStrength,
+          forkAlignment: validatedData.pigeon.forkAlignment,
+          muscles: validatedData.pigeon.muscles,
+          balance: validatedData.pigeon.balance,
+          back: validatedData.pigeon.back,
+          purpose: validatedData.pigeon.purpose ? JSON.stringify(validatedData.pigeon.purpose) : null,
         },
       });
       pigeonId = pigeon.id;

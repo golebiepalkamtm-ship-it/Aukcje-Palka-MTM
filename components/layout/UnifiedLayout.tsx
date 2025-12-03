@@ -21,11 +21,12 @@ const navItems = [
 ];
 
 interface UnifiedLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
   showNavigation?: boolean;
   showFooter?: boolean;
   showBackground?: boolean;
   className?: string;
+  isHomePage?: boolean;
 }
 
 export function UnifiedLayout({
@@ -34,10 +35,11 @@ export function UnifiedLayout({
   showFooter = true,
   showBackground = true,
   className = '',
+  isHomePage = false,
 }: UnifiedLayoutProps) {
   return (
-    <div className={`min-h-screen flex flex-col ${className} relative overflow-x-hidden`}>
-      {/* Tło strony - ukryte na stronie głównej, bo Liquid Background je zastępuje */}
+    <div className={`relative min-h-screen flex flex-col ${className}`}>
+      {/* Tło strony */}
       {showBackground && (
         <>
           <div className="fixed inset-0 w-full h-full -z-10">
@@ -52,67 +54,69 @@ export function UnifiedLayout({
             />
           </div>
           {/* Szara nakładka na tło */}
-          <div className="fixed inset-0 bg-black/55 pointer-events-none z-0"></div>
+          <div className="fixed inset-0 bg-black/25 pointer-events-none z-0"></div>
         </>
       )}
 
-      {/* Główna zawartość, która się rozciąga */}
-      <main className="flex-grow relative">
-        {/* overlay usunięty na prośbę użytkownika */}
-        {/* Logo w lewym górnym rogu */}
-        <div className="fade-in-fwd w-fit origin-center" style={{ animationDelay: '0.1s' }}>
-          <LogoGlow />
-        </div>
+      {/* Logo, Navigation Menu i User Status - IDENTYCZNE NA WSZYSTKICH STRONACH */}
+      {showNavigation && (
+        <div className="absolute z-[1001] pointer-events-auto fade-in-fwd top-5 left-12 right-6" style={{ animationDelay: '0s' }}>
+          <div className="flex items-center justify-between w-full" style={{ perspective: '1500px' }}>
+            {/* Logo i Navigation Menu po lewej */}
+            <div className="flex items-center gap-6">
+              {/* Logo */}
+              <div className="flex items-center scale-110">
+                <LogoGlow />
+              </div>
 
-        {/* Navigation Menu */}
-        {showNavigation && (
-          <>
-            <nav className="absolute top-8 left-[360px] z-[1001] pointer-events-auto">
-              <div className="flex items-center gap-3">
-                {navItems.map((item) => (
-                  <div 
-                    key={item.href} 
-                    className="fade-in-fwd"
-                    style={{ animationDelay: '0.1s' }}
-                  >
-                    <Link
-                      href={item.href as `/${string}`}
-                      className="glass-nav-button"
-                      title={item.title}
-                      onClick={() => {
-                        /* console.log('Clicked:', item.href) */
+              {/* Navigation Menu */}
+              <nav className="flex items-center">
+                <div className="flex items-center gap-4">
+                  {navItems.map((item, index) => (
+                    <div
+                      key={item.href}
+                      className="fade-in-fwd flex items-center"
+                      style={{
+                        animationDelay: '0s',
+                        transformStyle: 'preserve-3d'
                       }}
                     >
-                      <i className={`${item.icon} relative z-10 text-3xl`}></i>
-                      <span className="relative z-10 text-sm">{item.label}</span>
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </nav>
-
-            {/* User Status w prawym górnym rogu */}
-            <div className="absolute top-8 right-6 z-[1001] pointer-events-auto fade-in-fwd" style={{ animationDelay: '0.1s' }}>
-              <div className="flex flex-col items-end space-y-2">
-                <UserStatus />
-                <VerificationIndicator />
-              </div>
+                      <Link
+                        href={item.href as `/${string}`}
+                        className="glass-nav-button flex items-center justify-center scale-105"
+                        title={item.title}
+                        onClick={() => {
+                          /* console.log('Clicked:', item.href) */
+                        }}
+                      >
+                        <i className={`${item.icon} relative z-10 text-3xl`}></i>
+                        <span className="relative z-10 text-sm ml-2 font-medium">{item.label}</span>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </nav>
             </div>
-          </>
-        )}
 
-        {/* Main Content */}
-        <div className="relative z-20">
-          {/* Globalny baner weryfikacji - widoczny na każdej podstronie jeśli użytkownik wymaga akcji */}
-          <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 pt-32 pb-0">
-            <VerificationBanner />
+            {/* User Status po prawej */}
+            <div className="flex items-center gap-4 scale-105">
+              <UserStatus />
+            </div>
           </div>
-          {children}
         </div>
-      </main>
+      )}
 
-      {/* Stopka */}
-      {showFooter && <Footer />}
+      {/* Main Content */}
+      <div className="relative z-20 flex-1">
+        {children}
+      </div>
+
+      {/* Footer */}
+      {showFooter && (
+        <div className="relative z-20 mt-32 pt-16">
+          <Footer />
+        </div>
+      )}
     </div>
   );
 }

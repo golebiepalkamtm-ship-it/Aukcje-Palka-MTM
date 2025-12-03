@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { GlowingEdgeCard } from '@/components/ui/GlowingEdgeCard';
 
 type AchievementTimelineEntry = {
   label: string;
@@ -80,9 +79,9 @@ function TimelineCard({ item, align }: TimelineCardProps) {
     <div className="relative max-w-7xl mx-auto">
       <span
         aria-hidden="true"
-        className="absolute left-4 top-8 z-20 h-4 w-4 -translate-x-1/2 rounded-full border border-white/30 bg-gradient-to-br from-white via-sky-200 to-blue-400 md:left-1/2"
+        className="absolute left-4 top-8 z-20 h-4 w-4 -translate-x-1/2 rounded-full border border-white/60 bg-gradient-to-br from-white via-sky-200 to-blue-400 md:left-1/2"
       >
-        <span className="absolute inset-0 rounded-full bg-white/10 blur-sm" />
+        <span className="absolute inset-0 rounded-full bg-white/30 blur-sm" />
       </span>
 
       <div className={mergeClasses(
@@ -91,101 +90,12 @@ function TimelineCard({ item, align }: TimelineCardProps) {
           ? 'md:w-[calc(50%-3rem)] md:ml-0 md:mr-auto'
           : 'md:w-[calc(50%-3rem)] md:ml-auto md:mr-0'
       )}>
-        {/* Warstwa 9 - najgłębsza */}
-        <div 
-          className="absolute inset-0 rounded-3xl border-2 border-white/15 bg-gradient-to-br from-white/0.2 via-white/0.1 to-transparent backdrop-blur-xs"
-          style={{ 
-            transform: 'translateX(13.5px) translateY(6.75px) translateZ(-13.5px)', 
-            zIndex: 1 
-          }}
-          aria-hidden="true"
-        />
-        
-        {/* Warstwa 8 */}
-        <div 
-          className="absolute inset-0 rounded-3xl border-2 border-white/17 bg-gradient-to-br from-white/0.7 via-white/0.4 to-transparent backdrop-blur-xs"
-          style={{ 
-            transform: 'translateX(12px) translateY(6px) translateZ(-12px)', 
-            zIndex: 2 
-          }}
-          aria-hidden="true"
-        />
-        
-        {/* Warstwa 7 */}
-        <div 
-          className="absolute inset-0 rounded-3xl border-2 border-white/18 bg-gradient-to-br from-white/0.8 via-white/0.45 to-transparent backdrop-blur-xs"
-          style={{ 
-            transform: 'translateX(10.5px) translateY(5.25px) translateZ(-10.5px)', 
-            zIndex: 3 
-          }}
-          aria-hidden="true"
-        />
-        
-        {/* Warstwa 6 */}
-        <div 
-          className="absolute inset-0 rounded-3xl border-2 border-white/20 bg-gradient-to-br from-white/1 via-white/0.5 to-transparent backdrop-blur-xs"
-          style={{ 
-            transform: 'translateX(9px) translateY(4.5px) translateZ(-9px)', 
-            zIndex: 4 
-          }}
-          aria-hidden="true"
-        />
-        
-        {/* Warstwa 5 */}
-        <div 
-          className="absolute inset-0 rounded-3xl border-2 border-white/25 bg-gradient-to-br from-white/2 via-white/0.8 to-transparent backdrop-blur-sm"
-          style={{ 
-            transform: 'translateX(7px) translateY(3.5px) translateZ(-7px)', 
-            zIndex: 5 
-          }}
-          aria-hidden="true"
-        />
-        
-        {/* Warstwa 4 */}
-        <div 
-          className="absolute inset-0 rounded-3xl border-2 border-white/30 bg-gradient-to-br from-white/3 via-white/1 to-transparent backdrop-blur-sm"
-          style={{ 
-            transform: 'translateX(5px) translateY(2.5px) translateZ(-5px)', 
-            zIndex: 6 
-          }}
-          aria-hidden="true"
-        />
-        
-        {/* Warstwa 3 */}
-        <div 
-          className="absolute inset-0 rounded-3xl border-2 border-white/35 bg-gradient-to-br from-white/4 via-white/1.2 to-transparent backdrop-blur-md"
-          style={{ 
-            transform: 'translateX(3.5px) translateY(1.75px) translateZ(-3.5px)', 
-            zIndex: 7 
-          }}
-          aria-hidden="true"
-        />
-        
-        {/* Warstwa 2 */}
-        <div 
-          className="absolute inset-0 rounded-3xl border-2 border-white/45 bg-gradient-to-br from-white/6 via-white/2 to-transparent backdrop-blur-lg"
-          style={{ 
-            transform: 'translateX(2px) translateY(1px) translateZ(-2px)', 
-            zIndex: 8 
-          }}
-          aria-hidden="true"
-        />
-        
-        {/* Warstwa 1 - najbliżej głównej */}
-        <div 
-          className="absolute inset-0 rounded-3xl border-2 border-white/55 bg-gradient-to-br from-white/8 via-white/3 to-transparent backdrop-blur-xl"
-          style={{ 
-            transform: 'translateX(1px) translateY(0.5px) translateZ(-1px)', 
-            zIndex: 9 
-          }}
-          aria-hidden="true"
-        />
 
         <article
           ref={ref}
           className={mergeClasses(
-            'glass-morphism relative z-[10] w-full rounded-3xl border-2 border-white/20 bg-gradient-to-br from-white/5 via-white/2 to-transparent p-8 text-white transition-all duration-[2000ms]',
-            'backdrop-blur-2xl',
+            'glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 text-white transition-all duration-[2000ms] overflow-hidden',
+            'backdrop-blur-xl',
             align === 'left'
               ? 'md:pr-16 md:text-right pl-14'
               : 'md:pl-16 pl-14',
@@ -194,7 +104,10 @@ function TimelineCard({ item, align }: TimelineCardProps) {
           )}
           style={{
             transform: !isVisible ? 'translateZ(-200px) scale(0.5)' : 'translateZ(0) scale(1)',
-            transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)'
+            transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+            background: 'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
+            borderColor: 'rgba(218, 182, 98, 1)',
+            boxShadow: '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)'
           }}
         >
         <div className={mergeClasses(
@@ -211,13 +124,13 @@ function TimelineCard({ item, align }: TimelineCardProps) {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-5 rounded-2xl border border-white/10 bg-white/5 p-6 text-lg text-white/80">
+        <div className="mt-6 grid gap-5 rounded-2xl border border-white/30 bg-white/10 p-6 text-lg text-white">
           {item.groups.map((group) => (
             <div
               key={`${item.year}-${group.title}`}
               className="rounded-xl border border-white/5 bg-black/20 p-5"
             >
-              <p className="text-base md:text-lg font-semibold uppercase tracking-[0.3em] text-white/60 mb-4">
+              <p className="text-base md:text-lg font-semibold uppercase tracking-[0.3em] text-white mb-4">
                 {group.title}
               </p>
               <ul className="space-y-2">
@@ -232,7 +145,7 @@ function TimelineCard({ item, align }: TimelineCardProps) {
                         'flex flex-wrap items-baseline gap-2 text-lg md:text-xl',
                         isMasterTitle 
                           ? 'bg-yellow-500/20 border-2 border-yellow-500/50 rounded-lg px-3 py-2 text-yellow-100' 
-                          : 'text-white/80'
+                          : 'text-white'
                       )}
                     >
                       <span className={mergeClasses(
@@ -241,7 +154,7 @@ function TimelineCard({ item, align }: TimelineCardProps) {
                       )}>
                         {entry.label}
                       </span>
-                      <span className={isMasterTitle ? 'text-yellow-100 font-bold' : 'text-white/70'}>
+                      <span className={isMasterTitle ? 'text-yellow-100 font-bold' : 'text-white'}>
                         {entry.value}
                       </span>
                       {isMasterTitle && (
@@ -922,6 +835,54 @@ export const achievementsTimelineData: AchievementTimelineItem[] = [
           { label: 'Kat B', value: 'I V-ce Mistrz, 70.75 coeff, 15 con' },
           { label: 'Kat C', value: '~70 Przodownik, 561.95 coeff, 9 con' },
           { label: 'Kat D', value: '~50 Przodownik, 713.20 coeff, 42 con' },
+        ],
+      },
+    ],
+  },
+  {
+    year: '2021',
+    label: 'Chronologia 2021',
+    title: 'Stabilizacja formy w Kwisa',
+    description:
+      'Kontynuacja zwycięstw w Oddziale Kwisa z podwójnym mistrzostwem i wysokimi lokatami w okręgu.',
+    groups: [
+      {
+        title: 'Oddział Kwisa 0489',
+        entries: [
+          { label: 'Kat A', value: 'Mistrz, 95.48 coeff, 18 con' },
+          { label: 'Kat B', value: 'Mistrz, 127.36 coeff, 15 con' },
+          { label: 'Kat Total', value: 'I Wicemistrz, 892.17 coeff, 43 con' },
+        ],
+      },
+      {
+        title: 'Okręg Jelenia Góra',
+        entries: [
+          { label: 'Kat A', value: 'I Wicemistrz, 95.48 coeff, 18 con' },
+          { label: 'Kat B', value: '2 Przodownik, 127.36 coeff, 15 con' },
+        ],
+      },
+    ],
+  },
+  {
+    year: '2022',
+    label: 'Chronologia 2022',
+    title: 'Rok przed wielkim powrotem',
+    description:
+      'Sezon przygotowań do rebrandingu na Pałka MTM – solidne wyniki w kategoriach A i B.',
+    groups: [
+      {
+        title: 'Oddział Kwisa 0489',
+        entries: [
+          { label: 'Kat A', value: 'I Wicemistrz, 142.89 coeff, 18 con' },
+          { label: 'Kat B', value: 'Mistrz, 198.52 coeff, 15 con' },
+          { label: 'Kat C', value: '3 Przodownik, 478.13 coeff, 9 con' },
+        ],
+      },
+      {
+        title: 'Okręg Jelenia Góra',
+        entries: [
+          { label: 'Kat A', value: '2 Przodownik, 142.89 coeff, 18 con' },
+          { label: 'Kat B', value: 'I Wicemistrz, 198.52 coeff, 15 con' },
         ],
       },
     ],

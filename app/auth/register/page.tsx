@@ -10,7 +10,7 @@ export const metadata = {
 export default function RegisterPage() {
   return (
     <UnifiedLayout showNavigation={true} showFooter={true}>
-      <div className="flex items-start justify-center pt-8 pb-32 min-h-screen">
+      <div className="flex flex-col items-center justify-start pt-8 min-h-[150vh]">
         <Suspense fallback={<div className="text-white">Ładowanie...</div>}>
           <AuthFlipCard initialMode="register" />
         </Suspense>

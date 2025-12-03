@@ -43,7 +43,7 @@ import { debug, info, error, isDev } from '@/lib/logger';
 import CreateAuctionForm from '@/components/auctions/CreateAuctionForm';
 
 export function UserDashboard() {
-  const { user, dbUser, signOut, refetchDbUser } = useAuth();
+  const { user, dbUser, signOut, refetchDbUser, error: authError, clearError } = useAuth();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('profile');
   const [auctionsSubTab, setAuctionsSubTab] = useState<
@@ -256,7 +256,7 @@ export function UserDashboard() {
           <h1 className="text-2xl font-bold text-white mb-4">Nie jesteś zalogowany</h1>
           <Link
             href="/auth/register"
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300"
+            className="px-6 py-3 bg-gradient-to-r from-amber-600/80 to-yellow-600/80 hover:from-amber-700/90 hover:to-yellow-700/90 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/40 border border-amber-400/50 font-medium"
           >
             Zaloguj się
           </Link>
@@ -265,60 +265,132 @@ export function UserDashboard() {
     );
   }
 
+  // Jeśli użytkownik jest zalogowany w Firebase, ale nie ma danych z bazy (błąd synchronizacji)
+  if (user && !dbUser && authError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
+            <h2 className="text-xl font-bold text-red-300 mb-2">Problem z połączeniem</h2>
+            <p className="text-red-200 text-sm mb-4">{authError}</p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => {
+                  clearError();
+                  refetchDbUser();
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-amber-600/80 to-yellow-600/80 hover:from-amber-700/90 hover:to-yellow-700/90 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/40 border border-amber-400/50 font-medium"
+              >
+                Spróbuj ponownie
+              </button>
+              <button
+                onClick={signOut}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-300"
+              >
+                Wyloguj się
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2 flex items-center">
-          Panel Użytkownika
-          <InfoTooltip
-            text="To jest Twoje centrum dowodzenia. Tutaj możesz edytować dane, sprawdzać aukcje i wiadomości."
-            position="bottom"
-          />
-        </h1>
-        <p className="text-white/70">Zarządzaj swoim kontem i ustawieniami</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-8"
+      >
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-amber-500/80 to-yellow-600/80 rounded-xl flex items-center justify-center shadow-lg border border-amber-400/50">
+            <User className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1 flex items-center gap-2">
+              Panel Użytkownika
+              <InfoTooltip
+                text="To jest Twoje centrum dowodzenia. Tutaj możesz edytować dane, sprawdzać aukcje i wiadomości."
+                position="bottom"
+              />
+            </h1>
+            <p className="text-white text-sm">Zarządzaj swoim kontem i ustawieniami</p>
+          </div>
+        </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
         <div className="lg:col-span-1">
-          <UnifiedCard
-            variant="glass"
-            glow={true}
-            hover={true}
-            className="p-6"
+          <article
+            className="glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 text-white transition-all duration-[2000ms] overflow-hidden backdrop-blur-xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.9) 0%, rgba(133, 107, 56, 0.85) 25%, rgba(107, 91, 49, 0.8) 50%, rgba(89, 79, 45, 0.75) 75%, rgba(71, 61, 38, 0.7) 100%)',
+              borderColor: 'rgba(218, 182, 98, 1)',
+              boxShadow: '0 0 20px rgba(218, 182, 98, 1), 0 0 35px rgba(189, 158, 88, 0.8), 0 0 50px rgba(165, 138, 78, 0.5), inset 0 0 40px rgba(71, 61, 38, 0.3), inset 0 2px 0 rgba(218, 182, 98, 0.6), inset 0 -2px 0 rgba(61, 51, 33, 0.4)'
+            }}
           >
+            {/* Radial gradient overlay jak w AchievementTimeline */}
+            <div 
+              className="absolute inset-0 pointer-events-none rounded-3xl"
+              style={{
+                background: `
+                  radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255, 245, 200, 0.15) 0%, transparent 50%),
+                  radial-gradient(ellipse 600px 500px at 80% 70%, rgba(218, 182, 98, 0.1) 0%, transparent 50%),
+                  radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255, 235, 180, 0.08) 0%, transparent 60%)
+                `,
+                backdropFilter: 'blur(80px)',
+                mixBlendMode: 'soft-light',
+                zIndex: 1
+              }}
+            />
+            <div className="relative z-10">
             {/* User Info */}
-            <div className="text-center mb-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="w-10 h-10 text-white" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="text-center mb-6 pb-6 border-b border-white/10"
+            >
+              <div className="relative w-24 h-24 mx-auto mb-4">
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 rounded-full blur-lg opacity-60"></div>
+                <div className="relative w-24 h-24 bg-gradient-to-r from-yellow-500/80 to-amber-600/80 rounded-full flex items-center justify-center shadow-xl border-2 border-amber-400/50">
+                  <User className="w-12 h-12 text-white drop-shadow-lg" />
+                </div>
               </div>
-              <h2 className="text-xl font-semibold text-white mb-1">
+              <h2 className="text-xl font-bold text-white mb-1">
                 {user.displayName || 'Użytkownik'}
               </h2>
-              <p className="text-white/70 text-sm">{user.email}</p>
-              <div className="flex items-center justify-center gap-1 mt-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-green-400 text-sm">Aktywne</span>
+              <p className="text-white text-sm mb-3">{user.email}</p>
+              <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-green-500/20 border border-green-500/30 rounded-full w-fit mx-auto">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-green-400 text-xs font-medium">Aktywne</span>
               </div>
-            </div>
+            </motion.div>
 
             {/* Navigation */}
             <nav className="space-y-2">
-              {tabs.map(tab => {
+              {tabs.map((tab, index) => {
                 const Icon = tab.icon;
                 const isDisabled = tab.requiresVerification && !isProfileComplete;
+                const isActive = activeTab === tab.id;
                 return (
-                  <button
+                  <motion.button
                     key={tab.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
                     onClick={() => !isDisabled && setActiveTab(tab.id)}
                     disabled={isDisabled}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 ${
-                      activeTab === tab.id
-                        ? 'bg-blue-600 text-white'
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden group ${
+                      isActive
+                        ? 'bg-gradient-to-r from-amber-600 to-yellow-600 text-white shadow-lg shadow-amber-500/60 border-2 border-amber-400'
                         : isDisabled
-                          ? 'text-white/30 cursor-not-allowed opacity-50'
-                          : 'text-white/70 hover:bg-white/10 hover:text-white'
+                          ? 'text-white/50 cursor-not-allowed opacity-60'
+                          : 'text-white hover:bg-amber-900/50 hover:text-white hover:border-2 hover:border-amber-500/60'
                     }`}
                     title={
                       isDisabled
@@ -326,10 +398,26 @@ export function UserDashboard() {
                         : ''
                     }
                   >
-                    <Icon className="w-4 h-4" />
-                    <span>{tab.label}</span>
-                    {isDisabled && <Shield className="w-3 h-3 ml-auto text-yellow-400" />}
-                  </button>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 bg-gradient-to-r from-amber-600 to-yellow-600 rounded-xl"
+                        transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                    <Icon className={`w-5 h-5 relative z-10 ${isActive ? 'text-white' : ''}`} />
+                    <span className="relative z-10 font-medium">{tab.label}</span>
+                    {isDisabled && (
+                      <Shield className="w-4 h-4 ml-auto text-yellow-400 relative z-10" />
+                    )}
+                    {isActive && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute right-2 w-2 h-2 bg-white rounded-full"
+                      />
+                    )}
+                  </motion.button>
                 );
               })}
             </nav>
@@ -338,31 +426,55 @@ export function UserDashboard() {
             <div className="mt-6 pt-6 border-t border-white/10">
               <button
                 onClick={signOut}
-                className="w-full flex items-center gap-3 px-3 py-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-all duration-300"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/20 hover:text-red-300 rounded-xl transition-all duration-300 border border-red-500/30 hover:border-red-500/50"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Wyloguj się</span>
+                <span className="font-medium">Wyloguj się</span>
               </button>
             </div>
-          </UnifiedCard>
+            </div>
+          </article>
         </div>
 
         {/* Main Content */}
         <div className="lg:col-span-3">
-          <UnifiedCard
-            variant="glass"
-            glow={true}
-            hover={true}
-            className="p-6"
+          <article
+            className="glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 text-white transition-all duration-[2000ms] overflow-hidden backdrop-blur-xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.9) 0%, rgba(133, 107, 56, 0.85) 25%, rgba(107, 91, 49, 0.8) 50%, rgba(89, 79, 45, 0.75) 75%, rgba(71, 61, 38, 0.7) 100%)',
+              borderColor: 'rgba(218, 182, 98, 1)',
+              boxShadow: '0 0 20px rgba(218, 182, 98, 1), 0 0 35px rgba(189, 158, 88, 0.8), 0 0 50px rgba(165, 138, 78, 0.5), inset 0 0 40px rgba(71, 61, 38, 0.3), inset 0 2px 0 rgba(218, 182, 98, 0.6), inset 0 -2px 0 rgba(61, 51, 33, 0.4)'
+            }}
           >
+            {/* Radial gradient overlay jak w AchievementTimeline */}
+            <div 
+              className="absolute inset-0 pointer-events-none rounded-3xl"
+              style={{
+                background: `
+                  radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255, 245, 200, 0.15) 0%, transparent 50%),
+                  radial-gradient(ellipse 600px 500px at 80% 70%, rgba(218, 182, 98, 0.1) 0%, transparent 50%),
+                  radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255, 235, 180, 0.08) 0%, transparent 60%)
+                `,
+                backdropFilter: 'blur(80px)',
+                mixBlendMode: 'soft-light',
+                zIndex: 1
+              }}
+            />
+            <div className="relative z-10">
             {activeTab === 'profile' && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-white">Informacje o profilu</h3>
+                <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                      <User className="w-6 h-6 text-amber-400" />
+                      Informacje o profilu
+                    </h3>
+                    <p className="text-white text-sm">Zarządzaj swoimi danymi osobowymi</p>
+                  </div>
                   <button
                     onClick={() => {
                       if (isDev) debug('Kliknięto edytuj profil, aktualny stan:', isEditingProfile);
@@ -370,7 +482,11 @@ export function UserDashboard() {
                       setIsEditingProfile(!isEditingProfile);
                       if (isDev) debug('Nowy stan edycji:', !isEditingProfile);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300"
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 font-medium ${
+                      isEditingProfile
+                        ? 'bg-red-600 hover:bg-red-700 text-white'
+                        : 'bg-gradient-to-r from-amber-600/80 to-yellow-600/80 hover:from-amber-700/90 hover:to-yellow-700/90 text-white shadow-lg shadow-amber-500/40 border border-amber-400/50'
+                    }`}
                   >
                     <Edit3 className="w-4 h-4" />
                     <span>{isEditingProfile ? 'Anuluj' : 'Edytuj profil'}</span>
@@ -381,7 +497,7 @@ export function UserDashboard() {
                   {/* Podstawowe informacje */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-white/70 text-sm">Imię i nazwisko</label>
+                      <label className="text-white text-sm font-semibold">Imię i nazwisko</label>
                       {isEditingProfile ? (
                         <input
                           type="text"
@@ -389,13 +505,13 @@ export function UserDashboard() {
                           onChange={e =>
                             setProfileData({ ...profileData, displayName: e.target.value })
                           }
-                          className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300"
                           placeholder="Wpisz imię i nazwisko"
                           title="Wpisz imię i nazwisko"
                         />
                       ) : (
-                        <div className="flex items-center gap-3 p-3">
-                          <User className="w-4 h-4 text-blue-400" />
+                        <div className="flex items-center gap-3 p-3 bg-gray-800 border border-gray-700 rounded-xl">
+                          <User className="w-5 h-5 text-amber-400" />
                           <span className="text-white">
                             {profileData.displayName || 'Nie ustawiono'}
                           </span>
@@ -404,12 +520,12 @@ export function UserDashboard() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-white/70 text-sm flex items-center">
+                      <label className="text-white text-sm font-semibold flex items-center">
                         Email
                         <InfoTooltip text="Twój adres email służy do logowania i komunikacji. Nie można go zmienić samodzielnie." />
                       </label>
-                      <div className="flex items-center gap-3 p-3">
-                        <Mail className="w-4 h-4 text-blue-400" />
+                      <div className="flex items-center gap-3 p-3 bg-gray-800 border border-gray-700 rounded-xl">
+                        <Mail className="w-5 h-5 text-amber-400" />
                         <span className="text-white">{user.email}</span>
                         {user.emailVerified ? (
                           <div title="Email zweryfikowany" className="flex items-center gap-1">
@@ -428,14 +544,14 @@ export function UserDashboard() {
 
                   {/* Numer telefonu */}
                   <div className="space-y-2">
-                    <label className="text-white/70 text-sm flex items-center">
+                    <label className="text-white text-sm font-semibold flex items-center">
                       Numer telefonu
                       <InfoTooltip text="Numer służy do weryfikacji konta i kontaktu z kupującymi. Po wpisaniu numeru, kliknij przycisk 'Zweryfikuj', aby otrzymać kod SMS." />
                     </label>
                     <div className="flex items-center gap-3">
                       {isEditingProfile ? (
                         <div className="flex items-center gap-2 flex-1">
-                          <span className="text-white/70 text-sm whitespace-nowrap">
+                          <span className="text-white text-sm whitespace-nowrap">
                             {profileData.phoneCode}
                           </span>
                           <input
@@ -450,14 +566,14 @@ export function UserDashboard() {
                                 phoneNumber: `${profileData.phoneCode} ${value}`.trim(),
                               });
                             }}
-                            className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 p-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300"
                             placeholder="123 456 789"
                             title="Wpisz numer telefonu"
                           />
                         </div>
                       ) : (
-                        <div className="flex items-center gap-3 p-3 flex-1">
-                          <Phone className="w-4 h-4 text-green-400" />
+                        <div className="flex items-center gap-3 p-3 flex-1 bg-gray-800 border border-gray-700 rounded-xl">
+                          <Phone className="w-5 h-5 text-green-400" />
                           <span className="text-white">
                             {profileData.phoneNumber || 'Nie ustawiono'}
                           </span>
@@ -567,7 +683,7 @@ export function UserDashboard() {
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-white/70 text-sm">Ulica i numer</label>
+                        <label className="text-white text-sm font-semibold">Ulica i numer</label>
                         {isEditingProfile ? (
                           <AddressAutocomplete
                             value={profileData.address}
@@ -588,7 +704,7 @@ export function UserDashboard() {
                           />
                         ) : (
                           <div className="flex items-center gap-3 p-3">
-                            <MapPin className="w-4 h-4 text-blue-400" />
+                            <MapPin className="w-4 h-4 text-amber-400" />
                             <span className="text-white">
                               {profileData.address || 'Nie ustawiono'}
                             </span>
@@ -597,7 +713,7 @@ export function UserDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-white/70 text-sm">Miasto</label>
+                        <label className="text-white text-sm font-semibold">Miasto</label>
                         {isEditingProfile ? (
                           <AddressAutocomplete
                             value={profileData.city}
@@ -618,7 +734,7 @@ export function UserDashboard() {
                           />
                         ) : (
                           <div className="flex items-center gap-3 p-3">
-                            <MapPin className="w-4 h-4 text-blue-400" />
+                            <MapPin className="w-4 h-4 text-amber-400" />
                             <span className="text-white">
                               {profileData.city || 'Nie ustawiono'}
                             </span>
@@ -627,7 +743,7 @@ export function UserDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-white/70 text-sm">Kod pocztowy</label>
+                        <label className="text-white text-sm font-semibold">Kod pocztowy</label>
                         {isEditingProfile ? (
                           <input
                             type="text"
@@ -635,14 +751,14 @@ export function UserDashboard() {
                             onChange={e =>
                               setProfileData({ ...profileData, postalCode: e.target.value })
                             }
-                            className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300"
                             placeholder="00-000"
                             title="Wpisz kod pocztowy"
                             pattern="[0-9]{2}-[0-9]{3}"
                           />
                         ) : (
                           <div className="flex items-center gap-3 p-3">
-                            <MapPin className="w-4 h-4 text-blue-400" />
+                            <MapPin className="w-4 h-4 text-amber-400" />
                             <span className="text-white">
                               {profileData.postalCode || 'Nie ustawiono'}
                             </span>
@@ -651,7 +767,7 @@ export function UserDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-white/70 text-sm">Kraj</label>
+                        <label className="text-white text-sm font-semibold">Kraj</label>
                         {isEditingProfile ? (
                           <CountrySelect
                             value={profileData.country}
@@ -677,7 +793,7 @@ export function UserDashboard() {
                           />
                         ) : (
                           <div className="flex items-center gap-3 p-3">
-                            <MapPin className="w-4 h-4 text-blue-400" />
+                            <MapPin className="w-4 h-4 text-amber-400" />
                             <span className="text-white">{profileData.country}</span>
                           </div>
                         )}
@@ -693,11 +809,11 @@ export function UserDashboard() {
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-white/70 text-sm flex items-center">
+                        <label className="text-white text-sm font-semibold flex items-center">
                           Data utworzenia konta
                           <InfoTooltip text="Dzień, w którym dołączyłeś do naszej społeczności." />
                         </label>
-                        <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                        <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700">
                           <Calendar className="w-4 h-4 text-purple-400" />
                           <span className="text-white">
                             {user.metadata?.creationTime
@@ -708,11 +824,11 @@ export function UserDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-white/70 text-sm flex items-center">
+                        <label className="text-white text-sm font-semibold flex items-center">
                           Ostatnie logowanie
                           <InfoTooltip text="Data ostatniej aktywności na Twoim koncie." />
                         </label>
-                        <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                        <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700">
                           <Calendar className="w-4 h-4 text-orange-400" />
                           <span className="text-white">
                             {user.metadata?.lastSignInTime
@@ -833,7 +949,7 @@ export function UserDashboard() {
                       <div className="flex gap-2">
                         <Link
                           href="/auctions"
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300"
+                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/30 font-medium"
                           title="Przeglądaj wszystkie dostępne aukcje"
                         >
                           <Search className="w-4 h-4" />
@@ -852,43 +968,71 @@ export function UserDashboard() {
 
                     {/* Statystyki */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                      <div className="p-4">
+                      <div
+                        className="p-4 rounded-xl"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.9) 0%, rgba(133, 107, 56, 0.85) 25%, rgba(107, 91, 49, 0.8) 50%, rgba(89, 79, 45, 0.75) 75%, rgba(71, 61, 38, 0.7) 100%)',
+                          border: '1px solid rgba(218, 182, 98, 1)',
+                          boxShadow: '0 0 20px rgba(218, 182, 98, 0.6), inset 0 1px 0 rgba(218, 182, 98, 0.8)'
+                        }}
+                      >
                         <div className="flex items-center gap-3">
-                          <Gavel className="w-5 h-5 text-blue-400" />
+                          <Gavel className="w-5 h-5 text-amber-400" />
                           <div>
                             <h4 className="text-white font-semibold">Moje aukcje</h4>
-                            <p className="text-white/70 text-sm">
+                            <p className="text-white text-sm font-bold">
                               {auctionsData.myAuctions.length}
                             </p>
                           </div>
                         </div>
                       </div>
-                      <div className="p-4">
+                      <div
+                        className="p-4 rounded-xl"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.9) 0%, rgba(133, 107, 56, 0.85) 25%, rgba(107, 91, 49, 0.8) 50%, rgba(89, 79, 45, 0.75) 75%, rgba(71, 61, 38, 0.7) 100%)',
+                          border: '1px solid rgba(218, 182, 98, 1)',
+                          boxShadow: '0 0 20px rgba(218, 182, 98, 0.6), inset 0 1px 0 rgba(218, 182, 98, 0.8)'
+                        }}
+                      >
                         <div className="flex items-center gap-3">
                           <Heart className="w-5 h-5 text-pink-400" />
                           <div>
                             <h4 className="text-white font-semibold">Obserwowane</h4>
-                            <p className="text-white/70 text-sm">
+                            <p className="text-white text-sm font-bold">
                               {auctionsData.watchedAuctions.length}
                             </p>
                           </div>
                         </div>
                       </div>
-                      <div className="p-4">
+                      <div
+                        className="p-4 rounded-xl"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.9) 0%, rgba(133, 107, 56, 0.85) 25%, rgba(107, 91, 49, 0.8) 50%, rgba(89, 79, 45, 0.75) 75%, rgba(71, 61, 38, 0.7) 100%)',
+                          border: '1px solid rgba(218, 182, 98, 1)',
+                          boxShadow: '0 0 20px rgba(218, 182, 98, 0.6), inset 0 1px 0 rgba(218, 182, 98, 0.8)'
+                        }}
+                      >
                         <div className="flex items-center gap-3">
                           <TrendingUp className="w-5 h-5 text-green-400" />
                           <div>
                             <h4 className="text-white font-semibold">Moje licytacje</h4>
-                            <p className="text-white/70 text-sm">{auctionsData.myBids.length}</p>
+                            <p className="text-white text-sm font-bold">{auctionsData.myBids.length}</p>
                           </div>
                         </div>
                       </div>
-                      <div className="p-4">
+                      <div
+                        className="p-4 rounded-xl"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.9) 0%, rgba(133, 107, 56, 0.85) 25%, rgba(107, 91, 49, 0.8) 50%, rgba(89, 79, 45, 0.75) 75%, rgba(71, 61, 38, 0.7) 100%)',
+                          border: '1px solid rgba(218, 182, 98, 1)',
+                          boxShadow: '0 0 20px rgba(218, 182, 98, 0.6), inset 0 1px 0 rgba(218, 182, 98, 0.8)'
+                        }}
+                      >
                         <div className="flex items-center gap-3">
                           <BarChart3 className="w-5 h-5 text-purple-400" />
                           <div>
                             <h4 className="text-white font-semibold">Sprzedane</h4>
-                            <p className="text-white/70 text-sm">
+                            <p className="text-white text-sm font-bold">
                               {auctionsData.soldAuctions.length}
                             </p>
                           </div>
@@ -912,8 +1056,8 @@ export function UserDashboard() {
                             onClick={() => setAuctionsSubTab(subTab.id as any)}
                             className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-all ${
                               auctionsSubTab === subTab.id
-                                ? 'border-blue-500 text-blue-400'
-                                : 'border-transparent text-white/70 hover:text-white'
+                                ? 'border-amber-500 text-amber-400'
+                                : 'border-transparent text-white hover:text-white'
                             }`}
                           >
                             <Icon className="w-4 h-4" />
@@ -935,18 +1079,23 @@ export function UserDashboard() {
                               {auctionsData.myAuctions.map((auction: any) => (
                                 <div
                                   key={auction.id}
-                                  className="p-4"
+                                  className="p-4 rounded-xl"
+                                  style={{
+                                    background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.85) 0%, rgba(107, 91, 49, 0.8) 50%, rgba(71, 61, 38, 0.75) 100%)',
+                                    border: '1px solid rgba(218, 182, 98, 1)',
+                                    boxShadow: '0 0 15px rgba(218, 182, 98, 0.5)'
+                                  }}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div>
                                       <h5 className="text-white font-semibold">{auction.title}</h5>
-                                      <p className="text-white/70 text-sm">
+                                      <p className="text-white text-sm font-semibold">
                                         Aktualna cena: {auction.currentPrice} zł
                                       </p>
                                     </div>
                                     <Link
                                       href={`/auctions/${auction.id}`}
-                                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                                      className="px-4 py-2 bg-gradient-to-r from-amber-600/80 to-yellow-600/80 hover:from-amber-700/90 hover:to-yellow-700/90 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/40 border border-amber-400/50 font-medium"
                                     >
                                       Zobacz
                                     </Link>
@@ -957,7 +1106,7 @@ export function UserDashboard() {
                           ) : (
                             <div className="text-center py-12">
                               <Gavel className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                              <p className="text-white/70 mb-4">
+                              <p className="text-white mb-4 font-semibold">
                                 Nie masz jeszcze żadnych aktywnych aukcji
                               </p>
                               <Link
@@ -982,18 +1131,23 @@ export function UserDashboard() {
                               {auctionsData.watchedAuctions.map((auction: any) => (
                                 <div
                                   key={auction.id}
-                                  className="p-4"
+                                  className="p-4 rounded-xl"
+                                  style={{
+                                    background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.85) 0%, rgba(107, 91, 49, 0.8) 50%, rgba(71, 61, 38, 0.75) 100%)',
+                                    border: '1px solid rgba(218, 182, 98, 1)',
+                                    boxShadow: '0 0 15px rgba(218, 182, 98, 0.5)'
+                                  }}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div>
                                       <h5 className="text-white font-semibold">{auction.title}</h5>
-                                      <p className="text-white/70 text-sm">
+                                      <p className="text-white text-sm font-semibold">
                                         Aktualna cena: {auction.currentPrice} zł
                                       </p>
                                     </div>
                                     <Link
                                       href={`/auctions/${auction.id}`}
-                                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                                      className="px-4 py-2 bg-gradient-to-r from-amber-600/80 to-yellow-600/80 hover:from-amber-700/90 hover:to-yellow-700/90 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/40 border border-amber-400/50 font-medium"
                                     >
                                       Zobacz
                                     </Link>
@@ -1004,7 +1158,7 @@ export function UserDashboard() {
                           ) : (
                             <div className="text-center py-12">
                               <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                              <p className="text-white/70">
+                              <p className="text-white font-semibold">
                                 Nie obserwujesz jeszcze żadnych aukcji
                               </p>
                             </div>
@@ -1022,14 +1176,19 @@ export function UserDashboard() {
                               {auctionsData.myBids.map((bid: any) => (
                                 <div
                                   key={bid.id}
-                                  className="p-4"
+                                  className="p-4 rounded-xl"
+                                  style={{
+                                    background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.85) 0%, rgba(107, 91, 49, 0.8) 50%, rgba(71, 61, 38, 0.75) 100%)',
+                                    border: '1px solid rgba(218, 182, 98, 1)',
+                                    boxShadow: '0 0 15px rgba(218, 182, 98, 0.5)'
+                                  }}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div>
                                       <h5 className="text-white font-semibold">
                                         {bid.auction?.title || 'Aukcja'}
                                       </h5>
-                                      <p className="text-white/70 text-sm">
+                                      <p className="text-white text-sm font-semibold">
                                         Moja oferta: {bid.amount} zł
                                         {bid.isWinning && (
                                           <span className="ml-2 text-green-400">• Wygrywam</span>
@@ -1038,7 +1197,7 @@ export function UserDashboard() {
                                     </div>
                                     <Link
                                       href={`/auctions/${bid.auctionId}`}
-                                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                                      className="px-4 py-2 bg-gradient-to-r from-amber-600/80 to-yellow-600/80 hover:from-amber-700/90 hover:to-yellow-700/90 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/40 border border-amber-400/50 font-medium"
                                     >
                                       Zobacz
                                     </Link>
@@ -1049,7 +1208,7 @@ export function UserDashboard() {
                           ) : (
                             <div className="text-center py-12">
                               <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                              <p className="text-white/70">
+                              <p className="text-white font-semibold">
                                 Nie bierzesz jeszcze udziału w żadnych aukcjach
                               </p>
                             </div>
@@ -1067,19 +1226,24 @@ export function UserDashboard() {
                               {auctionsData.endedAuctions.map((auction: any) => (
                                 <div
                                   key={auction.id}
-                                  className="p-4"
+                                  className="p-4 rounded-xl"
+                                  style={{
+                                    background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.85) 0%, rgba(107, 91, 49, 0.8) 50%, rgba(71, 61, 38, 0.75) 100%)',
+                                    border: '1px solid rgba(218, 182, 98, 1)',
+                                    boxShadow: '0 0 15px rgba(218, 182, 98, 0.5)'
+                                  }}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div>
                                       <h5 className="text-white font-semibold">{auction.title}</h5>
-                                      <p className="text-white/70 text-sm">
+                                      <p className="text-white text-sm font-semibold">
                                         Zakończona:{' '}
                                         {new Date(auction.endTime).toLocaleDateString('pl-PL')}
                                       </p>
                                     </div>
                                     <Link
                                       href={`/auctions/${auction.id}`}
-                                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                                      className="px-4 py-2 bg-gradient-to-r from-amber-600/80 to-yellow-600/80 hover:from-amber-700/90 hover:to-yellow-700/90 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/40 border border-amber-400/50 font-medium"
                                     >
                                       Zobacz
                                     </Link>
@@ -1090,7 +1254,7 @@ export function UserDashboard() {
                           ) : (
                             <div className="text-center py-12">
                               <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                              <p className="text-white/70">Brak zakończonych aukcji</p>
+                              <p className="text-white font-semibold">Brak zakończonych aukcji</p>
                             </div>
                           )}
                         </div>
@@ -1106,18 +1270,23 @@ export function UserDashboard() {
                               {auctionsData.soldAuctions.map((auction: any) => (
                                 <div
                                   key={auction.id}
-                                  className="p-4"
+                                  className="p-4 rounded-xl"
+                                  style={{
+                                    background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.85) 0%, rgba(107, 91, 49, 0.8) 50%, rgba(71, 61, 38, 0.75) 100%)',
+                                    border: '1px solid rgba(218, 182, 98, 1)',
+                                    boxShadow: '0 0 15px rgba(218, 182, 98, 0.5)'
+                                  }}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div>
                                       <h5 className="text-white font-semibold">{auction.title}</h5>
-                                      <p className="text-white/70 text-sm">
+                                      <p className="text-white text-sm font-semibold">
                                         Sprzedane za: {auction.currentPrice} zł
                                       </p>
                                     </div>
                                     <Link
                                       href={`/auctions/${auction.id}`}
-                                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                                      className="px-4 py-2 bg-gradient-to-r from-amber-600/80 to-yellow-600/80 hover:from-amber-700/90 hover:to-yellow-700/90 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/40 border border-amber-400/50 font-medium"
                                     >
                                       Zobacz
                                     </Link>
@@ -1128,7 +1297,7 @@ export function UserDashboard() {
                           ) : (
                             <div className="text-center py-12">
                               <Trophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                              <p className="text-white/70">Brak sprzedanych aukcji</p>
+                              <p className="text-white font-semibold">Brak sprzedanych aukcji</p>
                             </div>
                           )}
                         </div>
@@ -1139,11 +1308,11 @@ export function UserDashboard() {
                   <div className="text-center py-12">
                     <Shield className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
                     <h3 className="text-2xl font-bold text-white mb-4">🔒 Wymagana weryfikacja Poziomu 3</h3>
-                    <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-6 max-w-2xl mx-auto">
-                      <p className="text-white/80 mb-4">
+                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 mb-6 max-w-2xl mx-auto">
+                      <p className="text-white mb-4">
                         Aby uzyskać dostęp do tworzenia aukcji i licytowania, musisz osiągnąć <strong className="text-blue-400">Poziom 3</strong>.
                       </p>
-                      <div className="space-y-2 text-left text-sm text-white/70">
+                      <div className="space-y-2 text-left text-sm text-white">
                         <p>📧 <strong className="text-green-400">Poziom 1:</strong> Rejestracja - Ukończone ✓</p>
                         <p>✅ <strong className="text-green-400">Poziom 2:</strong> Weryfikacja email - Ukończone ✓</p>
                         <p>🚀 <strong className="text-yellow-400">Poziom 3:</strong> Profil + Telefon - <strong className="text-yellow-400">Wymagane</strong></p>
@@ -1170,22 +1339,36 @@ export function UserDashboard() {
                 <h3 className="text-2xl font-bold text-white mb-6">Wiadomości</h3>
 
                 <div className="space-y-6">
-                  <div className="p-4">
+                  <div
+                    className="p-4 rounded-xl"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.4) 0%, rgba(133, 107, 56, 0.35) 25%, rgba(107, 91, 49, 0.32) 50%, rgba(89, 79, 45, 0.3) 75%, rgba(71, 61, 38, 0.28) 100%)',
+                      border: '1px solid rgba(218, 182, 98, 0.6)',
+                      boxShadow: '0 0 15px rgba(218, 182, 98, 0.3), inset 0 1px 0 rgba(218, 182, 98, 0.4)'
+                    }}
+                  >
                     <div className="flex items-center gap-3">
                       <MessageSquare className="w-5 h-5 text-blue-400" />
                       <div>
                         <h4 className="text-white font-semibold">Skrzynka odbiorcza</h4>
-                        <p className="text-white/70 text-sm">Komunikuj się z innymi hodowcami</p>
+                        <p className="text-white text-sm font-semibold">Komunikuj się z innymi hodowcami</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <div className="p-4">
+                    <div
+                      className="p-4 rounded-xl"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.35) 0%, rgba(107, 91, 49, 0.3) 50%, rgba(71, 61, 38, 0.25) 100%)',
+                        border: '1px solid rgba(218, 182, 98, 0.5)',
+                        boxShadow: '0 0 10px rgba(218, 182, 98, 0.2)'
+                      }}
+                    >
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="text-white font-semibold">Brak nowych wiadomości</h4>
-                          <p className="text-white/70 text-sm">Sprawdź ponownie później</p>
+                          <p className="text-white text-sm font-semibold">Sprawdź ponownie później</p>
                         </div>
                         <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                       </div>
@@ -1224,7 +1407,14 @@ export function UserDashboard() {
                 ) : (
                   <div className="space-y-6">
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4">
+                      <div
+                        className="flex items-center justify-between p-4 rounded-xl"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.85) 0%, rgba(107, 91, 49, 0.8) 50%, rgba(71, 61, 38, 0.75) 100%)',
+                          border: '1px solid rgba(218, 182, 98, 1)',
+                          boxShadow: '0 0 15px rgba(218, 182, 98, 0.5)'
+                        }}
+                      >
                         <div className="flex items-center gap-3">
                           <Mail className="w-4 h-4 text-blue-400" />
                           <div>
@@ -1232,7 +1422,7 @@ export function UserDashboard() {
                               Weryfikacja email
                               <InfoTooltip text="Potwierdzenie adresu email zwiększa bezpieczeństwo konta." />
                             </h4>
-                            <p className="text-white/70 text-sm">
+                            <p className="text-white text-sm font-semibold">
                               {user.emailVerified
                                 ? 'Email zweryfikowany'
                                 : 'Email niezweryfikowany'}
@@ -1251,12 +1441,19 @@ export function UserDashboard() {
                       </div>
 
                       {!user.emailVerified && (
-                        <div className="flex items-center justify-between p-4">
+                        <div
+                          className="flex items-center justify-between p-4 rounded-xl"
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.35) 0%, rgba(107, 91, 49, 0.3) 50%, rgba(71, 61, 38, 0.25) 100%)',
+                            border: '1px solid rgba(218, 182, 98, 0.5)',
+                            boxShadow: '0 0 10px rgba(218, 182, 98, 0.2)'
+                          }}
+                        >
                           <div className="flex items-center gap-3">
                             <Mail className="w-4 h-4 text-yellow-400" />
                             <div>
                               <h4 className="text-white font-semibold">Weryfikacja email</h4>
-                              <p className="text-white/70 text-sm">
+                              <p className="text-white text-sm font-semibold">
                                 Wyślij ponownie email weryfikacyjny
                               </p>
                             </div>
@@ -1291,19 +1488,33 @@ export function UserDashboard() {
                         </div>
                       )}
 
-                      <div className="p-4">
+                      <div
+                        className="p-4 rounded-xl"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.9) 0%, rgba(133, 107, 56, 0.85) 25%, rgba(107, 91, 49, 0.8) 50%, rgba(89, 79, 45, 0.75) 75%, rgba(71, 61, 38, 0.7) 100%)',
+                          border: '1px solid rgba(218, 182, 98, 1)',
+                          boxShadow: '0 0 20px rgba(218, 182, 98, 0.6), inset 0 1px 0 rgba(218, 182, 98, 0.8)'
+                        }}
+                      >
                         <div className="flex items-center gap-3">
                           <Shield className="w-5 h-5 text-green-400" />
                           <div>
                             <h4 className="text-white font-semibold">Konto zabezpieczone</h4>
-                            <p className="text-white/70 text-sm">
+                            <p className="text-white text-sm font-semibold">
                               Twoje konto jest chronione przez Firebase Authentication
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-4">
+                      <div
+                        className="flex items-center justify-between p-4 rounded-xl"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.85) 0%, rgba(107, 91, 49, 0.8) 50%, rgba(71, 61, 38, 0.75) 100%)',
+                          border: '1px solid rgba(218, 182, 98, 1)',
+                          boxShadow: '0 0 15px rgba(218, 182, 98, 0.5)'
+                        }}
+                      >
                         <div className="flex items-center gap-3">
                           <Key className="w-4 h-4 text-purple-400" />
                           <div>
@@ -1311,12 +1522,12 @@ export function UserDashboard() {
                               Hasło
                               <InfoTooltip text="Regularna zmiana hasła chroni Twoje konto przed włamaniem." />
                             </h4>
-                            <p className="text-white/70 text-sm">Zarządzaj swoim hasłem</p>
+                            <p className="text-white text-sm font-semibold">Zarządzaj swoim hasłem</p>
                           </div>
                         </div>
                         <button
                           onClick={() => setShowChangePassword(true)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300"
+                          className="px-4 py-2 bg-gradient-to-r from-amber-600/80 to-yellow-600/80 hover:from-amber-700/90 hover:to-yellow-700/90 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/40 border border-amber-400/50 font-medium"
                         >
                           Zmień hasło
                         </button>
@@ -1342,12 +1553,19 @@ export function UserDashboard() {
                 </h3>
 
                 <div className="space-y-4">
-                  <div className="p-4">
+                  <div
+                    className="p-4 rounded-xl"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.4) 0%, rgba(133, 107, 56, 0.35) 25%, rgba(107, 91, 49, 0.32) 50%, rgba(89, 79, 45, 0.3) 75%, rgba(71, 61, 38, 0.28) 100%)',
+                      border: '1px solid rgba(218, 182, 98, 0.6)',
+                      boxShadow: '0 0 15px rgba(218, 182, 98, 0.3), inset 0 1px 0 rgba(218, 182, 98, 0.4)'
+                    }}
+                  >
                     <div className="flex items-center gap-3">
                       <Bell className="w-5 h-5 text-blue-400" />
                       <div>
                         <h4 className="text-white font-semibold">Powiadomienia email</h4>
-                        <p className="text-white/70 text-sm">
+                        <p className="text-white text-sm font-semibold">
                           Otrzymuj powiadomienia o nowych aukcjach i aktualizacjach
                         </p>
                       </div>
@@ -1394,13 +1612,14 @@ export function UserDashboard() {
                 </div>
               </motion.div>
             )}
-          </UnifiedCard>
+            </div>
+          </article>
         </div>
       </div>
 
       {/* Modal weryfikacji SMS */}
       {showSmsVerification && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1411,7 +1630,7 @@ export function UserDashboard() {
                 <Shield className="w-8 h-8 text-green-400" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">Weryfikacja telefonu</h3>
-              <p className="text-white/70 text-sm">
+              <p className="text-white text-sm">
                 Wpisz 6-cyfrowy kod wysłany na numer <br />
                 <span className="font-semibold text-white">{profileData.phoneNumber}</span>
               </p>
@@ -1419,7 +1638,7 @@ export function UserDashboard() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-white/70 text-sm mb-2">Kod weryfikacyjny</label>
+                <label className="block text-white text-sm mb-2 font-semibold">Kod weryfikacyjny</label>
                 <input
                   type="text"
                   value={smsCode}
@@ -1427,7 +1646,7 @@ export function UserDashboard() {
                     const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                     setSmsCode(value);
                   }}
-                  className="w-full p-4 bg-white/10 border border-white/20 rounded-lg text-white text-center text-2xl font-mono tracking-widest placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full p-4 bg-gray-800 border border-gray-700 rounded-xl text-white text-center text-2xl font-mono tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
                   placeholder="000000"
                   maxLength={6}
                   autoFocus
@@ -1520,7 +1739,7 @@ export function UserDashboard() {
               </div>
 
               <div className="text-center pt-4 border-t border-white/10">
-                <p className="text-white/50 text-xs mb-2">Nie otrzymałeś kodu?</p>
+                <p className="text-white text-xs mb-2">Nie otrzymałeś kodu?</p>
                 <button
                   onClick={async () => {
                     // ⚠️ Walidacja: sprawdź czy numer telefonu jest wypełniony
@@ -1577,14 +1796,13 @@ export function UserDashboard() {
 
       {/* Modal formularza tworzenia aukcji */}
       {showCreateAuctionForm && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pointer-events-none overflow-y-auto">
+        <div className="fixed inset-0 z-[999999] flex items-start justify-center px-4 pt-32 pointer-events-none overflow-y-auto" style={{ minHeight: '100vh', paddingBottom: '400px' }}>
           {/* Overlay */}
           <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm pointer-events-auto"
-            onClick={() => setShowCreateAuctionForm(false)}
+            className="absolute inset-0 bg-black/60 pointer-events-none"
           />
           {/* Formularz */}
-          <div className="relative z-10 w-full max-w-6xl my-auto pointer-events-auto">
+          <div className="relative z-[999999] w-full max-w-6xl mt-16 mb-96 pointer-events-auto" style={{ paddingBottom: '400px' }}>
             <CreateAuctionForm
               showHeader={true}
               onCancel={() => setShowCreateAuctionForm(false)}

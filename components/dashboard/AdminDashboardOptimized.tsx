@@ -31,6 +31,8 @@ import { useCallback, useEffect, useState } from 'react';
 import AdminAuctions from './admin/AdminAuctions';
 import AdminOverview from './admin/AdminOverview';
 import AdminUsers from './admin/AdminUsers';
+import BackgroundImageManager from '@/app/components/admin/BackgroundImageManager';
+import ChampionGalleryManager from '@/app/components/admin/ChampionGalleryManager';
 
 // Rozszerz Firebase User o właściwość role
 declare module 'firebase/auth' {
@@ -211,6 +213,8 @@ export default function AdminDashboard() {
     { id: 'references', label: 'Referencje', icon: Star },
     { id: 'meetings', label: 'Spotkania', icon: Camera },
     { id: 'transactions', label: 'Transakcje', icon: DollarSign },
+    { id: 'appearance', label: 'Wygląd', icon: Camera },
+    { id: 'gallery', label: 'Galeria Championów', icon: Star },
     { id: 'metrics', label: 'Metryki', icon: Activity },
     { id: 'logs', label: 'Logi', icon: FileText },
     { id: 'reports', label: 'Raporty', icon: TrendingUp },
@@ -1293,6 +1297,30 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </UnifiedCard>
+              )}
+
+              {activeTab === 'appearance' && (
+                <div className="space-y-6">
+                  <UnifiedCard variant="glass" className="p-8">
+                    <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                      <Camera className="w-8 h-8 text-blue-400" />
+                      Zarządzanie Wyglądem Strony
+                    </h3>
+                    <BackgroundImageManager />
+                  </UnifiedCard>
+                </div>
+              )}
+
+              {activeTab === 'gallery' && (
+                <div className="space-y-6">
+                  <UnifiedCard variant="glass" className="p-8">
+                    <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                      <Star className="w-8 h-8 text-purple-400" />
+                      Galeria Championów
+                    </h3>
+                    <ChampionGalleryManager items={[]} />
+                  </UnifiedCard>
+                </div>
               )}
 
               {activeTab === 'metrics' && (

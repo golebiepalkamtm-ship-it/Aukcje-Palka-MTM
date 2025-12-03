@@ -3,20 +3,9 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { LogOut, Mail, Phone, Shield, Settings, User } from 'lucide-react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
-
-const navItemVariants = {
-  hidden: { opacity: 0, x: -50, rotate: -90 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    rotate: 0,
-    transition: { duration: 1.5, ease: [0.4, 0, 0.2, 1] as const },
-  },
-};
 
 export function UserStatus() {
   const { user, loading, signOut, refetchDbUser } = useAuth();
@@ -41,52 +30,49 @@ export function UserStatus() {
   // Usuń długotrwały loader - jeśli loading trwa, pokaż po prostu ikonę logowania
   if (loading) {
     return (
-      <motion.div variants={navItemVariants} initial="hidden" animate="visible">
-        <Link href="/auth/register" className="glass-nav-button" title="Konto">
-          <User className="relative z-10 w-8 h-8" />
-          <span className="relative z-10 text-sm">Konto</span>
-        </Link>
-      </motion.div>
+      <Link href="/auth/register" className="glass-nav-button" title="Konto">
+        <User className="relative z-10 w-8 h-8" />
+        <span className="relative z-10 text-sm">Konto</span>
+      </Link>
     );
   }
 
   if (!user) {
     return (
-      <motion.div variants={navItemVariants} initial="hidden" animate="visible">
-        <Link href="/auth/register" className="glass-nav-button" title="Konto">
-          <User className="relative z-10 w-8 h-8" />
-          <span className="relative z-10 text-sm">Konto</span>
-        </Link>
-      </motion.div>
+      <Link href="/auth/register" className="glass-nav-button" title="Konto">
+        <User className="relative z-10 w-8 h-8" />
+        <span className="relative z-10 text-sm">Konto</span>
+      </Link>
     );
   }
 
   return (
     <div className="relative">
+      {/* Przycisk statusu użytkownika */}
       <button
         onClick={() => setShowUserMenu(!showUserMenu)}
         className="glass-nav-button"
-        title="Panel Użytkownika"
+        title="Menu Użytkownika"
       >
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-1">
-            <div
-              className={`w-2 h-2 rounded-full animate-pulse ${
-                user?.emailVerified ? 'bg-green-400' : 'bg-yellow-400'
-              }`}
-            ></div>
-            <User className="w-8 h-8" />
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="flex items-center gap-2 mb-1">
+              <div
+                className={`w-2 h-2 rounded-full animate-pulse ${
+                  user?.emailVerified ? 'bg-green-400' : 'bg-yellow-400'
+                }`}
+              ></div>
+              <User className="w-8 h-8" />
+            </div>
+            <span className="text-xs text-white">Zalogowany</span>
+            <span className="text-sm font-medium">
+              {user.displayName || user.email?.split('@')[0]}
+            </span>
           </div>
-          <span className="text-xs text-white/70">Zalogowany</span>
-          <span className="text-sm font-medium">
-            {user.displayName || user.email?.split('@')[0]}
-          </span>
-        </div>
       </button>
 
       {/* Menu użytkownika */}
       {showUserMenu && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-black/90 backdrop-blur-xl rounded-xl border border-white/20 shadow-2xl z-50">
+        <div className="absolute top-full right-0 mt-2 w-80 bg-black backdrop-blur-xl rounded-xl border border-white/40 shadow-2xl z-50">
           <div className="p-4">
             {/* Nagłówek */}
             <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
@@ -98,7 +84,7 @@ export function UserStatus() {
                   {user.displayName || 'Użytkownik'}
                   <InfoTooltip text="To Twoje konto. Kliknij opcje poniżej, aby zarządzać." />
                 </h3>
-                <p className="text-white/70 text-sm">{user.email}</p>
+                <p className="text-white text-sm">{user.email}</p>
               </div>
             </div>
 
@@ -106,7 +92,7 @@ export function UserStatus() {
             <div className="space-y-3 mb-4">
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 text-blue-400" />
-                <span className="text-white/70">Email:</span>
+                <span className="text-white">Email:</span>
                 <span className="text-white">{user.email}</span>
                 {user.emailVerified && (
                   <div title="Email zweryfikowany">
@@ -118,7 +104,7 @@ export function UserStatus() {
               {user.phoneNumber && (
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="w-4 h-4 text-green-400" />
-                  <span className="text-white/70">Telefon:</span>
+                  <span className="text-white">Telefon:</span>
                   <span className="text-white">{user.phoneNumber}</span>
                 </div>
               )}
@@ -129,7 +115,7 @@ export function UserStatus() {
                     user?.emailVerified ? 'bg-green-400' : 'bg-yellow-400'
                   }`}
                 ></div>
-                <span className="text-white/70 flex items-center">
+                <span className="text-white flex items-center">
                   Status:
                   <InfoTooltip text="Zielony ptaszek oznacza pełną weryfikację. Możesz licytować i sprzedawać." />
                 </span>
@@ -168,7 +154,7 @@ export function UserStatus() {
                     <Shield className="w-4 h-4" />
                     <span className="font-semibold">Wymagana weryfikacja</span>
                   </div>
-                  <p className="text-white/70 text-sm">
+                  <p className="text-white text-sm">
                     Sprawdź swoją skrzynkę email i kliknij link aktywacyjny, aby uzyskać pełny
                     dostęp do konta.
                   </p>

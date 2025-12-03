@@ -1,9 +1,14 @@
 export const runtime = 'nodejs';
+import { z } from 'zod';
 import { handleApiError } from '@/lib/error-handling';
 import { getAdminAuth } from '@/lib/firebase-admin';
 import { prisma } from '@/lib/prisma';
 import { apiRateLimit } from '@/lib/rate-limit';
 import { NextRequest, NextResponse } from 'next/server';
+
+const verifyEmailAutoLoginSchema = z.object({
+  email: z.string().email('Nieprawidłowy format email'),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,11 +19,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email } = body;
+    const validation = verifyEmailAutoLoginSchema.safeParse(body);
 
-    if (!email) {
-      return NextResponse.json({ error: 'Brak email' }, { status: 400 });
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowe dane wejściowe', details: validation.error.issues },
+        { status: 400 }
+      );
     }
+
+    const { email } = validation.data;
 
     const adminAuth = getAdminAuth();
     if (!adminAuth) {

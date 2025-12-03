@@ -13,6 +13,9 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "apphosting": [
     {
       "backendId": "palkamtm",
@@ -27,6 +30,17 @@
         ".vercel"
       ],
       "alwaysDeployFromSource": true
+    },
+    {
+      "backendId": "mtm",
+      "rootDir": "/",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions"
+      ]
     }
   ]
 }

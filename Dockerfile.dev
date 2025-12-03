@@ -10,6 +10,9 @@ WORKDIR /app
 # Copy package files and npm config
 COPY package.json package-lock.json* .npmrc ./
 
+# Copy prisma schema first (needed for postinstall script)
+COPY prisma ./prisma
+
 # Align npm with lockfile generator and install dependencies
 RUN npm install -g npm@11.6.2 \
     && npm ci

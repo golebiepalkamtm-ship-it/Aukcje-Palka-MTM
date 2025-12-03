@@ -3,11 +3,117 @@
 import GoogleMap from '@/components/contact/GoogleMap';
 import { Text3D } from '@/components/ui/Text3D';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
-import { UnifiedCard } from '@/components/ui/UnifiedCard';
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Phone } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+
+// Scroll reveal hook from AchievementTimeline
+const useScrollReveal = () => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (prefersReducedMotion.matches) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.35 }
+    );
+
+    observer.observe(node);
+
+    return () => {
+      if (node) {
+        observer.unobserve(node);
+      }
+    };
+  }, []);
+
+  return { ref, isVisible };
+};
+
+// Styled card component matching AchievementTimeline
+interface GoldenCardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+function GoldenCard({ children, className = '' }: GoldenCardProps) {
+  const { ref, isVisible } = useScrollReveal();
+
+  return (
+    <div className="relative">
+      {/* 3D Shadow layers */}
+      {[...Array(11)].map((_, i) => {
+        const layer = 11 - i;
+        const offset = layer * 1.5;
+        const opacity = Math.max(0.2, 0.7 - layer * 0.05);
+        
+        return (
+          <div
+            key={i}
+            className="absolute inset-0 rounded-3xl border-2 backdrop-blur-sm"
+            style={{
+              borderColor: `rgba(0, 0, 0, ${opacity})`,
+              backgroundColor: `rgba(0, 0, 0, ${opacity * 0.8})`,
+              transform: `translateX(${offset}px) translateY(${offset / 2}px) translateZ(-${offset}px)`,
+              zIndex: i + 1
+            }}
+            aria-hidden="true"
+          />
+        );
+      })}
+
+      <article
+        ref={ref}
+        className={`glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 text-white transition-all duration-[2000ms] overflow-hidden backdrop-blur-xl ${className} ${
+          !isVisible ? 'opacity-0' : 'opacity-100'
+        }`}
+        style={{
+          transform: !isVisible ? 'translateZ(-200px) scale(0.5)' : 'translateZ(0) scale(1)',
+          transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+          background: 'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
+          borderColor: 'rgba(218, 182, 98, 1)',
+          boxShadow: '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)'
+        }}
+      >
+        {/* Inner light effects */}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-3xl"
+          style={{
+            background: `
+              radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255, 245, 200, 0.25) 0%, transparent 50%),
+              radial-gradient(ellipse 600px 500px at 80% 70%, rgba(218, 182, 98, 0.2) 0%, transparent 50%),
+              radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255, 235, 180, 0.15) 0%, transparent 60%)
+            `,
+            backdropFilter: 'blur(80px)',
+            mixBlendMode: 'soft-light',
+            zIndex: 1
+          }}
+        />
+        <div className={`relative z-10 h-full ${className.includes('flex') ? 'flex flex-col justify-between' : ''}`}>
+          {children}
+        </div>
+      </article>
+    </div>
+  );
+}
 
 export default function ContactPageClient() {
   const [formData, setFormData] = useState({
@@ -63,15 +169,15 @@ export default function ContactPageClient() {
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.6 }}
-        className="relative z-10 -mt-24 px-4 sm:px-6 lg:px-8"
+        transition={{ duration: 1, delay: 0.8 }}
+        className="relative z-10 pt-80 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Kontakt</h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
+            transition={{ duration: 0.8, delay: 1.2 }}
             className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
           >
             Skontaktuj się z nami, aby dowiedzieć się więcej o naszych gołębiach i hodowli
@@ -80,76 +186,73 @@ export default function ContactPageClient() {
       </motion.section>
 
       {/* Content Sections */}
-      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="max-w-6xl mx-auto">
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-96 mt-12" style={{ minHeight: '1200px' }}>
+        <div className="max-w-6xl mx-auto space-y-24">
           {/* Contact Info */}
           <motion.section
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="mb-20"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <UnifiedCard
-                variant="glass"
-                glow={true}
-                hover={true}
-                className="p-8 text-center"
-              >
-                <div className="w-16 h-16 glass-morphism-strong rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-white">
-                  <Phone className="w-8 h-8 text-white/60" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-16 lg:gap-20 xl:gap-24">
+              <GoldenCard className="text-center h-full min-h-[280px] flex flex-col justify-between">
+                <div>
+                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-amber-400/50 bg-gradient-to-br from-amber-500/20 to-amber-700/20">
+                    <Phone className="w-8 h-8 text-amber-300" />
+                  </div>
+                  <Text3D variant="glow" intensity="medium" className="text-xl font-bold mb-4">
+                    Telefon
+                  </Text3D>
+                  <p className="text-white/90 mb-4">75 722 47 29</p>
                 </div>
-                <Text3D variant="glow" intensity="medium" className="text-xl font-bold mb-4">
-                  Telefon
-                </Text3D>
-                <p className="text-white/90 mb-4">75 722 47 29</p>
-                <p className="text-white/70 text-sm">Dostępny 8:00 - 20:00</p>
-              </UnifiedCard>
+                <p className="text-white/60 text-sm">Dostępny 8:00 - 20:00</p>
+              </GoldenCard>
 
-              <UnifiedCard
-                variant="glass"
-                glow={true}
-                hover={true}
-                className="p-8 text-center"
-              >
-                <div className="w-16 h-16 glass-morphism-strong rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-white">
-                  <Mail className="w-8 h-8 text-white/60" />
+              <GoldenCard className="text-center h-full min-h-[280px] flex flex-col justify-between">
+                <div>
+                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-amber-400/50 bg-gradient-to-br from-amber-500/20 to-amber-700/20">
+                    <Mail className="w-8 h-8 text-amber-300" />
+                  </div>
+                  <Text3D variant="gradient" intensity="medium" className="text-xl font-bold mb-4">
+                    Email
+                  </Text3D>
+                  <p className="text-white/90 mb-4">kontakt@palkamtm.pl</p>
                 </div>
-                <Text3D variant="gradient" intensity="medium" className="text-xl font-bold mb-4">
-                  Email
-                </Text3D>
-                <p className="text-white/90 mb-4">kontakt@palkamtm.pl</p>
-                <p className="text-slate-200 text-sm">Odpowiadamy w ciągu 24h</p>
-              </UnifiedCard>
+                <p className="text-white/60 text-sm">Odpowiadamy w ciągu 24h</p>
+              </GoldenCard>
 
-              <UnifiedCard
-                variant="glass"
-                glow={true}
-                hover={true}
-                className="p-8 text-center"
-              >
-                <div className="w-16 h-16 glass-morphism-strong rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-white">
-                  <MapPin className="w-8 h-8 text-slate-300" />
+              <GoldenCard className="text-center h-full min-h-[280px] flex flex-col justify-between">
+                <div>
+                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-amber-400/50 bg-gradient-to-br from-amber-500/20 to-amber-700/20">
+                    <MapPin className="w-8 h-8 text-amber-300" />
+                  </div>
+                  <Text3D variant="neon" intensity="medium" className="text-xl font-bold mb-4">
+                    Adres
+                  </Text3D>
+                  <p className="text-white/90 mb-4">
+                    Pałka MTM
+                    <br />
+                    ul. Stawowa 6<br />
+                    59-800 Lubań
+                    <br />
+                    woj. dolnośląskie
+                  </p>
                 </div>
-                <Text3D variant="neon" intensity="medium" className="text-xl font-bold mb-4">
-                  Adres
-                </Text3D>
-                <p className="text-white/90 mb-4">
-                  Pałka MTM
-                  <br />
-                  ul. Stawowa 6<br />
-                  59-800 Lubań
-                  <br />
-                  woj. dolnośląskie
-                </p>
-                <p className="text-slate-200 text-sm">Wizyty po umówieniu</p>
-              </UnifiedCard>
+                <p className="text-white/60 text-sm">Wizyty po umówieniu</p>
+              </GoldenCard>
             </div>
           </motion.section>
 
           {/* Google Map */}
-          <GoogleMap />
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            viewport={{ once: true }}
+          >
+            <GoogleMap />
+          </motion.div>
 
           {/* Contact Form */}
           <motion.section
@@ -157,14 +260,8 @@ export default function ContactPageClient() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
-            className="mb-20"
           >
-            <UnifiedCard
-              variant="glass"
-              glow={true}
-              hover={true}
-              className="p-8"
-            >
+            <GoldenCard>
               <Text3D
                 variant="shimmer"
                 intensity="high"
@@ -268,7 +365,7 @@ export default function ContactPageClient() {
                   </UnifiedButton>
                 </div>
               </form>
-            </UnifiedCard>
+            </GoldenCard>
           </motion.section>
 
           {/* Additional Info */}
@@ -278,12 +375,7 @@ export default function ContactPageClient() {
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: true }}
           >
-            <UnifiedCard
-              variant="glass"
-              glow={true}
-              hover={true}
-              className="relative p-8"
-            >
+            <GoldenCard>
               <Text3D
                 variant="glow"
                 intensity="medium"
@@ -291,21 +383,21 @@ export default function ContactPageClient() {
               >
                 Godziny Pracy
               </Text3D>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="text-center">
-                  <h4 className="text-lg font-semibold text-slate-200 mb-4">Hodowla</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-20 xl:gap-24">
+                <div className="text-center rounded-xl border border-white/5 bg-black/20 p-5">
+                  <h4 className="text-lg font-semibold uppercase tracking-[0.3em] text-white/60 mb-4">Hodowla</h4>
                   <p className="text-white/90 mb-2">Poniedziałek - Piątek: 8:00 - 18:00</p>
                   <p className="text-white/90 mb-2">Sobota: 9:00 - 15:00</p>
                   <p className="text-white/90">Niedziela: Zamknięte</p>
                 </div>
-                <div className="text-center">
-                  <h4 className="text-lg font-semibold text-slate-200 mb-4">Aukcje Online</h4>
+                <div className="text-center rounded-xl border border-white/5 bg-black/20 p-5">
+                  <h4 className="text-lg font-semibold uppercase tracking-[0.3em] text-white/60 mb-4">Aukcje Online</h4>
                   <p className="text-white/90 mb-2">24/7 - Dostępne cały czas</p>
                   <p className="text-white/90 mb-2">Wsparcie: 8:00 - 20:00</p>
                   <p className="text-white/90">Email: 24h</p>
                 </div>
               </div>
-            </UnifiedCard>
+            </GoldenCard>
           </motion.section>
         </div>
       </div>

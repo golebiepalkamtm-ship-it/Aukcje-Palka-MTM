@@ -22,7 +22,7 @@ export default function DashboardPage() {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-white/70">Ładowanie...</p>
+            <p className="text-white">Ładowanie...</p>
           </div>
         </div>
       </UnifiedLayout>
@@ -33,7 +33,7 @@ export default function DashboardPage() {
   // Wszystkie komponenty weryfikacyjne są teraz obsługiwane wewnątrz UserDashboard lub wcześniej
   return (
     <UnifiedLayout>
-      <div className="container mx-auto px-4 -mt-24 pb-8">
+      <div className="container mx-auto px-4 pt-52 pb-8">
         <UserDashboard />
       </div>
     </UnifiedLayout>

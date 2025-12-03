@@ -1,83 +1,68 @@
-import { handleApiError } from '@/lib/error-handling';
-import { requireFirebaseAuth } from '@/lib/firebase-auth';
-import { prisma } from '@/lib/prisma';
-import { apiRateLimit } from '@/lib/rate-limit';
-import { NextRequest, NextResponse } from 'next/server';
+import { handleApiError } from '@/lib/error-handling'
+import { requireFirebaseAuth } from '@/lib/firebase-auth'
+import { prisma } from '@/lib/prisma'
+import { apiRateLimit } from '@/lib/rate-limit'
+import { completeProfileSchema } from '@/lib/validators'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
-    const rateLimitResponse = apiRateLimit(request);
-    if (rateLimitResponse) {
-      return rateLimitResponse;
+    const rateLimitResponse = apiRateLimit(request)
+    if (rateLimitResponse) return rateLimitResponse
+
+    const authResult = await requireFirebaseAuth(request)
+    if (authResult instanceof Response) return authResult
+    const { decodedToken } = authResult
+
+    const body = await request.json()
+    const validation = completeProfileSchema.safeParse(body)
+    
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowe dane', details: validation.error.issues },
+        { status: 400 }
+      )
     }
 
-    // Sprawdź autoryzację Firebase
-    const authResult = await requireFirebaseAuth(request);
-    if (authResult instanceof Response) {
-      return authResult;
-    }
-    const { decodedToken } = authResult;
+    const { firstName, lastName, address, city, postalCode, phoneNumber } = validation.data
 
-    // Pobierz dane z body
-    const body = await request.json();
-    const { firstName, lastName, address, city, postalCode, phoneNumber } = body;
-
-    // Walidacja wymaganych pól
-    if (!firstName?.trim() || !lastName?.trim() || !address?.trim()) {
-      return NextResponse.json({ error: 'Imię, nazwisko i adres są wymagane' }, { status: 400 });
-    }
-
-    // Pobierz użytkownika
-    const dbUser = await prisma.user.findFirst({
-      where: { firebaseUid: decodedToken.uid },
-      select: { id: true },
-    });
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'Użytkownik nie został znaleziony' }, { status: 404 });
-    }
-
-    // Pobierz pełne dane użytkownika, aby sprawdzić czy możemy podnieść rolę
-    const currentUser = await prisma.user.findFirst({
+    // Pobierz użytkownika - jedno zapytanie z wszystkimi potrzebnymi polami
+    const currentUser = await prisma.user.findUnique({
       where: { firebaseUid: decodedToken.uid },
       select: { id: true, isPhoneVerified: true, isActive: true, role: true },
-    });
+    })
 
     if (!currentUser) {
-      return NextResponse.json({ error: 'Użytkownik nie został znaleziony' }, { status: 404 });
+      return NextResponse.json({ error: 'Użytkownik nie został znaleziony' }, { status: 404 })
     }
 
-    // Aktualizuj profil użytkownika
-    const dataToUpdate: any = {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      address: address.trim(),
-      city: city?.trim() || null,
-      postalCode: postalCode?.trim() || null,
-      phoneNumber: phoneNumber?.trim() || null,
+    // Przygotuj dane do aktualizacji
+    const dataToUpdate: Record<string, unknown> = {
+      firstName,
+      lastName,
+      address,
+      city: city || null,
+      postalCode: postalCode || null,
+      phoneNumber: phoneNumber || null,
       isProfileVerified: true,
-    };
+    }
 
-    // Podnieś rolę do USER_FULL_VERIFIED tylko jeśli:
-    // - telefon jest zweryfikowany
-    // - użytkownik jest aktywny
-    // - nie jest już USER_FULL_VERIFIED ani ADMIN
+    // Podniesienie roli: telefon zweryfikowany + aktywny + nie ma już pełnej weryfikacji
     if (
       currentUser.isPhoneVerified &&
       currentUser.isActive &&
       currentUser.role !== 'USER_FULL_VERIFIED' &&
       currentUser.role !== 'ADMIN'
     ) {
-      dataToUpdate.role = 'USER_FULL_VERIFIED';
+      dataToUpdate.role = 'USER_FULL_VERIFIED'
     }
 
     const updatedUser = await prisma.user.update({
       where: { id: currentUser.id },
       data: dataToUpdate,
-    });
+    })
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       message: 'Profil został uzupełniony pomyślnie',
       user: {
         id: updatedUser.id,
@@ -92,8 +77,15 @@ export async function POST(request: NextRequest) {
         isPhoneVerified: updatedUser.isPhoneVerified,
         role: updatedUser.role,
       },
-    });
+    })
+
+    // Ustaw cookie UX dla poziomu 3 jeśli podniesiono rolę
+    if (dataToUpdate.role === 'USER_FULL_VERIFIED') {
+      res.cookies.set('level3-ok', '1', { path: '/', maxAge: 60 * 60 * 24, sameSite: 'lax' })
+    }
+
+    return res
   } catch (error) {
-    return handleApiError(error, request, { endpoint: 'auth/complete-profile' });
+    return handleApiError(error, request, { endpoint: 'auth/complete-profile' })
   }
 }

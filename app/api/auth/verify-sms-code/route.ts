@@ -1,25 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireFirebaseAuth } from '@/lib/firebase-auth';
+import { handleApiError } from '@/lib/error-handling';
+import { verifySmsCodeSchema } from '@/lib/validators';
 import { debug as _debug, info, error as logError } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
-  const authResult = await requireFirebaseAuth(request);
-  if (authResult instanceof NextResponse) return authResult;
-  const { decodedToken } = authResult;
+  try {
+    const authResult = await requireFirebaseAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { decodedToken } = authResult;
 
-  const body = await request.json().catch(() => ({}));
-  const code: string | undefined = body.code;
+    const body = await request.json().catch(() => ({}));
+    const validation = verifySmsCodeSchema.safeParse(body);
 
-  info(`📱 Verify SMS: code=${code}, uid=${decodedToken.uid}`);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowe dane wejściowe', details: validation.error.issues },
+        { status: 400 }
+      );
+    }
 
-  if (!code) {
-    logError('❌ Brak kodu w request body');
-    return NextResponse.json({ error: 'Brak kodu' }, { status: 400 });
-  }
+    const { code } = validation.data;
+    info(`📱 Verify SMS: code=${code}, uid=${decodedToken.uid}`);
 
-  // ✅ POPRAWNIE - używaj ZAWSZE firebaseUid
-  const user = await prisma.user.findFirst({
+  // ✅ POPRAWNIE - używaj ZAWSZE firebaseUid (findUnique dla unikalnego pola)
+  const user = await prisma.user.findUnique({
     where: { firebaseUid: decodedToken.uid },
     select: {
       id: true,
@@ -54,7 +60,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Pobierz pełne dane użytkownika, aby sprawdzić warunki podniesienia roli
-  const fullUser = await prisma.user.findFirst({
+  const fullUser = await prisma.user.findUnique({
     where: { firebaseUid: decodedToken.uid },
     select: { id: true, isProfileVerified: true, isActive: true, role: true },
   });
@@ -95,4 +101,7 @@ export async function POST(request: NextRequest) {
     res.cookies.set('level3-ok', '1', { path: '/', maxAge: 60 * 60 * 24, sameSite: 'lax' });
   }
   return res;
+  } catch (error) {
+    return handleApiError(error, request, { endpoint: 'auth/verify-sms-code' });
+  }
 }

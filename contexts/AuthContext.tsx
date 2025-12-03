@@ -12,42 +12,39 @@ import {
   useCallback,
   useRef,
 } from 'react';
-import { debug, info, error, isDev } from '@/lib/logger';
+import { debug, info, error as logError, isDev } from '@/lib/logger';
+import { AuthUser } from '@/types';
 
-// Definicja typu dla użytkownika z bazy danych
-interface DbUser {
-  id: string;
-  firebaseUid: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  phoneNumber: string;
-  role: 'USER_REGISTERED' | 'USER_EMAIL_VERIFIED' | 'USER_FULL_VERIFIED' | 'ADMIN';
-  isActive: boolean;
-  isPhoneVerified: boolean;
-  isProfileVerified: boolean;
+// Użyj wspólnego typu AuthUser z types/index.ts
+// Mapowanie z odpowiedzi API do AuthUser
+type DbUser = AuthUser & {
   emailVerified: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  address: string | null;
+  city: string | null;
+  postalCode: string | null;
+  phoneNumber: string | null;
 }
 
 interface AuthContextType {
   user: User | null;
   dbUser: DbUser | null;
   loading: boolean;
+  error: string | null;
   signOut: () => Promise<void>;
   refetchDbUser: () => Promise<void>;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   dbUser: null,
   loading: true,
+  error: null,
   signOut: async () => {},
   refetchDbUser: async () => {},
+  clearError: () => {},
 });
 
 export function useAuth() {
@@ -58,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [dbUser, setDbUser] = useState<DbUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const syncInProgressRef = useRef<string | null>(null);
 
@@ -82,15 +80,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const data = await response.json();
-        setDbUser(data.user);
+        // Obsługa zarówno nowego formatu (ApiResponse) jak i starego (backward compatibility)
+        const userData = data.success === true ? data.data.user : data.user;
+        const roleUpgraded = data.success === true ? data.data.roleUpgraded : data.roleUpgraded;
+        
+        // Mapowanie do DbUser (z nullable fields zgodnie z typem)
+        setDbUser({
+          ...userData,
+          address: userData.address || null,
+          city: userData.city || null,
+          postalCode: userData.postalCode || null,
+          phoneNumber: userData.phoneNumber || null,
+          emailVerified: userData.emailVerified ? new Date() : null,
+          createdAt: userData.createdAt ? new Date(userData.createdAt) : new Date(),
+          updatedAt: userData.updatedAt ? new Date(userData.updatedAt) : new Date(),
+        } as DbUser);
+        
         document.cookie = `firebase-auth-token=${token}; path=/; max-age=3600; SameSite=Lax`;
-        if (isDev) info('AuthContext: User synced successfully');
+        
+        // Ustaw cookie dla poziomów dostępu na podstawie danych użytkownika
+        if (userData.emailVerified) {
+          document.cookie = `level2-ok=1; path=/; max-age=86400; SameSite=Lax`;
+        }
+        
+        if (userData.isPhoneVerified && userData.isProfileVerified && userData.isActive) {
+          document.cookie = `level3-ok=1; path=/; max-age=86400; SameSite=Lax`;
+        }
+        
+        // Wyczyść błąd przy pomyślnej synchronizacji
+        setError(null);
+        
+        if (isDev) info('AuthContext: User synced successfully', { roleUpgraded });
       } else {
-        error('AuthContext: Sync failed:', response.status);
+        logError('AuthContext: Sync failed:', response.status);
+        // Pokaż użytkownikowi komunikat o błędzie synchronizacji
+        const errorMessage = response.status === 401 
+          ? 'Sesja wygasła. Zaloguj się ponownie.'
+          : response.status === 403
+          ? 'Brak uprawnień do dostępu.'
+          : 'Błąd synchronizacji z serwerem. Spróbuj odświeżyć stronę.';
+        setError(errorMessage);
+        console.error('❌ ' + errorMessage);
         setDbUser(null);
       }
     } catch (err) {
-      error('AuthContext: Sync error:', err);
+      logError('AuthContext: Sync error:', err);
+      const errorMessage = err instanceof Error && err.message.includes('network')
+        ? 'Błąd połączenia z serwerem. Sprawdź połączenie internetowe.'
+        : 'Błąd podczas łączenia z kontem. Spróbuj ponownie.';
+      setError(errorMessage);
+      console.error('❌ ' + errorMessage);
       setDbUser(null);
     } finally {
       setTimeout(() => {
@@ -99,9 +138,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   const refetchDbUser = useCallback(async () => {
     if (user) {
       setLoading(true);
+      setError(null); // Wyczyść błąd przed ponowną próbą
       await syncUserWithDatabase(user);
       setLoading(false);
     }
@@ -109,12 +153,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!auth) {
-      error('AuthContext: Firebase auth nie jest zainicjalizowany');
+      logError('AuthContext: Firebase auth nie jest zainicjalizowany');
       return;
     }
 
     const unsubscribe = onAuthStateChanged(auth, async firebaseUser => {
       setUser(firebaseUser);
+      setError(null); // Wyczyść błąd przy zmianie stanu autoryzacji
       
       if (firebaseUser) {
         await syncUserWithDatabase(firebaseUser);
@@ -122,6 +167,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setDbUser(null);
         syncInProgressRef.current = null;
         document.cookie = 'firebase-auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'level2-ok=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'level3-ok=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       }
       
       setLoading(false);
@@ -137,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser({ ...auth.currentUser });
           info('AuthContext: Firebase User reloaded, emailVerified:', auth.currentUser.emailVerified);
         } catch (err) {
-          error('AuthContext: Error reloading Firebase User:', err instanceof Error ? err.message : err);
+          logError('AuthContext: Error reloading Firebase User:', err instanceof Error ? err.message : err);
         }
       }
     };
@@ -166,16 +213,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await firebaseSignOut(auth);
       setUser(null);
       setDbUser(null);
+      setError(null); // Wyczyść błąd przy wylogowaniu
       // Usuń cookie przy wylogowaniu
       document.cookie = 'firebase-auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      document.cookie = 'level2-ok=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      document.cookie = 'level3-ok=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       router.push('/');
     } catch (err) {
-      error('Error signing out:', err instanceof Error ? err.message : err);
+      logError('Error signing out:', err instanceof Error ? err.message : err);
+      setError('Błąd podczas wylogowywania.');
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, dbUser, loading, signOut, refetchDbUser }}>
+    <AuthContext.Provider value={{ user, dbUser, loading, error, signOut, refetchDbUser, clearError }}>
       {children}
     </AuthContext.Provider>
   );

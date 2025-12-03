@@ -41,7 +41,7 @@ services:
       retries: 3
       start_period: 10s
 
-  # Prisma Migrations & Client Generation (Development - Alternative ports)
+  # Prisma Client Generation (Development - Alternative ports)
   prisma:
     image: node:20-alpine
     container_name: pigeon-auction-prisma-dev-alt
@@ -67,9 +67,7 @@ services:
         npm ci --silent &&
         echo '🔄 Generating Prisma Client...' &&
         npx prisma generate &&
-        echo '🚀 Running database migrations...' &&
-        npx prisma migrate deploy &&
-        echo '✅ Prisma setup completed!'
+        echo '✅ Prisma Client generation completed!'
       "
 
   # Next.js Application (Development - Alternative port)

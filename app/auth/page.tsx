@@ -10,7 +10,7 @@ export const metadata = {
 export default function AuthPage() {
   return (
     <UnifiedLayout showNavigation={true} showFooter={true}>
-      <div className="min-h-screen flex items-start justify-center pt-0">
+      <div className="flex items-start justify-center pt-48" style={{ minHeight: '3000px' }}>
         <Suspense fallback={<div className="text-white">Ładowanie...</div>}>
           <AuthFlipCard />
         </Suspense>

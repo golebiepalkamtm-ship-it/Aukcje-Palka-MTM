@@ -3,8 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { error as logError } from '@/lib/logger'
 import * as Sentry from '@sentry/nextjs'
-
-type Role = 'USER_REGISTERED' | 'USER_EMAIL_VERIFIED' | 'USER_FULL_VERIFIED' | 'ADMIN'
+import { ROLE_HIERARCHY, Role } from '@/types/auth'
 
 /**
  * Uniwersalna funkcja sprawdzająca czy użytkownik spełnia wymagania roli
@@ -48,16 +47,8 @@ async function requireRole(request: NextRequest, requiredRole: Role): Promise<Ne
       return null
     }
 
-    // Hierarchia ról
-    const roleHierarchy: Record<Role, number> = {
-      USER_REGISTERED: 1,
-      USER_EMAIL_VERIFIED: 2,
-      USER_FULL_VERIFIED: 3,
-      ADMIN: 4,
-    }
-
-    const userLevel = roleHierarchy[user.role]
-    const requiredLevel = roleHierarchy[requiredRole]
+    const userLevel = ROLE_HIERARCHY[user.role]
+    const requiredLevel = ROLE_HIERARCHY[requiredRole]
 
     if (userLevel < requiredLevel) {
       // Zwróć odpowiedni komunikat w zależności od brakującego poziomu

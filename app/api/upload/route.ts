@@ -2,9 +2,9 @@ import { handleApiError } from '@/lib/error-handling';
 import { requireFirebaseAuth } from '@/lib/firebase-auth';
 import { requirePhoneVerification } from '@/lib/phone-verification';
 import { apiRateLimit } from '@/lib/rate-limit';
-import { mkdir, writeFile } from 'fs/promises';
+import { getStorage } from 'firebase-admin/storage';
+import { getAdminApp } from '@/lib/firebase-admin';
 import { NextRequest, NextResponse } from 'next/server';
-import { join } from 'path';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'];
@@ -47,6 +47,42 @@ function generateSafeFileName(originalName: string): string {
   return `${baseName}_${timestamp}_${randomString}.${extension}`;
 }
 
+async function uploadToFirebaseStorage(file: File, type: string, userId: string): Promise<string> {
+  const app = getAdminApp()
+  if (!app) {
+    throw new Error('Firebase Admin SDK not initialized')
+  }
+
+  // Pobierz nazwę bucketa z zmiennych środowiskowych
+  const storageBucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET;
+  
+  if (!storageBucketName) {
+    throw new Error('Firebase Storage bucket name is not configured. Set NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET or FIREBASE_STORAGE_BUCKET environment variable.')
+  }
+
+  // Użyj jawnie nazwy bucketa
+  const bucket = getStorage(app).bucket(storageBucketName)
+  const safeFileName = generateSafeFileName(file.name)
+  const storagePath = `uploads/${type}/${userId}/${safeFileName}`
+
+  const fileRef = bucket.file(storagePath)
+  const buffer = Buffer.from(await file.arrayBuffer())
+
+  await fileRef.save(buffer, {
+    metadata: {
+      contentType: file.type,
+      metadata: {
+        originalName: file.name,
+        uploadedBy: userId,
+        uploadedAt: new Date().toISOString(),
+      },
+    },
+    public: true,
+  })
+
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(storagePath)}?alt=media`
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
@@ -60,6 +96,8 @@ export async function POST(request: NextRequest) {
     if (authResult instanceof NextResponse) {
       return authResult;
     }
+    const { decodedToken } = authResult;
+    const userId = decodedToken.uid;
 
     // Sprawdź weryfikację telefonu dla uploadu plików
     const phoneVerificationError = await requirePhoneVerification(request);
@@ -97,23 +135,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: validation.error }, { status: 400 });
       }
 
-      // Generuj bezpieczną nazwę pliku
-      const safeFileName = generateSafeFileName(file.name);
-      const uploadDir = join(process.cwd(), 'public', 'uploads', type);
-      const filePath = join(uploadDir, safeFileName);
-
       try {
-        // Utwórz katalog jeśli nie istnieje
-        await mkdir(uploadDir, { recursive: true });
-
-        // Zapisz plik
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        await writeFile(filePath, buffer);
-
-        // Dodaj URL do listy
-        uploadedFiles.push(`/uploads/${type}/${safeFileName}`);
+        // Upload to Firebase Storage
+        const publicUrl = await uploadToFirebaseStorage(file, type, userId);
+        uploadedFiles.push(publicUrl);
       } catch (error) {
+        console.error('❌ [API Upload] Błąd uploadu do Firebase Storage:', error);
         return handleApiError(error, request, { endpoint: 'upload', file: file.name });
       }
     }

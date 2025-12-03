@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+// Helper to convert NaN to undefined for optional number fields
+const optionalNumber = z.preprocess(
+  (val) => (typeof val === 'number' && isNaN(val) ? undefined : val),
+  z.number().min(0, 'Wartość nie może być ujemna').optional()
+);
+
 // User validation schemas (bez hasła - Firebase obsługuje auth)
 export const userRegistrationSchema = z.object({
   email: z.string().email('Nieprawidłowy adres email'),
@@ -38,9 +44,9 @@ export const auctionCreateSchema = z
       .min(20, 'Opis musi mieć co najmniej 20 znaków')
       .max(2000, 'Opis może mieć maksymalnie 2000 znaków'),
     category: z.string().min(1, 'Kategoria jest wymagana'),
-    startingPrice: z.number().min(0, 'Cena startowa nie może być ujemna').optional(),
-    buyNowPrice: z.number().min(0, 'Cena kup teraz nie może być ujemna').optional(),
-    reservePrice: z.number().min(0, 'Cena rezerwowa nie może być ujemna').optional(),
+    startingPrice: optionalNumber,
+    buyNowPrice: optionalNumber,
+    reservePrice: optionalNumber,
     startTime: z.string().datetime('Nieprawidłowa data rozpoczęcia').optional(),
     endTime: z.string().datetime('Nieprawidłowa data zakończenia').optional(),
     images: z.array(z.string().min(1, 'URL obrazu nie może być pusty')).optional(),
@@ -117,9 +123,9 @@ const baseAuctionSchema = z.object({
     .min(20, 'Opis musi mieć co najmniej 20 znaków')
     .max(2000, 'Opis może mieć maksymalnie 2000 znaków'),
   category: z.string().min(1, 'Kategoria jest wymagana'),
-  startingPrice: z.number().min(0, 'Cena startowa nie może być ujemna').optional(),
-  buyNowPrice: z.number().min(0, 'Cena kup teraz nie może być ujemna').optional(),
-  reservePrice: z.number().min(0, 'Cena rezerwowa nie może być ujemna').optional(),
+  startingPrice: optionalNumber,
+  buyNowPrice: optionalNumber,
+  reservePrice: optionalNumber,
   startTime: z.string().datetime('Nieprawidłowa data rozpoczęcia'),
   endTime: z.string().datetime('Nieprawidłowa data zakończenia'),
   images: z.array(z.string().min(1, 'URL obrazu nie może być pusty')).optional(),

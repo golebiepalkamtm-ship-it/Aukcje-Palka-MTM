@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Zaktualizuj numer telefonu w profilu użytkownika
+    // Znajdź użytkownika
     const dbUser = await prisma.user.findFirst({
       where: { firebaseUid: decodedToken.uid },
       select: { id: true, phoneNumber: true },

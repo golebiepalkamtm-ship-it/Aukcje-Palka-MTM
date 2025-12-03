@@ -13,7 +13,7 @@ interface Champion {
 
 interface ChampionsCarouselProps {
   champions: Champion[];
-  onImageClick: (imageSrc: string, index: number) => void;
+  onImageClick: (imageSrc: string, index: number, sourceEl: HTMLElement) => void;
   onPedigreeClick: (pedigreeImage: string) => void;
 }
 
@@ -151,7 +151,7 @@ export function ChampionsCarousel({
 
       {/* Carousel Container */}
       <div
-        className="relative h-[480px] sm:h-[560px] overflow-hidden pb-8"
+        className="relative h-[360px] sm:h-[420px] overflow-hidden pb-6"
         style={{ perspective: '1200px' }}
       >
         <AnimatePresence>
@@ -183,19 +183,20 @@ export function ChampionsCarousel({
               <motion.div
                 className={`relative overflow-hidden shadow-2xl cursor-pointer ${
                   position === 0
-                    ? 'w-[612px] h-[460px]'
+                    ? 'w-[460px] h-[345px]'
                     : position === -1 || position === 1
-                      ? 'w-[508px] h-[380px]'
-                      : 'w-[372px] h-[280px]'
+                      ? 'w-[380px] h-[285px]'
+                      : 'w-[280px] h-[210px]'
                 }`}
                 whileHover={{
                   scale: position === 0 ? 1.02 : 0.97,
                   boxShadow: '0 0 28px rgba(255, 255, 255, 0.6)',
                   transition: { duration: 0.25 },
                 }}
-                onClick={() => {
+                onClick={e => {
                   if (position === 0) {
-                    onImageClick(imageData.imageSrc, index);
+                    // Przekaż element źródłowy dla animacji "lotu" do modala
+                    onImageClick(imageData.imageSrc, index, e.currentTarget as HTMLElement);
                   } else if (position !== 0) {
                     goToSlide(index);
                   }

@@ -30,7 +30,7 @@ const createPrismaClient = () => {
   const url = databaseUrl || 'postgresql://placeholder:placeholder@localhost:5432/placeholder';
   
   return new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log: ['error'], // Wyciszone logi - tylko błędy
     datasources: {
       db: {
         url,

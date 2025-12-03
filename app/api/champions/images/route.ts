@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Skanuj foldery championów w public/champions/
+    // Pobierz championów z Firebase Storage lub lokalnych plików (fallback)
     const folderChampions = await scanChampionFolders();
 
     // Zastosuj paginację do folderów
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const total = folderChampions.length;
 
     // Zwracaj pełne dane championów
-    const transformedChampions = paginatedChampions.map(champion => ({
+    const transformedChampions = paginatedChampions.map((champion: any) => ({
       id: champion.id,
       name: champion.name,
       ringNumber: champion.ringNumber,

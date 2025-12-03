@@ -1,8 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ImageIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { ImageIcon, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface SmartImageProps {
@@ -10,6 +9,7 @@ interface SmartImageProps {
   alt: string;
   width?: number;
   height?: number;
+  fill?: boolean;
   className?: string;
   priority?: boolean;
   quality?: number;
@@ -18,19 +18,9 @@ interface SmartImageProps {
   sizes?: string;
   onLoad?: () => void;
   onError?: () => void;
-  // Nowe właściwości dla inteligentnego wyświetlania
   fitMode?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
   aspectRatio?: 'square' | 'video' | 'portrait' | 'landscape' | 'auto';
-  cropFocus?:
-    | 'center'
-    | 'top'
-    | 'bottom'
-    | 'left'
-    | 'right'
-    | 'top-left'
-    | 'top-right'
-    | 'bottom-left'
-    | 'bottom-right';
+  cropFocus?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
 export function SmartImage({
@@ -38,6 +28,7 @@ export function SmartImage({
   alt,
   width,
   height,
+  fill = false,
   className = '',
   priority = false,
   quality = 85,
@@ -77,7 +68,7 @@ export function SmartImage({
       },
       {
         threshold: 0.1,
-        rootMargin: '100px', // Zwiększona wartość dla lepszego UX
+        rootMargin: '100px',
       }
     );
 
@@ -104,67 +95,34 @@ export function SmartImage({
     onError?.();
   };
 
-  // Generuj inteligentne klasy CSS na podstawie parametrów
+  // Proste klasy CSS na podstawie parametrów
   const getImageClasses = () => {
     const baseClasses = 'w-full h-full object-center transition-opacity duration-300';
     const loadedClasses = isLoaded ? 'opacity-100' : 'opacity-0';
 
-    // Mapuj fitMode na odpowiednie klasy Tailwind
-    const fitClasses =
-      {
-        cover: 'object-cover',
-        contain: 'object-contain',
-        fill: 'object-fill',
-        none: 'object-none',
-        'scale-down': 'object-scale-down',
-      }[fitMode] || 'object-contain';
+    const fitClasses = {
+      cover: 'object-cover',
+      contain: 'object-contain',
+      fill: 'object-fill',
+      none: 'object-none',
+      'scale-down': 'object-scale-down',
+    }[fitMode] || 'object-contain';
 
-    // Mapuj aspectRatio na odpowiednie klasy
-    const aspectClasses =
-      {
-        square: 'aspect-square',
-        video: 'aspect-video',
-        portrait: 'aspect-[3/4]',
-        landscape: 'aspect-[4/3]',
-        auto: '',
-      }[aspectRatio] || '';
+    const aspectClasses = {
+      square: 'aspect-square',
+      video: 'aspect-video',
+      portrait: 'aspect-[3/4]',
+      landscape: 'aspect-[4/3]',
+      auto: '',
+    }[aspectRatio] || '';
 
     return `${baseClasses} ${loadedClasses} ${fitClasses} ${aspectClasses}`;
   };
 
-  // Generuj optymalizowane parametry obrazu
-  const getOptimizedSrc = () => {
-    // Sprawdź czy src jest prawidłowy
-    if (!src || typeof src !== 'string') {
-      return '';
-    }
+  // Sprawdź czy src jest prawidłowy - nie modyfikuj URL-i zewnętrznych
+  const isValidSrc = src && typeof src === 'string' && src.trim() !== '';
 
-    if (src.startsWith('http') || src.startsWith('/api/')) {
-      return src;
-    }
-
-    // Dodaj parametry optymalizacji dla lokalnych obrazów
-    try {
-      const params = new URLSearchParams();
-      if (width) params.set('w', width.toString());
-      if (height) params.set('h', height.toString());
-      if (quality) params.set('q', quality.toString());
-      if (sizes) params.set('sizes', sizes);
-      if (fitMode === 'cover') params.set('fit', 'cover');
-      if (cropFocus !== 'center') params.set('crop', cropFocus);
-
-      const queryString = params.toString();
-      const encodedSrc = encodeURI(src);
-      return queryString ? `${encodedSrc}${encodedSrc.includes('?') ? '&' : '?'}${queryString}` : encodedSrc;
-    } catch {
-      return src;
-    }
-  };
-
-  const optimizedSrc = getOptimizedSrc();
-
-  // Nie renderuj jeśli nie ma prawidłowego src
-  if (!optimizedSrc) {
+  if (!isValidSrc) {
     return (
       <div className={`relative overflow-hidden ${className}`}>
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
@@ -181,7 +139,7 @@ export function SmartImage({
     <div
       ref={imgRef}
       className={`relative overflow-hidden ${className}`}
-      {...(width && height ? { style: { width, height } } : {})}
+      {...(width && height && !fill ? { style: { width, height } } : {})}
     >
       {/* Loading placeholder */}
       {!isLoaded && !isError && (
@@ -211,10 +169,11 @@ export function SmartImage({
       {/* Actual image */}
       {isInView && (
         <Image
-          src={optimizedSrc}
+          src={src}
           alt={alt}
-          width={width || 400}
-          height={height || 300}
+          fill={fill}
+          width={!fill ? (width || 400) : undefined}
+          height={!fill ? (height || 300) : undefined}
           className={getImageClasses()}
           onLoad={handleLoad}
           onError={handleError}
@@ -228,11 +187,12 @@ export function SmartImage({
 
       {/* Fade in animation */}
       {isLoaded && (
-        <motion.div
+        <div
           className="absolute inset-0 bg-white dark:bg-gray-900"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          style={{
+            opacity: 1,
+            transition: 'opacity 0.3s',
+          }}
         />
       )}
     </div>

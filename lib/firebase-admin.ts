@@ -1,7 +1,13 @@
 // Firebase Admin SDK - tylko dla serwera
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { isDev, debug, info, error } from './logger';
+
+// Wyciszone logi - nie używamy importu z ./logger
+const SILENT_MODE = true;
+const debug = (..._args: any[]) => { if (!SILENT_MODE) console.debug('[DEBUG]', ..._args); };
+const info = (..._args: any[]) => { if (!SILENT_MODE) console.info('[INFO]', ..._args); };
+const error = (..._args: any[]) => { if (!SILENT_MODE) console.error('[ERROR]', ..._args); };
+const isDev = process.env.NODE_ENV !== 'production';
 
 let adminAuth: ReturnType<typeof getAuth> | null = null;
 let app: ReturnType<typeof initializeApp> | null = null;
@@ -29,12 +35,14 @@ function initializeFirebaseAdmin() {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET;
 
   if (isDev && !isTest && !isBuildTime) {
     debug('🔧 Firebase Admin SDK initialization check:');
     debug('- FIREBASE_PROJECT_ID:', projectId ? 'SET' : 'NOT SET');
     debug('- FIREBASE_CLIENT_EMAIL:', clientEmail ? 'SET' : 'NOT SET');
     debug('- FIREBASE_PRIVATE_KEY:', privateKey ? 'SET' : 'NOT SET');
+    debug('- FIREBASE_STORAGE_BUCKET:', storageBucket ? 'SET' : 'NOT SET');
   }
 
   if (isTest || isBuildTime) {
@@ -85,6 +93,7 @@ function initializeFirebaseAdmin() {
         clientEmail,
         privateKey: normalizedPrivateKey,
       }),
+      storageBucket: storageBucket,
     };
 
     info('🔧 Initializing Firebase Admin SDK...');

@@ -3,12 +3,20 @@
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 import ClientProviders from '@/components/providers/ClientProviders';
 import { useAuth } from '@/contexts/AuthContext';
+import { auth } from '@/lib/firebase.client';
 
 import { motion } from 'framer-motion';
 import { ArrowLeft, Phone, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { 
+  signInWithPhoneNumber, 
+  RecaptchaVerifier, 
+  PhoneAuthProvider,
+  ConfirmationResult,
+  updateProfile
+} from 'firebase/auth';
 
 function VerifyPhoneContent() {
   const { user, loading } = useAuth();
@@ -21,6 +29,9 @@ function VerifyPhoneContent() {
   const [success, setSuccess] = useState('');
   const [countdown, setCountdown] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -38,42 +49,83 @@ function VerifyPhoneContent() {
     return () => clearInterval(interval);
   }, [countdown]);
 
+  // Initialize Recaptcha when component mounts
+  useEffect(() => {
+    if (typeof window !== 'undefined' && recaptchaContainerRef.current && !recaptchaVerifier && auth) {
+      const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
+        'size': 'invisible',
+        'callback': (response: any) => {
+          console.log('reCAPTCHA verified');
+        },
+        'expired-callback': () => {
+          setError('reCAPTCHA wygasł. Spróbuj ponownie.');
+        }
+      });
+
+      setRecaptchaVerifier(verifier);
+    }
+
+    return () => {
+      if (recaptchaVerifier) {
+        recaptchaVerifier.clear();
+      }
+    };
+  }, [auth, recaptchaVerifier]);
+
+  const normalizePhoneNumber = (phone: string): string => {
+    // Remove all non-digits
+    let cleaned = phone.replace(/\D/g, '');
+    
+    // If doesn't start with country code, add Poland's
+    if (!cleaned.startsWith('48') && cleaned.length === 9) {
+      cleaned = '48' + cleaned;
+    }
+    
+    // Add + prefix for Firebase
+    if (!cleaned.startsWith('+')) {
+      cleaned = '+' + cleaned;
+    }
+    
+    return cleaned;
+  };
+
   const sendVerificationCode = async () => {
-    if (!user) return;
+    if (!user || !auth) return;
 
     setIsLoading(true);
     setError('');
 
     try {
-      const token = await user.getIdToken();
+      const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
-      const response = await fetch('/api/phone/send-verification', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phoneNumber }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Nie udało się wysłać kodu');
-      }
-
+      // Send SMS via Firebase
+      const result = await signInWithPhoneNumber(auth, normalizedPhone, recaptchaVerifier!);
+      
+      setConfirmationResult(result);
       setIsCodeSent(true);
-      setCountdown(60); // 60 sekund cooldown
-      setSuccess('Kod weryfikacyjny został wysłany na Twój numer telefonu');
-    } catch (error) {
-      console.error('Błąd wysyłania SMS:', error);
-      setError(error instanceof Error ? error.message : 'Wystąpił błąd podczas wysyłania kodu');
+      setCountdown(60);
+      setSuccess('Kod weryfikacyjny został wysłany SMS na Twój numer telefonu');
+
+    } catch (error: any) {
+      console.error('Firebase Phone Auth error:', error);
+      
+      let errorMessage = 'Nie udało się wysłać kodu';
+      if (error.code === 'auth/invalid-phone-number') {
+        errorMessage = 'Nieprawidłowy format numeru telefonu';
+      } else if (error.code === 'auth/quota-exceeded') {
+        errorMessage = 'Przekroczono limit wysyłania SMS. Spróbuj później.';
+      } else if (error.code === 'auth/app-not-authorized') {
+        errorMessage = 'Aplikacja nie jest autoryzowana do wysyłania SMS';
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   const verifyCode = async () => {
-    if (!verificationCode.trim() || verificationCode.length !== 6) {
+    if (!confirmationResult || !verificationCode.trim() || verificationCode.length !== 6) {
       setError('Wprowadź 6-cyfrowy kod weryfikacyjny');
       return;
     }
@@ -84,7 +136,11 @@ function VerifyPhoneContent() {
     setError('');
 
     try {
-      const token = await user.getIdToken();
+      // Verify the code with Firebase
+      const result = await confirmationResult.confirm(verificationCode);
+      
+      // If Firebase verification succeeded, update our database
+      const token = await result.user.getIdToken();
 
       const response = await fetch('/api/phone/check-verification', {
         method: 'POST',
@@ -92,7 +148,10 @@ function VerifyPhoneContent() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code: verificationCode }),
+        body: JSON.stringify({ 
+          code: verificationCode,
+          verificationId: confirmationResult.verificationId 
+        }),
       });
 
       if (!response.ok) {
@@ -106,9 +165,18 @@ function VerifyPhoneContent() {
       setTimeout(() => {
         router.push('/dashboard');
       }, 2000);
-    } catch (error) {
+      
+    } catch (error: any) {
       console.error('Błąd weryfikacji kodu:', error);
-      setError(error instanceof Error ? error.message : 'Wystąpił błąd podczas weryfikacji kodu');
+      
+      let errorMessage = 'Wystąpił błąd podczas weryfikacji kodu';
+      if (error.code === 'auth/invalid-verification-code') {
+        errorMessage = 'Nieprawidłowy kod weryfikacyjny';
+      } else if (error.code === 'auth/invalid-verification-id') {
+        errorMessage = 'Sesja weryfikacji wygasła. Wyślij kod ponownie.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -116,6 +184,9 @@ function VerifyPhoneContent() {
 
   const resendCode = async () => {
     if (countdown > 0) return;
+    setIsCodeSent(false);
+    setVerificationCode('');
+    setConfirmationResult(null);
     await sendVerificationCode();
   };
 
@@ -178,7 +249,7 @@ function VerifyPhoneContent() {
                 </div>
                 <h2 className="text-xl font-semibold text-white mb-2">Wyślij kod weryfikacyjny</h2>
                 <p className="text-white/70 text-sm">
-                  Wyślemy SMS z kodem weryfikacyjnym na Twój numer telefonu
+                  Firebase wyśle SMS z kodem weryfikacyjnym na Twój numer telefonu
                 </p>
               </div>
 
@@ -186,7 +257,7 @@ function VerifyPhoneContent() {
                 type="tel"
                 value={phoneNumber}
                 onChange={e => setPhoneNumber(e.target.value)}
-                placeholder="Wprowadź numer telefonu"
+                placeholder="Wprowadź numer telefonu (np. 123456789)"
                 className="w-full text-center text-lg py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
 
@@ -199,6 +270,9 @@ function VerifyPhoneContent() {
               >
                 {isLoading ? 'Wysyłanie...' : 'Wyślij kod weryfikacyjny'}
               </motion.button>
+              
+              {/* Invisible reCAPTCHA container */}
+              <div ref={recaptchaContainerRef}></div>
             </div>
           ) : (
             <div className="space-y-6">
@@ -260,6 +334,7 @@ function VerifyPhoneContent() {
                 <p>• Bezpieczne transakcje i licytacje</p>
                 <p>• Ochrona przed oszustwami</p>
                 <p>• Pełny dostęp do wszystkich funkcji</p>
+                <p>• Autentyczne SMS przez Firebase (nie testowe)</p>
               </div>
             </div>
           </div>

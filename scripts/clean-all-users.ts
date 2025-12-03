@@ -1,6 +1,13 @@
-
+import 'dotenv/config';
 import admin from 'firebase-admin';
 import { PrismaClient } from '@prisma/client';
+
+// Ładuj zmienne środowiskowe z .env.local (jeśli istnieje)
+try {
+  require('dotenv').config({ path: '.env.local' });
+} catch (e) {
+  // .env.local może nie istnieć, to OK
+}
 
 // Użyj zmiennych środowiskowych z .env
 if (admin.apps.length === 0) {
@@ -71,19 +78,82 @@ async function deleteAllPrismaUsers() {
   }
 }
 
+function checkConfirmation(): boolean {
+  // Wymagaj argumentu --yes, --force lub -y
+  const hasConfirmation = 
+    process.argv.includes('--yes') || 
+    process.argv.includes('--force') || 
+    process.argv.includes('-y');
+
+  if (!hasConfirmation) {
+    console.error('\n❌ BŁĄD: Operacja wymaga potwierdzenia!');
+    console.error('\n📝 Użycie:');
+    console.error('   npm run clean:users -- --yes');
+    console.error('   lub');
+    console.error('   tsx scripts/clean-all-users.ts --yes');
+    console.error('\n⚠️  To nieodwracalna operacja - upewnij się, że chcesz usunąć wszystkich użytkowników!\n');
+    return false;
+  }
+
+  return true;
+}
+
+async function getCounts() {
+  const prismaCount = await prisma.user.count();
+  let firebaseCount = 0;
+  try {
+    const listUsersResult = await auth.listUsers(1000);
+    firebaseCount = listUsersResult.users.length;
+    // Jeśli jest więcej niż 1000, policz wszystkie
+    let pageToken = listUsersResult.pageToken;
+    while (pageToken) {
+      const nextPage = await auth.listUsers(1000, pageToken);
+      firebaseCount += nextPage.users.length;
+      pageToken = nextPage.pageToken;
+    }
+  } catch (error) {
+    console.error('⚠️  Nie można policzyć użytkowników Firebase:', error);
+  }
+  return { firebaseCount, prismaCount };
+}
+
 async function cleanAll() {
   console.log('╔════════════════════════════════════════════════════════════╗');
   console.log('║     🧹 CZYSZCZENIE WSZYSTKICH UŻYTKOWNIKÓW                ║');
   console.log('╚════════════════════════════════════════════════════════════╝\n');
 
-  const firebaseCount = await deleteAllFirebaseUsers();
-  const prismaCount = await deleteAllPrismaUsers();
+  // Pokaż statystyki przed usunięciem
+  console.log('📊 Sprawdzam liczbę użytkowników...\n');
+  const { firebaseCount, prismaCount } = await getCounts();
+  console.log(`  Firebase Authentication: ${firebaseCount} użytkowników`);
+  console.log(`  Baza danych (Prisma):    ${prismaCount} użytkowników\n`);
+
+  if (firebaseCount === 0 && prismaCount === 0) {
+    console.log('ℹ️  Brak użytkowników do usunięcia.\n');
+    await prisma.$disconnect();
+    process.exit(0);
+  }
+
+  // Wymagaj potwierdzenia przez argument
+  if (!checkConfirmation()) {
+    await prisma.$disconnect();
+    process.exit(1);
+  }
+
+  console.log('✅ Potwierdzenie otrzymane (--yes)\n');
+
+  console.log('\n');
+
+  const firebaseDeleted = await deleteAllFirebaseUsers();
+  const prismaDeleted = await deleteAllPrismaUsers();
 
   console.log('╔════════════════════════════════════════════════════════════╗');
   console.log('║                    ✅ PODSUMOWANIE                         ║');
   console.log('╠════════════════════════════════════════════════════════════╣');
-  console.log(`║  Firebase Authentication: ${firebaseCount} użytkowników           ║`);
-  console.log(`║  Baza danych (Prisma):    ${prismaCount} użytkowników           ║`);
+  const firebaseLine = `║  Firebase Authentication: ${String(firebaseDeleted).padEnd(3)} użytkowników usunięto ║`;
+  const prismaLine = `║  Baza danych (Prisma):    ${String(prismaDeleted).padEnd(3)} użytkowników usunięto ║`;
+  console.log(firebaseLine);
+  console.log(prismaLine);
   console.log('╠════════════════════════════════════════════════════════════╣');
   console.log('║  🎉 Wszystkie użytkownicy zostali usunięci!               ║');
   console.log('╚════════════════════════════════════════════════════════════╝');

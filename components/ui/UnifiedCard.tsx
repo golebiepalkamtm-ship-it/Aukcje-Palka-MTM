@@ -137,11 +137,10 @@ export const UnifiedCard = memo(function UnifiedCard({
         stiffness: 100,
       }}
       className={`
-        ${variantClasses[variant]}
         ${glow ? 'animate-glow3D' : ''}
-        ${hover ? 'unified-card-hover-highlight card-3d-raised-strong' : 'card-3d-raised'}
+        ${hover ? 'unified-card-hover-highlight' : ''}
         ${className}
-        card-glow-effect
+        rounded-3xl p-6
       `}
       style={{
         position: 'relative',
@@ -151,20 +150,17 @@ export const UnifiedCard = memo(function UnifiedCard({
           ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(30px)`
           : 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)',
         transition: isHovering ? 'transform 0.1s ease-out, box-shadow 0.3s ease' : 'transform 0.3s ease-out, box-shadow 0.3s ease',
-        boxShadow: isHovering 
-          ? '0 20px 40px rgba(0, 0, 0, 0.2), 0 15px 30px rgba(0, 0, 0, 0.15), inset 2px 2px 5px rgba(255, 255, 255, 0.4), inset -2px -2px 5px rgba(0, 0, 0, 0.2), inset 0 8px 12px rgba(255, 255, 255, 0.3)'
-          : '0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08), inset 1px 1px 3px rgba(255, 255, 255, 0.3), inset -1px -1px 3px rgba(0, 0, 0, 0.15), inset 0 4px 8px rgba(255, 255, 255, 0.2)',
-        background: `linear-gradient(145deg, 
-          rgba(255, 255, 255, 0.25) 0%, 
-          rgba(255, 255, 255, 0.12) 25%,
-          rgba(200, 200, 200, 0.08) 50%, 
-          rgba(150, 150, 150, 0.1) 75%,
-          rgba(0, 0, 0, 0.12) 100%
-        )`,
-        borderTop: '1px solid rgba(255, 255, 255, 0.5)',
-        borderLeft: '1px solid rgba(255, 255, 255, 0.4)',
-        borderBottom: '1px solid rgba(0, 0, 0, 0.3)',
-        borderRight: '1px solid rgba(0, 0, 0, 0.25)',
+        // DOKŁADNIE jak w AchievementTimeline - złoty gradient
+        background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.4) 0%, rgba(133, 107, 56, 0.35) 25%, rgba(107, 91, 49, 0.32) 50%, rgba(89, 79, 45, 0.3) 75%, rgba(71, 61, 38, 0.28) 100%)',
+        // DOKŁADNIE jak w AchievementTimeline - złota ramka
+        border: '2px solid rgba(218, 182, 98, 1)',
+        borderRadius: '1.5rem',
+        // DOKŁADNIE jak w AchievementTimeline - złoty glow
+        boxShadow: isHovering
+          ? '0 0 25px rgba(218, 182, 98, 1), 0 0 40px rgba(189, 158, 88, 0.9), 0 0 55px rgba(165, 138, 78, 0.6), inset 0 0 40px rgba(71, 61, 38, 0.15), inset 0 2px 0 rgba(218, 182, 98, 0.6), inset 0 -2px 0 rgba(61, 51, 33, 0.4)'
+          : '0 0 20px rgba(218, 182, 98, 1), 0 0 35px rgba(189, 158, 88, 0.8), 0 0 50px rgba(165, 138, 78, 0.5), inset 0 0 40px rgba(71, 61, 38, 0.15), inset 0 2px 0 rgba(218, 182, 98, 0.6), inset 0 -2px 0 rgba(61, 51, 33, 0.4)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
       }}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
