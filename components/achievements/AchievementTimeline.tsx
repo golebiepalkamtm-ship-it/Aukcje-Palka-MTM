@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import GoldenCard from '@/components/ui/GoldenCard';
 
 type AchievementTimelineEntry = {
   label: string;
@@ -73,8 +74,6 @@ type TimelineCardProps = {
 };
 
 function TimelineCard({ item, align }: TimelineCardProps) {
-  const { ref, isVisible } = useScrollReveal();
-
   return (
     <div className="relative max-w-7xl mx-auto">
       <span
@@ -91,24 +90,14 @@ function TimelineCard({ item, align }: TimelineCardProps) {
           : 'md:w-[calc(50%-3rem)] md:ml-auto md:mr-0'
       )}>
 
-        <article
-          ref={ref}
+        <GoldenCard
           className={mergeClasses(
-            'glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 text-white transition-all duration-[2000ms] overflow-hidden',
+            'glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 text-white overflow-hidden',
             'backdrop-blur-xl',
             align === 'left'
               ? 'md:pr-16 md:text-right pl-14'
-              : 'md:pl-16 pl-14',
-            !isVisible && 'opacity-0 translate-z-[-200px] scale-50',
-            isVisible && 'opacity-100 translate-z-0 scale-100'
+              : 'md:pl-16 pl-14'
           )}
-          style={{
-            transform: !isVisible ? 'translateZ(-200px) scale(0.5)' : 'translateZ(0) scale(1)',
-            transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-            background: 'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
-            borderColor: 'rgba(218, 182, 98, 1)',
-            boxShadow: '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)'
-          }}
         >
         <div className={mergeClasses(
           "flex flex-col gap-2",
@@ -124,11 +113,11 @@ function TimelineCard({ item, align }: TimelineCardProps) {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-5 rounded-2xl border border-white/30 bg-white/10 p-6 text-lg text-white">
+        <div className="card-glass mt-6 grid gap-5 rounded-2xl border border-yellow-500 bg-gradient-to-br from-yellow-300 to-yellow-500 p-6 text-lg text-yellow-50">
           {item.groups.map((group) => (
             <div
               key={`${item.year}-${group.title}`}
-              className="rounded-xl border border-white/5 bg-black/20 p-5"
+              className="rounded-xl border border-yellow-400/30 bg-gradient-to-br from-yellow-500/20 to-yellow-700/20 p-5 card"
             >
               <p className="text-base md:text-lg font-semibold uppercase tracking-[0.3em] text-white mb-4">
                 {group.title}
@@ -169,7 +158,7 @@ function TimelineCard({ item, align }: TimelineCardProps) {
             </div>
           ))}
         </div>
-      </article>
+      </GoldenCard>
       </div>
     </div>
   );

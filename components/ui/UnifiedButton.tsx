@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { memo, ReactNode } from 'react';
 
@@ -30,7 +29,7 @@ export const UnifiedButton = memo(function UnifiedButton({
   disabled = false,
   title,
   ariaLabel,
-  glow = true,
+  glow = false,
   intensity = 'medium',
 }: UnifiedButtonProps) {
   const sizeClasses = {
@@ -47,14 +46,6 @@ export const UnifiedButton = memo(function UnifiedButton({
     glass: 'glass-morphism hover:glass-morphism-strong',
   };
 
-  const intensityMap = {
-    low: { scale: 1.02, y: -2 },
-    medium: { scale: 1.05, y: -4 },
-    high: { scale: 1.08, y: -6 },
-  };
-
-  const currentIntensity = intensityMap[intensity];
-
   const buttonClasses = `
     ${variantClasses[variant]}
     ${sizeClasses[size]}
@@ -64,72 +55,47 @@ export const UnifiedButton = memo(function UnifiedButton({
     ${className}
   `;
 
-  const motionProps = {
-    whileHover: !disabled
-      ? {
-          scale: currentIntensity.scale,
-          y: currentIntensity.y,
-        }
-      : {},
-    whileTap: !disabled
-      ? {
-          scale: 0.98,
-          y: 0,
-        }
-      : {},
-    transition: {
-      type: 'spring' as const,
-      stiffness: 300,
-      damping: 20,
-    },
-  };
-
   if (href) {
     // Check if it's an external URL (starts with http/https)
     const isExternal = href.startsWith('http://') || href.startsWith('https://');
 
     if (isExternal) {
       return (
-        <motion.div {...motionProps}>
-          <a
-            href={href}
-            title={title}
-            aria-label={ariaLabel}
-            className={buttonClasses}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className="relative z-10">{children}</span>
-          </a>
-        </motion.div>
+        <a
+          href={href}
+          title={title}
+          aria-label={ariaLabel}
+          className={buttonClasses}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="relative z-10">{children}</span>
+        </a>
       );
     }
 
     return (
-      <motion.div {...motionProps}>
-        <Link
-          href={href as `/${string}`}
-          title={title}
-          aria-label={ariaLabel}
-          className={buttonClasses}
-        >
-          <span className="relative z-10">{children}</span>
-        </Link>
-      </motion.div>
+      <Link
+        href={href as `/${string}`}
+        title={title}
+        aria-label={ariaLabel}
+        className={buttonClasses}
+      >
+        <span className="relative z-10">{children}</span>
+      </Link>
     );
   }
 
   return (
-    <motion.button
+    <button
       type={type}
       onClick={onClick}
       disabled={disabled}
       title={title}
       aria-label={ariaLabel}
       className={buttonClasses}
-      {...motionProps}
     >
       <span className="relative z-10">{children}</span>
-    </motion.button>
+    </button>
   );
 });

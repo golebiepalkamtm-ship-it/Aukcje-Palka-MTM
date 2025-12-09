@@ -1,3 +1,4 @@
+
 # Dokumentacja Systemu Rejestracji, Weryfikacji, Logowania i Autoryzacji SMS
 
 ## 🧠 Rationale i Strategia Implementacji
@@ -149,37 +150,43 @@ export function validatePhoneNumber(
 ## 🛠️ Instrukcje Implementacji
 
 ### 1. Konfiguracja Firebase
+
 - Utwórz projekt w Firebase Console
 - Włącz Authentication (Email/Password, Google, Phone)
 - Skonfiguruj Firestore Rules i Storage Rules
 - Pobierz `firebase-key.json` dla Admin SDK
 - Ustaw zmienne środowiskowe w `.env.local`:
-  ```
-  NEXT_PUBLIC_FIREBASE_API_KEY=...
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
-  FIREBASE_CLIENT_EMAIL=...
-  FIREBASE_PRIVATE_KEY=...
-  ```
+
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY=...
+```
 
 ### 2. Migracje Bazy Danych
+
 ```bash
 npx prisma migrate dev
 npx prisma generate
 ```
 
 ### 3. Uruchomienie Aplikacji
+
 ```bash
 npm install
 npm run dev:windows  # Windows-specific dla file watching
 ```
 
 ### 4. Testowanie
+
 - **E2E**: `npx playwright test e2e/auth.e2e.spec.ts`
 - **Unit**: `npm test`
 - **Ręczne**: Przejdź przez flow rejestracji → weryfikacja email → uzupełnienie profilu → weryfikacja telefonu
 
 ### 5. Monitoring
+
 - **Sentry**: Błędy automatycznie logowane w `sentry.server.config.ts`
 - **Prometheus**: Metryki pod `/api/metrics`
 - **Logi**: Sprawdzaj `logs/app.log`
@@ -189,12 +196,14 @@ npm run dev:windows  # Windows-specific dla file watching
 System rejestracji i autoryzacji stanowi **fundament bezpieczeństwa** całej platformy Pałka MTM, umożliwiając bezpieczne transakcje aukcyjne i ochronę przed oszustwami. Implementacja **eliminuje duplikację kodu** między komponentami autoryzacji, wprowadzając standaryzowane middleware i konteksty.
 
 **Wpływ na PLAN NAPRAWY:**
+
 - ✅ **Zrealizowane**: 3-poziomowa weryfikacja użytkowników
 - ✅ **Zrealizowane**: Integracja Firebase Auth z Prisma
 - 🚧 **W trakcie**: Admin API (30+ endpointów) - patrz `ADMIN_UPRAWNIENIA.md`
 - 🔄 **Następne**: Implementacja reCAPTCHA dla publicznych formularzy (PRIORYTET 2) - patrz `INSTRUKCJA_RECAPTCHA.md`
 
 **Kolejne Kroki:**
+
 1. **Testy E2E**: Dodać pełne scenariusze weryfikacji w `e2e/auth.e2e.spec.ts`
 2. **Monitoring**: Dodać metryki Prometheus dla rate limiting i autoryzacji
 3. **reCAPTCHA**: Zaimplementować dla rejestracji i resetowania hasła
@@ -208,6 +217,7 @@ System jest **produkcyjny i bezpieczny**, gotowy do obsługi tysięcy użytkowni
 Wyobraź sobie, że jesteś nowym użytkownikiem platformy aukcyjnej dla hodowców gołębi. Co się dzieje krok po kroku? Opiszę to tak, jakbyśmy siedzieli przy kawie i rozmawiali.
 
 ### 1. **Rejestracja - Pierwszy Kontakt**
+
 - Wchodzisz na stronę `/auth/register` - tam jest taki fajny, interaktywny formularz z kostką 3D, która się obraca (to `AuthFlipCard` z `Auth3DForm`).
 - Wpisujesz email i hasło (albo logujesz się przez Google jednym kliknięciem).
 - Jeśli rejestrujesz się pierwszy raz, aplikacja tworzy konto w Firebase (to taki bezpieczny system Google'a do logowania) i od razu wysyła email weryfikacyjny.
@@ -215,6 +225,7 @@ Wyobraź sobie, że jesteś nowym użytkownikiem platformy aukcyjnej dla hodowc�
 - W tym momencie masz **poziom dostępu 1** - jesteś zarejestrowany, ale jeszcze nic nie możesz robić.
 
 ### 2. **Weryfikacja Emaila - Potwierdzenie, Że Jesteś Sobą**
+
 - Otrzymujesz email od Firebase z linkiem do weryfikacji.
 - Klikasz w link - prowadzi do strony `/auth/verify-email`.
 - Aplikacja sprawdza kod w linku (`oobCode`), potwierdza email w Firebase i automatycznie Cię loguje.
@@ -223,12 +234,14 @@ Wyobraź sobie, że jesteś nowym użytkownikiem platformy aukcyjnej dla hodowc�
 - System zapisuje w bazie danych, że email jest zweryfikowany, i ustawia ciasteczka `level2-ok=1`.
 
 ### 3. **Uzupełnienie Profilu - Trochę Szczegółów o Tobie**
+
 - Po weryfikacji emaila, aplikacja Cię przekierowuje do `/profile`.
 - Musisz wypełnić podstawowe dane: imię, nazwisko, adres, miasto, kod pocztowy, numer telefonu.
 - To jest ważne, bo bez kompletnego profilu nie przejdziesz dalej.
 - System sprawdza, czy wszystkie pola są wypełnione - to jest `isProfileVerified`.
 
 ### 4. **Weryfikacja Telefonu - SMS do Potwierdzenia**
+
 - Teraz przechodzisz do `/auth/verify-phone`.
 - Wpisujesz swój numer telefonu (aplikacja sprawdza format - polskie numery jak +48 123 456 789, albo międzynarodowe).
 - Klikasz "Wyślij kod" - Firebase wysyła SMS z 6-cyfrowym kodem na Twój telefon.
@@ -237,6 +250,7 @@ Wyobraź sobie, że jesteś nowym użytkownikiem platformy aukcyjnej dla hodowc�
 - Teraz masz **poziom dostępu 3** - pełny dostęp! Możesz tworzyć aukcje, licytować, dodawać treści, wszystko.
 
 ### 5. **Logowanie - Jak Wracasz Następnym Razem**
+
 - Jeśli masz już konto, wchodzisz na `/auth/login`.
 - Wpisujesz email i hasło, albo klikasz Google.
 - Jeśli email nie był zweryfikowany, system znowu wyśle link weryfikacyjny.
@@ -244,18 +258,21 @@ Wyobraź sobie, że jesteś nowym użytkownikiem platformy aukcyjnej dla hodowc�
 - Ustawia ciasteczka dostępu i przekierowuje Cię tam, gdzie chciałeś iść.
 
 ### 6. **Poziomy Dostępu - Co Możesz Robić na Każdym Etapie**
+
 - **Poziom 1 (USER_REGISTERED)**: Tylko logowanie, nic więcej. Jesteś w systemie, ale nieaktywny.
 - **Poziom 2 (USER_EMAIL_VERIFIED)**: Możesz wejść do profilu, zobaczyć dashboard, ale nie możesz tworzyć aukcji ani licytować.
 - **Poziom 3 (USER_FULL_VERIFIED)**: Pełny dostęp - aukcje, licytacje, referencje, spotkania hodowców, wszystko.
 - **ADMIN**: Jeśli jesteś administratorem, masz dostęp do wszystkiego, włącznie z panelem admina.
 
 ### 7. **Bezpieczeństwo i Jak To Wszystko Działa**
+
 - Cały czas aplikacja sprawdza, czy jesteś tym, za kogo się podajesz - przez tokeny Firebase.
 - Middleware (to taki strażnik na wejściu) sprawdza ciasteczka i przekierowuje Cię, jeśli nie masz odpowiedniego poziomu.
 - API routes używają funkcji jak `requireEmailVerification()` czy `requireFullVerification()` - jeśli nie masz dostępu, dostajesz błąd 403.
 - Wszystko jest logowane w Sentry (jak coś pójdzie nie tak) i monitorowane przez Prometheus.
 
 ### 8. **Co Jeśli Coś Pójdzie Nie Tak?**
+
 - Jeśli link weryfikacyjny wygaśnie - zaloguj się i wyślij nowy.
 - Jeśli SMS nie przyjdzie - sprawdź numer telefonu i spróbuj ponownie.
 - Jeśli coś się zepsuje - aplikacja pokaże błąd i zaloguje go w systemie.

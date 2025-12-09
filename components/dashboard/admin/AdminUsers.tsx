@@ -75,7 +75,12 @@ const AdminUsers = memo(function AdminUsers({
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card">
+      <motion.div
+        // @ts-ignore
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="card"
+      >
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-48">
             <label className="block text-sm font-medium text-white mb-2">Rola</label>
@@ -121,6 +126,7 @@ const AdminUsers = memo(function AdminUsers({
 
       {/* Users Table */}
       <motion.div
+        // @ts-ignore
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}

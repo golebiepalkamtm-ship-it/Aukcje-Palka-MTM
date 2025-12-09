@@ -1,12 +1,9 @@
 {
-  "name": "Storm King",
-  "ringNumber": "PL-0446-12-328",
-  "bloodline": "Janssen",
-  "gender": "MALE",
-  "birthDate": "2012-04-12T00:00:00.000Z",
-  "color": "Blue",
-  "weight": 475,
-  "breeder": "MTM Pałka",
-  "description": "Król burzy - champion o niezwykłej wytrzymałości i sile charakteru.",
-  "achievements": ["Mistrz Polski 2012", "1. miejsce - Poznań 2012", "2. miejsce - Warszawa 2011"]
+  "id": "5",
+  "name": "Champion Echo",
+  "achievements": ["Zwycięzca Pucharu Narodowego", "Rekordzista w locie długodystansowym"],
+  "images": [
+    "/champions/5/gallery/PL-0446-12-328_2KK.jpg"
+  ],
+  "pedigreeImage": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop"
 }

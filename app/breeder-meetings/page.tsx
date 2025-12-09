@@ -1,124 +1,20 @@
 'use client';
-
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal';
 import { SmartImage } from '@/components/ui/SmartImage';
 import { Text3D } from '@/components/ui/Text3D';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import { useAuth } from '@/contexts/AuthContext';
-import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, Camera, CheckCircle, Upload, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-// Scroll reveal hook from AchievementTimeline
-const useScrollReveal = () => {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+import GoldenCard from '@/components/ui/GoldenCard';
+import GlowingCard from '@/components/ui/GlowingCard';
 
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    if (prefersReducedMotion.matches) {
-      setIsVisible(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.35 }
-    );
-
-    observer.observe(node);
-
-    return () => {
-      if (node) {
-        observer.unobserve(node);
-      }
-    };
-  }, []);
-
-  return { ref, isVisible };
-};
-
-// Styled card component matching AchievementTimeline
-interface MeetingCardProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-function MeetingCard({ children, className = '' }: MeetingCardProps) {
-  const { ref, isVisible } = useScrollReveal();
-
-  return (
-    <div className="relative">
-      {/* 3D Shadow layers */}
-      {[...Array(11)].map((_, i) => {
-        const layer = 11 - i;
-        const offset = layer * 1.5;
-        const opacity = Math.max(0.2, 0.7 - layer * 0.05);
-        
-        return (
-          <div
-            key={i}
-            className="absolute inset-0 rounded-3xl border-2 backdrop-blur-sm"
-            style={{
-              borderColor: `rgba(0, 0, 0, ${opacity})`,
-              backgroundColor: `rgba(0, 0, 0, ${opacity * 0.8})`,
-              transform: `translateX(${offset}px) translateY(${offset / 2}px) translateZ(-${offset}px)`,
-              zIndex: i + 1
-            }}
-            aria-hidden="true"
-          />
-        );
-      })}
-
-      <article
-        ref={ref}
-        className={`glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 text-white transition-all duration-[2000ms] overflow-hidden backdrop-blur-xl ${className} ${
-          !isVisible ? 'opacity-0' : 'opacity-100'
-        }`}
-        style={{
-          transform: !isVisible ? 'translateZ(-200px) scale(0.5)' : 'translateZ(0) scale(1)',
-          transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-          background: 'linear-gradient(135deg, rgba(139, 117, 66, 0.4) 0%, rgba(133, 107, 56, 0.35) 25%, rgba(107, 91, 49, 0.32) 50%, rgba(89, 79, 45, 0.3) 75%, rgba(71, 61, 38, 0.28) 100%)',
-          borderColor: 'rgba(218, 182, 98, 1)',
-          boxShadow: '0 0 20px rgba(218, 182, 98, 1), 0 0 35px rgba(189, 158, 88, 0.8), 0 0 50px rgba(165, 138, 78, 0.5), inset 0 0 40px rgba(71, 61, 38, 0.15), inset 0 2px 0 rgba(218, 182, 98, 0.6), inset 0 -2px 0 rgba(61, 51, 33, 0.4)'
-        }}
-      >
-        {/* Inner light effects */}
-        <div
-          className="absolute inset-0 pointer-events-none rounded-3xl"
-          style={{
-            background: `
-              radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255, 245, 200, 0.15) 0%, transparent 50%),
-              radial-gradient(ellipse 600px 500px at 80% 70%, rgba(218, 182, 98, 0.1) 0%, transparent 50%),
-              radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255, 235, 180, 0.08) 0%, transparent 60%)
-            `,
-            backdropFilter: 'blur(80px)',
-            mixBlendMode: 'soft-light',
-            zIndex: 1
-          }}
-        />
-        <div className="relative z-10">
-          {children}
-        </div>
-      </article>
-    </div>
-  );
-}
+// Use the shared GlowingCard for meeting containers with gradient effect
+const MeetingCard = GlowingCard;
 
 interface BreederMeeting {
   id: string;
@@ -132,6 +28,7 @@ interface BreederMeeting {
 export default function BreederMeetingsPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [breederMeetings, setBreederMeetings] = useState<BreederMeeting[]>([]);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{
@@ -254,55 +151,130 @@ export default function BreederMeetingsPage() {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [selectedImage]);
 
+  // Glow effect functions
+  const centerOfElement = ($el: HTMLElement) => {
+    const { left, top, width, height } = $el.getBoundingClientRect();
+    return [width / 2, height / 2];
+  };
+
+  const pointerPositionRelativeToElement = ($el: HTMLElement, e: PointerEvent) => {
+    const pos = [e.clientX, e.clientY];
+    const { left, top, width, height } = $el.getBoundingClientRect();
+    const x = pos[0] - left;
+    const y = pos[1] - top;
+    const px = Math.min(Math.max((100 / width) * x, 0), 100);
+    const py = Math.min(Math.max((100 / height) * y, 0), 100);
+    return { pixels: [x, y], percent: [px, py] };
+  };
+
+  const angleFromPointerEvent = ($el: HTMLElement, dx: number, dy: number) => {
+    let angleRadians = 0;
+    let angleDegrees = 0;
+    if (dx !== 0 || dy !== 0) {
+      angleRadians = Math.atan2(dy, dx);
+      angleDegrees = angleRadians * (180 / Math.PI) + 90;
+      if (angleDegrees < 0) {
+        angleDegrees += 360;
+      }
+    }
+    return angleDegrees;
+  };
+
+  const distanceFromCenter = ($el: HTMLElement, x: number, y: number) => {
+    const [cx, cy] = centerOfElement($el);
+    return [x - cx, y - cy];
+  };
+
+  const closenessToEdge = ($el: HTMLElement, x: number, y: number) => {
+    const [cx, cy] = centerOfElement($el);
+    const [dx, dy] = distanceFromCenter($el, x, y);
+    let k_x = Infinity;
+    let k_y = Infinity;
+    if (dx !== 0) {
+      k_x = cx / Math.abs(dx);
+    }
+    if (dy !== 0) {
+      k_y = cy / Math.abs(dy);
+    }
+    return Math.min(Math.max((1 / Math.min(k_x, k_y)), 0), 1);
+  };
+
+  const round = (value: number, precision = 3) => parseFloat(value.toFixed(precision));
+
+  const clamp = (value: number, min = 0, max = 100) =>
+    Math.min(Math.max(value, min), max);
+
+  const cardUpdate = (e: PointerEvent) => {
+    if (!containerRef.current) return;
+
+    // Znajdź wszystkie karty w kontenerze
+    const cards = containerRef.current.querySelectorAll('.card');
+
+    cards.forEach((cardElement) => {
+      const card = cardElement as HTMLElement;
+      const rect = card.getBoundingClientRect();
+
+      // Sprawdź, czy kursor jest nad tą kartą
+      if (e.clientX >= rect.left && e.clientX <= rect.right &&
+          e.clientY >= rect.top && e.clientY <= rect.bottom) {
+
+        const position = pointerPositionRelativeToElement(card, e);
+        const [px, py] = position.pixels;
+        const [perx, pery] = position.percent;
+        const [dx, dy] = distanceFromCenter(card, px, py);
+        const edge = closenessToEdge(card, px, py);
+        const angle = angleFromPointerEvent(card, dx, dy);
+
+        // Ustaw zmienne na karcie, jak w oryginalnym kodzie dla pojedynczej karty
+        card.style.setProperty('--pointer-x', `${round(perx)}%`);
+        card.style.setProperty('--pointer-y', `${round(pery)}%`);
+        card.style.setProperty('--pointer-°', `${round(angle)}deg`);
+        card.style.setProperty('--pointer-d', `${round(edge * 100)}`);
+
+        card.classList.remove('animating');
+      }
+    });
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener("pointermove", cardUpdate);
+    return () => container.removeEventListener("pointermove", cardUpdate);
+  }, []);
+
   if (!imagesLoaded) {
     return (
-      <UnifiedLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <MeetingCard className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mx-auto mb-4"></div>
-            <Text3D variant="glow" intensity="medium" className="text-lg">
-              Ładowanie zdjęć...
-            </Text3D>
-          </MeetingCard>
-        </div>
-      </UnifiedLayout>
+      <div className="min-h-screen flex items-center justify-center">
+        <MeetingCard className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mx-auto mb-4"></div>
+          <Text3D variant="glow" intensity="medium" className="text-lg">
+            Ładowanie zdjęć...
+          </Text3D>
+        </MeetingCard>
+      </div>
     );
   }
 
   return (
-    <UnifiedLayout isHomePage={true}>
-      {/* Hero Section - z padding-top dla miejsca na logo i nawigację, delay 0.8s czeka na animację fade-in-fwd */}
-      <motion.section
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.8 }}
-        className="relative z-10 pt-80 pb-12 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12"
-      >
+    <>
+      {/* Hero Section */}
+      <section className="relative z-10 pt-40 pb-12 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12">
         <div className="w-full mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Spotkania z Hodowcami</h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.2 }}
-            className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
-          >
+          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto">
             Galeria zdjęć z naszych spotkań z hodowcami gołębi pocztowych
-          </motion.p>
+          </p>
         </div>
-      </motion.section>
+      </section>
 
       {/* Content */}
-      <div className="relative z-10 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12 pb-20">
+      <div ref={containerRef} className="relative z-10 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12 pb-20">
         <div className="max-w-7xl mx-auto">
           {/* Add Meeting Form Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-20"
-          >
-            <MeetingCard>
+          <section className="mb-20">
+            <MeetingCard className="no-glow">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold mb-4 text-gradient">Dodaj Zdjęcia ze Spotkania</h2>
                 <p className="text-white/80 text-lg">
@@ -312,30 +284,18 @@ export default function BreederMeetingsPage() {
 
               {user ? (
                 <>
-                  <AnimatePresence>
-                    {submitStatus === 'success' && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center"
-                      >
-                        <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
-                        <span className="text-green-400">Spotkanie zostało dodane pomyślnie!</span>
-                      </motion.div>
-                    )}
-                    {submitStatus === 'error' && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center"
-                      >
-                        <AlertCircle className="w-5 h-5 text-red-400 mr-3" />
-                        <span className="text-red-400">{errorMessage}</span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {submitStatus === 'success' && (
+                    <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center">
+                      <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                      <span className="text-green-400">Spotkanie zostało dodane pomyślnie!</span>
+                    </div>
+                  )}
+                  {submitStatus === 'error' && (
+                    <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center">
+                      <AlertCircle className="w-5 h-5 text-red-400 mr-3" />
+                      <span className="text-red-400">{errorMessage}</span>
+                    </div>
+                  )}
 
                   <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -440,10 +400,8 @@ export default function BreederMeetingsPage() {
                           </p>
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                             {previewImages.map((preview, index) => (
-                              <motion.div
+                              <div
                                 key={index}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
                                 className="relative group aspect-square"
                               >
                                 <SmartImage
@@ -463,7 +421,7 @@ export default function BreederMeetingsPage() {
                                 >
                                   <X className="w-4 h-4" />
                                 </button>
-                              </motion.div>
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -514,27 +472,18 @@ export default function BreederMeetingsPage() {
                 </div>
               )}
             </MeetingCard>
-          </motion.section>
+          </section>
 
           {/* Breeder Meetings Grid */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
+          <section>
             <div className="space-y-12">
               {breederMeetings &&
                 Array.isArray(breederMeetings) &&
                 breederMeetings.map((meeting, index) => (
-                  <motion.div
+                  <div
                     key={meeting.id}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: index * 0.1 }}
-                    viewport={{ once: true }}
                   >
-                    <MeetingCard className="p-6">
+                      <MeetingCard className="p-6 no-glow">
                       {/* Meeting Title */}
                       <div className="mb-6">
                         <h3 className="text-2xl md:text-3xl font-bold text-gradient text-center">{meeting.name}</h3>
@@ -549,12 +498,8 @@ export default function BreederMeetingsPage() {
                       <div className="grid gap-5 rounded-2xl border border-white/10 bg-white/5 p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                           {meeting.images.map((image, imageIndex) => (
-                            <motion.div
+                            <div
                               key={imageIndex}
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              whileInView={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.5, delay: imageIndex * 0.05 }}
-                              viewport={{ once: true }}
                               className="relative h-48 overflow-hidden rounded-xl cursor-pointer group border border-white/5 bg-black/20"
                               onClick={() => handleImageClick(meeting.id, imageIndex)}
                             >
@@ -575,18 +520,18 @@ export default function BreederMeetingsPage() {
                                   </span>
                                 </div>
                               </div>
-                            </motion.div>
+                            </div>
                           ))}
                         </div>
                       </div>
                     </MeetingCard>
-                  </motion.div>
+                  </div>
                 ))}
             </div>
 
             {/* Empty State */}
             {breederMeetings.length === 0 && (
-              <MeetingCard className="p-12 text-center">
+                  <MeetingCard className="p-12 text-center no-glow">
                 <Text3D variant="gradient" intensity="medium" className="text-2xl font-bold mb-4">
                   Brak spotkań
                 </Text3D>
@@ -604,7 +549,7 @@ export default function BreederMeetingsPage() {
                 )}
               </MeetingCard>
             )}
-          </motion.section>
+          </section>
         </div>
       </div>
 
@@ -627,6 +572,6 @@ export default function BreederMeetingsPage() {
             />
           );
         })()}
-    </UnifiedLayout>
+    </>
   );
 }

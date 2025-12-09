@@ -15,19 +15,19 @@ async function checkData() {
   try {
     console.log('Sprawdzam tabele...');
 
-    const userCount = await prisma.user.count();
+    const [userCount, adminUser, auctionCount, bidCount] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.findFirst({
+        where: { email: 'admin@palka-mtm.pl' },
+        select: { id: true, email: true, role: true, firebaseUid: true }
+      }),
+      prisma.auction.count(),
+      prisma.bid.count()
+    ]);
+
     console.log(`Liczba użytkowników: ${userCount}`);
-
-    const adminUser = await prisma.user.findFirst({
-      where: { email: 'admin@palka-mtm.pl' },
-      select: { id: true, email: true, role: true, firebaseUid: true }
-    });
     console.log('Admin user:', adminUser);
-
-    const auctionCount = await prisma.auction.count();
     console.log(`Liczba aukcji: ${auctionCount}`);
-
-    const bidCount = await prisma.bid.count();
     console.log(`Liczba ofert: ${bidCount}`);
 
   } catch (error) {

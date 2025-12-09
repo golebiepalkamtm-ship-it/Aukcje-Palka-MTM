@@ -56,6 +56,26 @@ export async function GET(_request: NextRequest) {
     }>;
 
     for (const id of championIds) {
+      const dataFile = path.join(championsRoot, id, 'data.json');
+
+      // Try to read data.json first
+      try {
+        const dataContent = await fs.promises.readFile(dataFile, 'utf-8');
+        const championData = JSON.parse(dataContent);
+
+        if (championData.removed !== true && championData.images && Array.isArray(championData.images)) {
+          champions.push({
+            id,
+            images: championData.images,
+            pedigree: { images: championData.pedigreeImage ? [championData.pedigreeImage] : [] },
+          });
+          continue; // Skip file-based loading if data.json exists
+        }
+      } catch {
+        // data.json doesn't exist or is invalid, fall back to file-based loading
+      }
+
+      // Fallback to file-based loading
       const galleryDir = path.join(championsRoot, id, 'gallery');
       const pedigreeDir = path.join(championsRoot, id, 'pedigree');
 

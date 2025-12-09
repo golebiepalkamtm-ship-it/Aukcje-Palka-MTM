@@ -102,9 +102,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (userData.emailVerified) {
           document.cookie = `level2-ok=1; path=/; max-age=86400; SameSite=Lax`;
         }
-        
+
         if (userData.isPhoneVerified && userData.isProfileVerified && userData.isActive) {
           document.cookie = `level3-ok=1; path=/; max-age=86400; SameSite=Lax`;
+        }
+
+        // Ustaw cookie roli użytkownika dla middleware
+        if (userData.role) {
+          document.cookie = `user-role=${userData.role.toLowerCase()}; path=/; max-age=86400; SameSite=Lax`;
         }
         
         // Wyczyść błąd przy pomyślnej synchronizacji
@@ -169,6 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         document.cookie = 'firebase-auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         document.cookie = 'level2-ok=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         document.cookie = 'level3-ok=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       }
       
       setLoading(false);
@@ -218,6 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       document.cookie = 'firebase-auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       document.cookie = 'level2-ok=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       document.cookie = 'level3-ok=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      document.cookie = 'user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       router.push('/');
     } catch (err) {
       logError('Error signing out:', err instanceof Error ? err.message : err);

@@ -1,8 +1,50 @@
-import { handleApiError } from '@/lib/error-handling';
-import { getAdminUser } from '@/lib/firebase-auth-helpers';
-import { prisma } from '@/lib/prisma';
-import { apiRateLimit } from '@/lib/rate-limit';
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getAdminUser } from '@/lib/firebase-auth-helpers';
+import { getBreederMeetingById } from '@/lib/breeder-meetings';
+import { handleApiError } from '@/lib/error-handling';
+import { apiRateLimit } from '@/lib/rate-limit';
+
+// GET - Pobierz szczegóły spotkania z hodowcą
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Rate limiting
+    const rateLimitResponse = apiRateLimit(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    // Sprawdź autoryzację - tylko admin
+    const authResult = await getAdminUser(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
+    const meeting = await getBreederMeetingById(params.id);
+
+    if (!meeting) {
+      return NextResponse.json(
+        { error: 'Nie znaleziono spotkania' },
+        { status: 404 }
+      );
+    }
+
+    // Zapewnienie, że ścieżka do zdjęcia jest poprawnym URL-em
+    const meetingData = {
+      ...meeting,
+      photoUrl: meeting.photoUrl?.startsWith('http')
+        ? meeting.photoUrl
+        : `${process.env.NEXT_PUBLIC_BASE_URL}${meeting.photoUrl}`
+    };
+
+    return NextResponse.json(meetingData);
+  } catch (error) {
+    return handleApiError(error, request, { endpoint: 'admin/breeder-meetings/[id]', method: 'GET' });
+  }
+}
 
 // PATCH - Zatwierdź/odrzuć spotkanie z hodowcą
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

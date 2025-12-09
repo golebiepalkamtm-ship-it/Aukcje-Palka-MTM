@@ -1,8 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { ExternalLink, MapPin, Navigation } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import GoldenCard from '@/components/ui/GoldenCard';
 
 // Scroll reveal hook from AchievementTimeline
 const useScrollReveal = () => {
@@ -44,72 +44,7 @@ const useScrollReveal = () => {
   return { ref, isVisible };
 };
 
-// Styled card component matching AchievementTimeline
-interface GoldenCardProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-function GoldenCard({ children, className = '' }: GoldenCardProps) {
-  const { ref, isVisible } = useScrollReveal();
-
-  return (
-    <div className="relative">
-      {/* 3D Shadow layers */}
-      {[...Array(11)].map((_, i) => {
-        const layer = 11 - i;
-        const offset = layer * 1.5;
-        const opacity = Math.max(0.2, 0.7 - layer * 0.05);
-        
-        return (
-          <div
-            key={i}
-            className="absolute inset-0 rounded-3xl border-2 backdrop-blur-sm"
-            style={{
-              borderColor: `rgba(0, 0, 0, ${opacity})`,
-              backgroundColor: `rgba(0, 0, 0, ${opacity * 0.8})`,
-              transform: `translateX(${offset}px) translateY(${offset / 2}px) translateZ(-${offset}px)`,
-              zIndex: i + 1
-            }}
-            aria-hidden="true"
-          />
-        );
-      })}
-
-      <article
-        ref={ref}
-        className={`glass-morphism relative z-[12] w-full rounded-3xl border-2 p-6 text-white transition-all duration-[2000ms] overflow-hidden backdrop-blur-xl ${className} ${
-          !isVisible ? 'opacity-0' : 'opacity-100'
-        }`}
-        style={{
-          transform: !isVisible ? 'translateZ(-200px) scale(0.5)' : 'translateZ(0) scale(1)',
-          transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-          background: 'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
-          borderColor: 'rgba(218, 182, 98, 1)',
-          boxShadow: '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)'
-        }}
-      >
-        {/* Inner light effects */}
-        <div 
-          className="absolute inset-0 pointer-events-none rounded-3xl"
-          style={{
-            background: `
-              radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255, 245, 200, 0.25) 0%, transparent 50%),
-              radial-gradient(ellipse 600px 500px at 80% 70%, rgba(218, 182, 98, 0.2) 0%, transparent 50%),
-              radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255, 235, 180, 0.15) 0%, transparent 60%)
-            `,
-            backdropFilter: 'blur(80px)',
-            mixBlendMode: 'soft-light',
-            zIndex: 1
-          }}
-        />
-        <div className="relative z-10">
-          {children}
-        </div>
-      </article>
-    </div>
-  );
-}
+// using shared GoldenCard from components/ui/GoldenCard for consistent styling
 
 export default function GoogleMap() {
   const address = 'ul. Stawowa 6, 59-800 Lubań';
@@ -117,13 +52,7 @@ export default function GoogleMap() {
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      viewport={{ once: true }}
-      className="mb-20"
-    >
+    <section className="mb-20">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16">
         {/* Mapa */}
         <GoldenCard className="p-0 overflow-hidden">
@@ -200,6 +129,6 @@ export default function GoogleMap() {
           </GoldenCard>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }

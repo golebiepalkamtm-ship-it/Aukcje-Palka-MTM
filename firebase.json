@@ -18,7 +18,7 @@
   },
   "apphosting": [
     {
-      "backendId": "palkamtm",
+      "backendId": "mtm",
       "rootDir": ".",
       "ignore": [
         "node_modules",
@@ -30,17 +30,6 @@
         ".vercel"
       ],
       "alwaysDeployFromSource": true
-    },
-    {
-      "backendId": "mtm",
-      "rootDir": "/",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "functions"
-      ]
     }
   ]
 }

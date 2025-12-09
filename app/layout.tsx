@@ -1,7 +1,7 @@
 // Server root layout — head tags must be rendered on server so external styles (FontAwesome) load correctly
 import type { Viewport } from 'next';
-import './globals.css';
 import './loading-animation.css';
+import './globals.css';
 import ClientRoot from '@/components/layout/ClientRoot';
 
 export const viewport: Viewport = {
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           precedence="default"
         />
       </head>
-      <body className="relative">
+      <body className="relative" suppressHydrationWarning>
         <ClientRoot>{children}</ClientRoot>
       </body>
     </html>

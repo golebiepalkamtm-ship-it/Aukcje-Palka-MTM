@@ -45,7 +45,7 @@ export function GlowCard({
   
   const variantClasses = {
     default: 'card border-2 border-white/15 bg-gradient-to-br from-white/10 via-white/5 to-transparent',
-    glass: 'card-glass border-2 border-white/20 bg-gradient-to-br from-white/15 via-white/8 to-transparent',
+    glass: 'card-glass border-2 border-white/20',
     solid: 'card-solid border-2 border-white/25 bg-gradient-to-br from-white/20 via-white/10 to-white/5',
     gradient: 'card-gradient border-2 border-white/20 bg-gradient-to-br from-blue-900/20 via-purple-900/10 to-transparent',
     floating: 'card-floating border-2 border-white/15 bg-gradient-to-br from-white/12 via-white/6 to-transparent',
@@ -57,7 +57,8 @@ export function GlowCard({
     strong: { '--glow-boost': '30%' } as React.CSSProperties,
   };
 
-  const hoverClasses = hoverable ? 'hover:scale-[1.02] hover:-translate-y-1 hover:border-white hover:shadow-[0_0_60px_20px_rgba(255,255,255,1),0_0_100px_30px_rgba(255,255,255,0.7)] cursor-pointer' : '';
+  // Remove lift (translate/scale) on hover — keep subtle border highlight and cursor
+  const hoverClasses = hoverable ? 'hover:border-white cursor-pointer' : '';
   const clickableProps = onClick ? {
     onClick,
     onKeyDown: (e: React.KeyboardEvent) => {
@@ -82,7 +83,6 @@ export function GlowCard({
       aria-label={ariaLabel}
       {...clickableProps}
     >
-      <span className="glow" aria-hidden="true" />
       <div className="relative z-10">{children}</div>
     </Component>
   );
@@ -135,13 +135,12 @@ export function GlowButton({
       aria-label={ariaLabel}
       className={cn(
         variantClasses[variant],
-        'relative overflow-hidden font-semibold py-3 px-6 text-sm rounded-2xl transition-all duration-500 ease-out transform hover:scale-105',
+        'relative overflow-hidden font-semibold py-3 px-6 text-sm rounded-2xl transition-all duration-500 ease-out',
         fullWidth && 'w-full',
-        disabled && 'opacity-50 cursor-not-allowed hover:scale-100',
+        disabled && 'opacity-50 cursor-not-allowed',
         className
       )}
     >
-      <span className="glow" aria-hidden="true" />
       {children}
     </button>
   );

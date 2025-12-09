@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useDropzone } from 'react-dropzone';
@@ -57,7 +58,7 @@ function GoldenCard({ children, className = '' }: GoldenCardProps) {
   return (
     <div className="relative">
       {/* 3D Shadow layers */}
-      {[...Array(11)].map((_, i) => (
+      {isVisible && [...Array(11)].map((_, i) => (
         <div
           key={i}
           className="absolute inset-0 rounded-2xl pointer-events-none"
@@ -72,15 +73,17 @@ function GoldenCard({ children, className = '' }: GoldenCardProps) {
 
       <article
         ref={ref}
-        className={`relative rounded-2xl border-2 p-6 transition-all duration-700 ${className} ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}
+        className={`relative rounded-2xl border-2 p-6 transition-all duration-700 ${className}`}
         style={{
-            background:
-            'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
-          borderColor: 'rgba(218, 182, 98, 1)',
-          boxShadow:
-            '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)',
+          transform: isVisible ? 'translateY(0)' : 'translateY(8px)',
+          opacity: isVisible ? 1 : 0,
+          background: !isVisible 
+            ? 'transparent'
+            : 'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
+          borderColor: !isVisible ? 'transparent' : 'rgba(218, 182, 98, 1)',
+          boxShadow: !isVisible 
+            ? 'none'
+            : '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)',
         }}
       >
         {/* Inner light effects */}
@@ -155,6 +158,9 @@ export default function CreateAuctionForm({
   } | null>(null);
 
   // Hook formularza
+  // Cast zodResolver to the react-hook-form Resolver generic to satisfy TS inference
+  const resolver = zodResolver(auctionCreateSchema) as unknown as Resolver<CreateAuctionFormData>;
+
   const {
     register,
     handleSubmit,
@@ -162,7 +168,7 @@ export default function CreateAuctionForm({
     setValue,
     formState: { errors },
   } = useForm<CreateAuctionFormData>({
-    resolver: zodResolver(auctionCreateSchema),
+    resolver,
     mode: 'onChange',
   });
 
@@ -640,6 +646,7 @@ export default function CreateAuctionForm({
             {currentStep === 1 && (
               <motion.div
                 key="step1"
+                // @ts-ignore
                 initial={{ opacity: 0, x: -100 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 100 }}
@@ -881,6 +888,7 @@ export default function CreateAuctionForm({
             {currentStep === 2 && (
               <motion.div
                 key="step2"
+                // @ts-ignore
                 initial={{ opacity: 0, x: 100 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -100 }}

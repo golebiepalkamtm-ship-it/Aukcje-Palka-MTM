@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { error as logError } from '@/lib/logger'
 import * as Sentry from '@sentry/nextjs'
+import { captureException } from '@/lib/sentry-helpers'
 import { ROLE_HIERARCHY, Role } from '@/types/auth'
 
 /**

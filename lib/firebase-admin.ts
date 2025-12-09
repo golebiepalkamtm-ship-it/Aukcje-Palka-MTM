@@ -1,16 +1,19 @@
-// Firebase Admin SDK - tylko dla serwera
-import { cert, getApps, initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+// Firebase Admin SDK - only require at runtime on server to avoid bundling into client
+/* eslint-disable */
+// We intentionally avoid top-level imports of 'firebase-admin' because Next.js build
+// statically analyzes imports and will try to resolve node-only modules (fs, net, http2)
+// which breaks the client bundle. Instead we `require()` inside the initializer below
+// guarded by server-only checks.
 
 // Wyciszone logi - nie używamy importu z ./logger
-const SILENT_MODE = true;
+const SILENT_MODE = false; // Tymczasowo włączone dla debugowania produkcji
 const debug = (..._args: any[]) => { if (!SILENT_MODE) console.debug('[DEBUG]', ..._args); };
 const info = (..._args: any[]) => { if (!SILENT_MODE) console.info('[INFO]', ..._args); };
 const error = (..._args: any[]) => { if (!SILENT_MODE) console.error('[ERROR]', ..._args); };
 const isDev = process.env.NODE_ENV !== 'production';
 
-let adminAuth: ReturnType<typeof getAuth> | null = null;
-let app: ReturnType<typeof initializeApp> | null = null;
+let adminAuth: any = null;
+let app: any = null;
 let initializationAttempted = false;
 
 const isTest =
@@ -32,10 +35,39 @@ function initializeFirebaseAdmin() {
   initializationAttempted = true;
 
   // Sprawdź czy wszystkie wymagane zmienne środowiskowe są ustawione
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  let projectId = process.env.FIREBASE_PROJECT_ID;
+  let clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  let privateKey = process.env.FIREBASE_PRIVATE_KEY;
   const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET;
+
+  // If a full service account JSON is provided via Secret Manager, parse it and
+  // override individual fields. We expect `FIREBASE_SERVICE_ACCOUNT_JSON` to
+  // contain the entire JSON content of the service account key.
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  if (serviceAccountJson) {
+    try {
+      const parsed = typeof serviceAccountJson === 'string' ? JSON.parse(serviceAccountJson) : serviceAccountJson;
+      // prefer parsed values if available
+      if (parsed.project_id) {
+        // eslint-disable-next-line prefer-const
+        // assign to local variables used below
+        // (we don't set process.env to avoid mutating global env)
+      }
+      // Use local shadowed variables
+      const saProjectId = parsed.project_id || projectId;
+      const saClientEmail = parsed.client_email || clientEmail;
+      const saPrivateKey = parsed.private_key || privateKey;
+      // Reassign the three variables used later
+      // @ts-ignore
+      projectId = saProjectId;
+      // @ts-ignore
+      clientEmail = saClientEmail;
+      // @ts-ignore
+      privateKey = saPrivateKey;
+    } catch (err) {
+      error('❌ Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON:', err instanceof Error ? err.message : String(err));
+    }
+  }
 
   if (isDev && !isTest && !isBuildTime) {
     debug('🔧 Firebase Admin SDK initialization check:');
@@ -71,6 +103,15 @@ function initializeFirebaseAdmin() {
       .replace(/\\n/g, '\n')
       // Handle literal newlines (already present)
       .trim();
+
+    if (isDev) {
+      debug('🔑 Private key debug:');
+      debug('- Original length:', privateKey.length);
+      debug('- Normalized length:', normalizedPrivateKey.length);
+      debug('- Starts with BEGIN:', normalizedPrivateKey.startsWith('-----BEGIN'));
+      debug('- Ends with END:', normalizedPrivateKey.endsWith('-----END'));
+      debug('- Contains newlines:', normalizedPrivateKey.includes('\n'));
+    }
     
     // Check if private key looks valid (should start with -----BEGIN)
     if (!normalizedPrivateKey.includes('-----BEGIN')) {
@@ -88,20 +129,42 @@ function initializeFirebaseAdmin() {
     }
 
     const firebaseAdminConfig = {
-      credential: cert({
-        projectId,
-        clientEmail,
-        privateKey: normalizedPrivateKey,
-      }),
+      // credential will be created below using runtime require
       storageBucket: storageBucket,
     };
 
-    info('🔧 Initializing Firebase Admin SDK...');
+    info('🔧 Initializing Firebase Admin SDK (server-only require) ...');
 
-    // Initialize Firebase Admin
-    app = getApps().length === 0 ? initializeApp(firebaseAdminConfig) : getApps()[0];
-    adminAuth = getAuth(app);
-    
+    // Require server-side firebase-admin modules at runtime. Use require instead of
+    // static import to prevent bundlers from including node-only modules in client bundles.
+    if (typeof window !== 'undefined') {
+      error('Attempt to initialize Firebase Admin SDK in browser environment - aborting');
+      return;
+    }
+
+    let adminAppModules: any;
+    let adminAuthModule: any;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      adminAppModules = require('firebase-admin/app');
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      adminAuthModule = require('firebase-admin/auth');
+    } catch (err) {
+      error('❌ Could not require firebase-admin modules at runtime:', err instanceof Error ? err.message : String(err));
+      return;
+    }
+
+    const { cert: runtimeCert, getApps: runtimeGetApps, initializeApp: runtimeInitializeApp } = adminAppModules;
+    const { getAuth: runtimeGetAuth } = adminAuthModule;
+
+    // Build final config with runtime certificate
+    const finalConfig = Object.assign({}, firebaseAdminConfig, {
+      credential: runtimeCert({ projectId, clientEmail, privateKey: normalizedPrivateKey }),
+    });
+
+    app = runtimeGetApps().length === 0 ? runtimeInitializeApp(finalConfig) : runtimeGetApps()[0];
+    adminAuth = runtimeGetAuth(app);
+
     info('✅ Firebase Admin SDK initialized successfully');
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);

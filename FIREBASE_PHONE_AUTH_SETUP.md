@@ -6,7 +6,7 @@ System autoryzacji SMS został skonfigurowany do wysyłania prawdziwych SMS prze
 
 ## 1. Firebase Console - Aktywacja Phone Auth
 
-1. **Idź do Firebase Console**: https://console.firebase.google.com/
+1. **Idź do Firebase Console**: [Firebase Console](https://console.firebase.google.com/)
 2. **Wybierz projekt**: Palka MTM Auctions
 3. **Przejdź do Authentication**:
    - Kliknij na "Authentication" w menu po lewej stronie
@@ -23,7 +23,7 @@ System autoryzacji SMS został skonfigurowany do wysyłania prawdziwych SMS prze
 
 1. **Przejdź do Billing**:
    - W Firebase Console kliknij na ikonę "Billing" (🏷️) lub przejdź do Google Cloud Console
-   - Link: https://console.cloud.google.com/billing
+   - Link: [Google Cloud Console Billing](https://console.cloud.google.com/billing)
 
 2. **Skonfiguruj billing**:
    - Podłącz kartę kredytową do konta Google Cloud
@@ -97,18 +97,22 @@ npm run dev:windows
 ## Rozwiązywanie problemów
 
 ### Błąd: "APP_NOT_AUTHORIZED"
+
 - **Przyczyna**: Domena nie jest autoryzowana
 - **Rozwiązanie**: Dodaj domenę do Authorized domains
 
 ### Błąd: "QUOTA_EXCEEDED"
+
 - **Przyczyna**: Przekroczono dzienny limit SMS
 - **Rozwiązanie**: Poczekaj 24h lub skontaktuj się z Firebase Support
 
 ### Błąd: "INVALID_PHONE_NUMBER"
+
 - **Przyczyna**: Zły format numeru telefonu
 - **Rozwiązanie**: Użyj formatu +48XXXXXXXXX (PL)
 
 ### SMS nie przychodzi
+
 1. **Sprawdź czy numer nie jest na czarnej liście**
 2. **Sprawdź czy masz aktywny billing**
 3. **Sprawdź logs w Firebase Console**
@@ -120,13 +124,15 @@ npm run dev:windows
 - **Mały ruch**: 100-500 SMS/miesiąc = ~10 USD
 - **Średni ruch**: 500-2000 SMS/miesiąc = ~30-50 USD
 
-## ✅ Gotowe!
+## Gotowe
 
 Po wykonaniu tych kroków system będzie:
+
 - ✅ Wysyłał prawdziwe SMS (nie testowe)
 - ✅ Weryfikował numery telefonu przez Firebase
 - ✅ Zapisywał status weryfikacji w bazie danych
 - ✅ Chronił przed spamem przez reCAPTCHA
+
 
 ---
 

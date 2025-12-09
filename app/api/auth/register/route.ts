@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     } catch (dbError) {
       // Jeśli zapis do bazy danych się nie powiedzie, cofnij utworzenie użytkownika w Firebase
       logError('Failed to create user in local DB, rolling back Firebase user.', email, firebaseUser.uid, dbError)
-      captureException(dbError, { firebaseUid: firebaseUser.uid, reason: 'Rollback after DB user creation failure.' })
+      captureException(dbError as Error, { firebaseUid: firebaseUser.uid, reason: 'Rollback after DB user creation failure.' })
       
       await adminAuth.deleteUser(firebaseUser.uid)
       

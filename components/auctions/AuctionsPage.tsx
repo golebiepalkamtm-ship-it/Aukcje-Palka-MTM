@@ -5,7 +5,6 @@ import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal';
 import { SmartImage } from '@/components/ui/SmartImage';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore, useError, useFilteredAuctions, useLoading, useRatePLNperEUR } from '@/store/useAppStore';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar, Gavel, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -48,22 +47,26 @@ interface GoldenCardProps {
 
 // GoldenCard Component with solid styling and 3D depth
 function GoldenCard({ children, className = '' }: GoldenCardProps) {
-  const { ref, isVisible } = useScrollReveal();
   return (
     <div className="relative">
       {/* 3D Shadow layers - solid depth effect */}
       {[...Array(11)].map((_, i) => {
         const layer = 11 - i;
         const offset = layer * 1.5;
-        const opacity = Math.max(0.2, 0.7 - layer * 0.05);
+
+        // połyskujące złoto: gradient z jasnym pasmem (highlight)
+        const goldRgb = '218,182,98';
+        const highlightAlpha = 0.25 * (1 - i / 11); // silniejszy highlight dla bliższych warstw
+        const baseAlpha = 1 - highlightAlpha * 0.6;
+        const gradient = `linear-gradient(100deg, rgba(${goldRgb}, ${baseAlpha}) 0%, rgba(255,255,255, ${highlightAlpha}) 12%, rgba(${goldRgb}, ${baseAlpha}) 35%)`;
 
         return (
           <div
             key={i}
             className="absolute inset-0 rounded-3xl border-2"
             style={{
-              borderColor: `rgba(0, 0, 0, ${opacity})`,
-              backgroundColor: `rgba(0, 0, 0, ${opacity * 0.8})`,
+              borderColor: `rgba(${goldRgb}, 1)`,
+              background: gradient,
               transform: `translateX(${offset}px) translateY(${offset / 2}px) translateZ(-${offset}px)`,
               zIndex: i + 1,
             }}
@@ -73,31 +76,48 @@ function GoldenCard({ children, className = '' }: GoldenCardProps) {
       })}
 
       <article
-        ref={ref}
-        className={`card-glow-edge relative z-[12] w-full rounded-3xl border-2 p-8 text-white transition-all duration-[2000ms] overflow-hidden ${className}`}
+        className={`relative z-[12] w-full rounded-3xl border-2 p-8 text-white overflow-hidden ${className}`}
         style={{
-          transform: !isVisible ? 'translateZ(-200px) scale(0.5)' : 'translateZ(0) scale(1)',
-          transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-          opacity: isVisible ? 1 : 0,
-          background:
-            'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
+          background: 'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
           borderColor: 'rgba(218, 182, 98, 1)',
-          boxShadow:
-            '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)',
+          // Przywrócony prosty, mocny dwu-warstwowy złoty cień (bez dodatkowych pasków i inset)
+          boxShadow: '0 12px 0 rgba(218,182,98,1), 0 28px 40px rgba(218,182,98,0.28)'
         }}
       >
-        {/* Inner light effects - solid overlay */}
+        {/* Gloss highlight to make the gold look shiny */}
         <div
-          className="absolute inset-0 pointer-events-none rounded-3xl"
+          aria-hidden="true"
           style={{
-            background: `
-              radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255, 245, 200, 0.25) 0%, transparent 50%),
-              radial-gradient(ellipse 600px 500px at 80% 70%, rgba(218, 182, 98, 0.2) 0%, transparent 50%),
-              radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255, 235, 180, 0.15) 0%, transparent 60%)
-            `,
-            zIndex: 1,
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '1.5rem',
+            pointerEvents: 'none',
+            zIndex: 11,
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 8%, rgba(255,255,255,0.08) 14%, rgba(255,255,255,0) 22%)',
+            mixBlendMode: 'overlay'
           }}
         />
+
+        {/* Narrow specular gleam for extra shine */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: '-8%',
+            left: '-18%',
+            width: '70%',
+            height: '28%',
+            transform: 'rotate(-18deg)',
+            borderRadius: '999px',
+            pointerEvents: 'none',
+            zIndex: 12,
+            background: 'linear-gradient(90deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0) 65%)',
+            filter: 'blur(6px)',
+            mixBlendMode: 'screen',
+            opacity: 0.95
+          }}
+        />
+
         <div className="relative z-10">{children}</div>
       </article>
     </div>
@@ -115,46 +135,43 @@ export function AuctionsPage() {
   const ratePLNperEUR = useRatePLNperEUR();
 
   // Compute filtered auctions with useMemo to prevent infinite loops
-  const filteredAuctions = useMemo(() => {
-    const filtered = auctions.filter(auction => {
-      const matchesSearch =
-        auction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        auction.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = !selectedCategory || auction.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
+  const [filterStatus, setFilterStatus] = useState<'all' | 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING'>('all');
 
-    // Sort
-    const sortedFiltered = [...filtered];
-    switch (sortBy) {
-      case 'newest':
-        sortedFiltered.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  const filteredAuctions = useMemo(() => {
+    let filtered = Array.isArray(auctions) ? [...auctions] : [];
+
+    // Search filter
+    if (searchTerm && searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter((a: any) => {
+        return (
+          (a.title && String(a.title).toLowerCase().includes(q)) ||
+          (a.description && String(a.description).toLowerCase().includes(q)) ||
+          (a.sellerId && String(a.sellerId).toLowerCase().includes(q))
         );
-        break;
-      case 'oldest':
-        sortedFiltered.sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-        break;
-      case 'price-low':
-        sortedFiltered.sort((a, b) => a.currentPrice - b.currentPrice);
-        break;
-      case 'price-high':
-        sortedFiltered.sort((a, b) => b.currentPrice - a.currentPrice);
-        break;
-      case 'ending-soon':
-        sortedFiltered.sort(
-          (a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime()
-        );
-        break;
+      });
     }
 
-    return sortedFiltered;
-  }, [auctions, searchTerm, selectedCategory, sortBy]);
-  const [filterStatus, setFilterStatus] = useState<
-    'all' | 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING'
-  >('all');
+    // Category filter
+    if (selectedCategory && selectedCategory !== 'all') {
+      filtered = filtered.filter((a: any) => a.category === selectedCategory);
+    }
+
+    // Status filter
+    if (filterStatus && filterStatus !== 'all') {
+      filtered = filtered.filter((a: any) => a.status === filterStatus);
+    }
+
+    // Sorting (basic)
+    if (sortBy === 'endingSoon') {
+      filtered.sort((x: any, y: any) => new Date(x.endTime).getTime() - new Date(y.endTime).getTime());
+    } else if (sortBy === 'newest') {
+      filtered.sort((x: any, y: any) => new Date(y.createdAt || 0).getTime() - new Date(x.createdAt || 0).getTime());
+    }
+
+    return filtered;
+  }, [auctions, searchTerm, selectedCategory, sortBy, filterStatus]);
+
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [nowTs, setNowTs] = useState<number>(Date.now());
   // const [bidAmounts, setBidAmounts] = useState<Record<string, string>>({}) // unused
@@ -302,25 +319,15 @@ export function AuctionsPage() {
 
   return (
     <>
-      {/* Hero Section - z padding-top dla miejsca na logo i nawigację, delay 0.8s czeka na animację fade-in-fwd logo/nawigacji */}
-      <motion.section
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.8 }}
-        className="relative z-10 pt-[250px] pb-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16"
-      >
+      {/* Hero Section */}
+      <section className="relative z-10 pt-44 pb-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Nasze Aukcje</h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.2 }}
-            className="text-lg md:text-xl text-white/90 mb-8 max-w-4xl mx-auto"
-          >
+          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-4xl mx-auto">
             Licytuj ekskluzywne gołębie pocztowe z rodowodami championów
-          </motion.p>
+          </p>
         </div>
-      </motion.section>
+      </section>
 
       {/* Content */}
       <div className="relative z-10 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 pb-20">
@@ -559,35 +566,27 @@ export function AuctionsPage() {
       </div>
 
       {/* Modal aukcji w stylu panelu dashboardu */}
-      <AnimatePresence>
-        {showCreateForm && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-0 z-[999999]"
-            style={{ pointerEvents: 'auto' }}
-          >
-            {/* Overlay */}
-            <div
-              className="absolute inset-0 bg-black/30 backdrop-blur-sm pointer-events-none"
-            />
-            {/* Centered Form - only one container */}
-            <div className="absolute inset-0 flex items-start justify-center px-4 pt-32 pointer-events-none overflow-y-auto" style={{ minHeight: '100vh', paddingBottom: '400px' }}>
-              <div className="relative z-[999999] w-full max-w-6xl mt-16 mb-96 pointer-events-auto" style={{ paddingBottom: '400px' }}>
-                <CreateAuctionForm
-                  showHeader={true}
-                  onSuccess={() => {
-                    setShowCreateForm(false);
-                    fetchAuctions(); // Odśwież listę aukcji po utworzeniu
-                  }}
-                  onCancel={() => setShowCreateForm(false)}
-                />
-              </div>
+      {showCreateForm && (
+        <div className="fixed inset-0 z-[999999]" style={{ pointerEvents: 'auto' }}>
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm pointer-events-none"
+          />
+          {/* Centered Form - only one container */}
+          <div className="absolute inset-0 flex items-start justify-center px-4 pt-32 pointer-events-none overflow-y-auto" style={{ minHeight: '100vh', paddingBottom: '400px' }}>
+            <div className="relative z-[999999] w-full max-w-6xl mt-16 mb-96 pointer-events-auto" style={{ paddingBottom: '400px' }}>
+              <CreateAuctionForm
+                showHeader={true}
+                onSuccess={() => {
+                  setShowCreateForm(false);
+                  fetchAuctions(); // Odśwież listę aukcji po utworzeniu
+                }}
+                onCancel={() => setShowCreateForm(false)}
+              />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
 
       {/* Fullscreen Image Modal */}
       <FullscreenImageModal

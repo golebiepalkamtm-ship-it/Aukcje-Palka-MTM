@@ -53,7 +53,7 @@ function GoldenCard({ children, className = '' }: GoldenCardProps) {
   return (
     <div className="relative">
       {/* 3D Shadow layers - solid depth effect */}
-      {[...Array(11)].map((_, i) => {
+      {isVisible && [...Array(11)].map((_, i) => {
         const layer = 11 - i;
         const offset = layer * 1.5;
         const opacity = Math.max(0.2, 0.7 - layer * 0.05);
@@ -79,12 +79,14 @@ function GoldenCard({ children, className = '' }: GoldenCardProps) {
         style={{
           transform: !isVisible ? 'translateZ(-200px) scale(0.5)' : 'translateZ(0) scale(1)',
           transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-          opacity: isVisible ? 1 : 0,
-          background:
-            'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
-          borderColor: 'rgba(218, 182, 98, 1)',
-          boxShadow:
-            '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)',
+          opacity: !isVisible ? 0 : 1,
+          background: !isVisible 
+            ? 'transparent'
+            : 'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
+          borderColor: !isVisible ? 'transparent' : 'rgba(218, 182, 98, 1)',
+          boxShadow: !isVisible 
+            ? 'none'
+            : '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)',
         }}
       >
         {/* Inner light effects - solid overlay */}

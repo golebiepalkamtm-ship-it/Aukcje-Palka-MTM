@@ -32,6 +32,7 @@ function VerifyPhoneContent() {
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
+  const createdVerifierRef = useRef<RecaptchaVerifier | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -49,12 +50,15 @@ function VerifyPhoneContent() {
     return () => clearInterval(interval);
   }, [countdown]);
 
-  // Initialize Recaptcha when component mounts
+  // Initialize Recaptcha once on mount. We use a ref to store the created
+  // verifier so cleanup can run reliably without causing effect re-runs.
   useEffect(() => {
-    if (typeof window !== 'undefined' && recaptchaContainerRef.current && !recaptchaVerifier && auth) {
+    if (typeof window === 'undefined' || !recaptchaContainerRef.current || !auth) return;
+
+    if (!createdVerifierRef.current) {
       const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
-        'size': 'invisible',
-        'callback': (response: any) => {
+        size: 'invisible',
+        callback: (response: any) => {
           console.log('reCAPTCHA verified');
         },
         'expired-callback': () => {
@@ -62,15 +66,19 @@ function VerifyPhoneContent() {
         }
       });
 
+      createdVerifierRef.current = verifier;
       setRecaptchaVerifier(verifier);
     }
 
     return () => {
-      if (recaptchaVerifier) {
-        recaptchaVerifier.clear();
+      try {
+        createdVerifierRef.current?.clear();
+      } catch (e) {
+        // ignore cleanup errors
       }
+      createdVerifierRef.current = null;
     };
-  }, [auth, recaptchaVerifier]);
+  }, []);
 
   const normalizePhoneNumber = (phone: string): string => {
     // Remove all non-digits
@@ -208,6 +216,7 @@ function VerifyPhoneContent() {
   return (
     <div className="min-h-screen flex items-start justify-center p-4 pt-8">
       <motion.div
+        // @ts-ignore
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
@@ -262,10 +271,11 @@ function VerifyPhoneContent() {
               />
 
               <motion.button
-                onClick={sendVerificationCode}
-                disabled={isLoading}
+                // @ts-ignore
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={sendVerificationCode}
+                disabled={isLoading}
                 className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Wysyłanie...' : 'Wyślij kod weryfikacyjny'}
@@ -305,10 +315,11 @@ function VerifyPhoneContent() {
                 </div>
 
                 <motion.button
-                  onClick={verifyCode}
-                  disabled={isLoading || verificationCode.length !== 6}
+                  // @ts-ignore
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={verifyCode}
+                  disabled={isLoading || verificationCode.length !== 6}
                   className="w-full py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? 'Weryfikacja...' : 'Zweryfikuj kod'}

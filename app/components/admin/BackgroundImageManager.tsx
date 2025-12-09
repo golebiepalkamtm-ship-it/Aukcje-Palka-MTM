@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useDragAndDropFileUpload } from '@/app/hooks/useFileUpload';
-import { 
-  uploadSystemBackgroundImage,
-  type FileUploadResult 
-} from '@/app/actions/admin-storage';
+// Use the admin upload API instead of importing server actions directly
+// to avoid bundling server-only modules into client code.
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 
@@ -104,15 +102,25 @@ export default function BackgroundImageManager({
     }
 
     try {
-      // Use server action directly for better control
       const file = selectedFiles[0];
-      const result = await uploadSystemBackgroundImage(file, 'admin');
+
+      // Send file to server upload endpoint
+      const formData = new FormData();
+      formData.append('files', file);
+      formData.append('type', 'background');
+
+      const resp = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      const result = await resp.json();
       
-      if (result.success && result.url) {
-        if (onBackgroundUpdate) {
-          onBackgroundUpdate(result.url);
-        }
-        toast.success('Tło strony zostało zaktualizowane!');
+      if (resp.ok) {
+        const url = (result.files && result.files[0]) || null;
+        if (url && onBackgroundUpdate) onBackgroundUpdate(url);
+        toast.success(result.message || 'Tło strony zostało zaktualizowane!');
         clearSelectedFiles();
       } else {
         toast.error(result.error || 'Błąd podczas aktualizacji tła');

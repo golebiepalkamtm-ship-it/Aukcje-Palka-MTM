@@ -31,9 +31,9 @@ if (!getApps().length) {
 const auth = getAuth();
 
 async function createAdminAccount() {
-  const email = 'admin@palka-mtm.pl';
-  const password = 'Admin123!@#'; // Zmień to hasło na bezpieczne
-  const displayName = 'Administrator Systemu';
+  const email = process.env.ADMIN_EMAIL || 'admin@palka-mtm.pl';
+  const password = process.env.ADMIN_PASSWORD || 'Admin123!@#'; // Możesz nadpisać przez ADMIN_PASSWORD
+  const displayName = process.env.ADMIN_DISPLAY_NAME || 'Administrator Systemu';
 
   try {
     // Sprawdź czy użytkownik już istnieje

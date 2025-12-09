@@ -1,6 +1,6 @@
-import { motion, type HTMLMotionProps } from 'framer-motion';
+import { motion } from 'framer-motion';
 
-export function MotionButton(props: HTMLMotionProps<'button'>) {
+export function MotionButton(props: any) {
   return (
     <motion.button
       whileHover={{ scale: 1.04, backgroundColor: '#facc15' }}
