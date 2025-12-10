@@ -1,3 +1,4 @@
+
 'use client';
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 import { motion } from 'framer-motion';
@@ -16,7 +17,7 @@ export default function ChampionsPage() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.8 }}
-        className="relative z-10 pt-64 pb-12 px-4 sm:px-6 lg:px-8"
+        className="relative z-10 pt-72 pb-12 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Nasze Championy</h1>
@@ -52,8 +53,8 @@ export default function ChampionsPage() {
         </button>
       </motion.div>
 
-      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-20 -mt-72">
-        <div className="max-w-7xl mx-auto">
+      <div className="relative z-10 px-2 sm:px-4 lg:px-6 pb-20 mt-8">
+        <div className="max-w-full mx-auto">
           <SimpleChampionsList onPedigreeClick={setSelectedPedigreeImage} onCentralChampionChange={setCentralChampion} />
         </div>
       </div>

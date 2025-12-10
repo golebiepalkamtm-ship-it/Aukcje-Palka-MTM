@@ -11,6 +11,8 @@ interface Champion {
   id: string;
   images: string[];
   pedigreeImage?: string;
+  name?: string;
+  achievements?: string[];
 }
 
 interface ChampionData {
@@ -26,6 +28,8 @@ export function SimpleChampionsList({
   onPedigreeClick?: (image: string) => void;
   onCentralChampionChange?: (champion: Champion | null) => void;
 }) {
+  // Track the central champion based on current carousel index
+  const [currentChampionIndex, setCurrentChampionIndex] = useState(0);
   const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string; sourceEl?: HTMLElement } | null>(null);
   const [champions, setChampions] = useState<Champion[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
@@ -36,7 +40,7 @@ export function SimpleChampionsList({
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Enhanced loading function with retry logic
+  // Enhanced loading function with retry logic - temporary fallback to API
   const loadChampions = useCallback(async (isRetry = false) => {
     try {
       if (isRetry) {
@@ -48,7 +52,7 @@ export function SimpleChampionsList({
       }
 
       if (isDev) debug(`Fetching champions from API... (retry: ${isRetry})`);
-      
+
       const response = await fetch('/api/champions/images', {
         method: 'GET',
         headers: {
@@ -135,7 +139,7 @@ export function SimpleChampionsList({
         })
         .filter(Boolean) as Champion[];
 
-      if (isDev) debug('Processed champions list:', championsList);
+      if (isDev) debug('Final champions list:', championsList);
       if (isDev) debug('Champions list length:', championsList.length);
 
       // Enhanced validation
@@ -147,26 +151,26 @@ export function SimpleChampionsList({
 
       // Przygotuj wszystkie zdjęcia do nawigacji w modalu
       const flatImages = championsList.flatMap((champion: Champion) =>
-        champion.images.map(src => ({ src, alt: `Zdjęcie championa ${champion.id}` }))
+        champion.images.map(src => ({ src, alt: `Zdjęcie championa ${champion.name || champion.id}` }))
       );
 
       setAllImages(flatImages);
 
       // Reset retry count on success
       setRetryCount(0);
-      
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Nieznany błąd podczas ładowania championów';
-      
+
       if (isDev) logError('Error loading champions:', { error: err, retryCount, isRetry });
-      
+
       setError(errorMessage);
-      
+
       // Log to Sentry in production
       if (!isDev) {
         logError('Champions loading failed', { error: errorMessage, retryCount });
       }
-      
+
     } finally {
       setIsLoading(false);
       setIsRetrying(false);
@@ -190,7 +194,47 @@ export function SimpleChampionsList({
     setSelectedImageIndex(index);
   };
 
-  // Enhanced loading state with skeleton
+  // Update central champion when champions change or current index changes
+  useEffect(() => {
+    if (champions.length > 0 && currentChampionIndex < champions.length) {
+      const centralChampion = champions[currentChampionIndex];
+      if (onCentralChampionChange) {
+        onCentralChampionChange(centralChampion);
+      }
+    }
+  }, [champions, currentChampionIndex, onCentralChampionChange]);
+
+  // Nasłuch zdarzeń emitowanych przez `ChampionsCarousel` (CustomEvent)
+  useEffect(() => {
+    const onChampionImageClick = (e: Event) => {
+      const d = (e as CustomEvent).detail;
+      if (d && d.imageSrc !== undefined) {
+        setSelectedImage({ src: d.imageSrc, alt: `Zdjęcie ${d.index + 1}`, sourceEl: d.sourceEl });
+        setSelectedImageIndex(d.index);
+
+        // Update current champion index based on which champion the clicked image belongs to
+        if (d.championIndex !== undefined) {
+          setCurrentChampionIndex(d.championIndex);
+        }
+      }
+    };
+
+    const onChampionPedigreeClick = (e: Event) => {
+      const d = (e as CustomEvent).detail;
+      if (d && d.pedigreeImage) {
+        setSelectedPedigreeImage(d.pedigreeImage);
+      }
+    };
+
+    window.addEventListener('championImageClick', onChampionImageClick as EventListener);
+    window.addEventListener('championPedigreeClick', onChampionPedigreeClick as EventListener);
+
+    return () => {
+      window.removeEventListener('championImageClick', onChampionImageClick as EventListener);
+      window.removeEventListener('championPedigreeClick', onChampionPedigreeClick as EventListener);
+    };
+  }, []);
+
   if (isLoading) {
     return (
       <motion.div
@@ -211,7 +255,7 @@ export function SimpleChampionsList({
           <h3 className="text-white text-lg font-semibold mb-2">Ładowanie championów...</h3>
           <p className="text-gray-300 text-sm">Przygotowujemy dla Ciebie naszych wybitnych gołębi pocztowych</p>
         </motion.div>
-        
+
         {/* Skeleton loading for carousel placeholders */}
         <div className="w-full max-w-[1600px] px-4 mt-8">
           <div className="grid grid-cols-3 gap-4">
@@ -238,7 +282,7 @@ export function SimpleChampionsList({
           <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h3 className="text-white text-xl font-semibold mb-3">Wystąpił błąd</h3>
           <p className="text-gray-300 mb-6 text-sm leading-relaxed">{error}</p>
-          
+
           <div className="space-y-3">
             <button
               onClick={handleRetry}
@@ -257,13 +301,13 @@ export function SimpleChampionsList({
                 </>
               )}
             </button>
-            
+
             <p className="text-gray-400 text-xs">
               Próba {retryCount > 0 ? `${retryCount + 1}` : '1'} z 3
             </p>
           </div>
         </div>
-        
+
         {/* Debug info in development */}
         {process.env.NODE_ENV === 'development' && (
           <div className="mt-6 bg-black/50 text-gray-300 p-4 rounded-lg text-xs max-w-2xl">
@@ -283,19 +327,7 @@ export function SimpleChampionsList({
   return (
     <>
       {/* Champions Carousel */}
-      <ChampionsCarousel
-        champions={champions}
-        onImageClick={(src, idx, el) => handleImageClick(src, idx, el)}
-        onPedigreeClick={pedigreeImage => {
-          console.log('=== onPedigreeClick CALLED ===');
-          console.log('Pedigree image received:', pedigreeImage);
-          console.log('Setting selectedPedigreeImage to:', pedigreeImage);
-          setSelectedPedigreeImage(pedigreeImage);
-          console.log('selectedPedigreeImage set successfully');
-          console.log('=== END onPedigreeClick ===');
-        }}
-        onCentralChampionChange={onCentralChampionChange}
-      />
+      <ChampionsCarousel champions={champions} />
 
       {/* Image Modal - renderowany lokalnie */}
       {selectedImage && selectedImageIndex !== null && (

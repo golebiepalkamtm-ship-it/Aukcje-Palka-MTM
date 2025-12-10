@@ -165,12 +165,15 @@ export default function ContactPageClient() {
 
   return (
     <>
+      {/* Additional top spacing for header */}
+      <div className="pt-24"></div>
+
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.8 }}
-        className="relative z-10 pt-80 px-4 sm:px-6 lg:px-8"
+        className="relative z-10 pt-48 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Kontakt</h1>
@@ -186,7 +189,7 @@ export default function ContactPageClient() {
       </motion.section>
 
       {/* Content Sections */}
-      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-96 mt-12" style={{ minHeight: '1200px' }}>
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-[30rem] mt-12" style={{ minHeight: '1400px' }}>
         <div className="max-w-6xl mx-auto space-y-24">
           {/* Contact Info */}
           <motion.section

@@ -1,7 +1,12 @@
 "use server";
+
+/* eslint-disable */
+
 import { revalidatePath } from 'next/cache';
 import { getAdminApp } from '@/lib/firebase-admin';
-import { getStorage } from 'firebase-admin/storage';
+
+// Avoid top-level import of 'firebase-admin/storage' which pulls node-only modules
+// into the client bundle. We'll require it at runtime (server-only) where needed.
 import { prisma } from '@/lib/prisma';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -47,8 +52,8 @@ function generateSafeFileName(originalName: string): string {
  * Upload file to Firebase Storage
  */
 async function uploadToFirebaseStorage(
-  file: File, 
-  folder: string, 
+  file: File,
+  folder: string,
   userId: string
 ): Promise<string> {
   const app = getAdminApp();
@@ -61,7 +66,16 @@ async function uploadToFirebaseStorage(
     throw new Error('Firebase Storage bucket name is not configured');
   }
 
-  const bucket = getStorage(app).bucket(storageBucketName);
+  // Require storage helper at runtime to prevent Next.js from bundling node-only modules
+  let runtimeGetStorage: any;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    runtimeGetStorage = require('firebase-admin/storage').getStorage;
+  } catch (err) {
+    throw new Error('Server environment required: firebase-admin/storage not available')
+  }
+
+  const bucket = runtimeGetStorage(app).bucket(storageBucketName);
   const safeFileName = generateSafeFileName(file.name);
   const storagePath = `${folder}/${userId}/${safeFileName}`;
 
@@ -99,8 +113,16 @@ async function deleteFromFirebaseStorage(fileUrl: string): Promise<void> {
       throw new Error('Firebase Storage bucket name is not configured');
     }
 
-    const bucket = getStorage(app).bucket(storageBucketName);
-    
+    let runtimeGetStorage: any;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      runtimeGetStorage = require('firebase-admin/storage').getStorage;
+    } catch (err) {
+      throw new Error('Server environment required: firebase-admin/storage not available')
+    }
+
+    const bucket = runtimeGetStorage(app).bucket(storageBucketName);
+
     // Extract file path from URL
     const urlPattern = /\/o\/([^?]+)/;
     const match = fileUrl.match(urlPattern);
@@ -141,7 +163,7 @@ export async function uploadSystemBackgroundImage(
     // Update or create system setting
     await prisma.systemSetting.upsert({
       where: { key: 'siteBackgroundImageUrl' },
-      update: { 
+      update: {
         value: imageUrl,
         updatedAt: new Date()
       },
@@ -170,9 +192,9 @@ export async function uploadSystemBackgroundImage(
     return { success: true, url: imageUrl };
   } catch (error) {
     console.error('Error uploading system background image:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Błąd podczas przesyłania obrazu' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Błąd podczas przesyłania obrazu'
     };
   }
 }
@@ -188,16 +210,16 @@ export async function uploadChampionGalleryImages(
 ): Promise<{ success: boolean; results: FileUploadResult[]; error?: string }> {
   try {
     const results: FileUploadResult[] = [];
-    
+
     // Validate all files first
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const validation = validateImageFile(file);
       if (!validation.valid) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           results: [],
-          error: `Plik "${file.name}": ${validation.error}` 
+          error: `Plik "${file.name}": ${validation.error}`
         };
       }
     }
@@ -233,9 +255,9 @@ export async function uploadChampionGalleryImages(
         results.push({ success: true, url: imageUrl });
       } catch (error) {
         console.error(`Error processing file ${i}:`, error);
-        results.push({ 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Błąd przesyłania pliku' 
+        results.push({
+          success: false,
+          error: error instanceof Error ? error.message : 'Błąd przesyłania pliku'
         });
       }
     }
@@ -247,10 +269,10 @@ export async function uploadChampionGalleryImages(
     return { success: true, results };
   } catch (error) {
     console.error('Error uploading champion gallery images:', error);
-    return { 
-      success: false, 
+    return {
+      success: false,
       results: [],
-      error: error instanceof Error ? error.message : 'Błąd podczas przesyłania plików' 
+      error: error instanceof Error ? error.message : 'Błąd podczas przesyłania plików'
     };
   }
 }
@@ -281,9 +303,9 @@ export async function updateChampionGalleryItem(
     return { success: true };
   } catch (error) {
     console.error('Error updating champion gallery item:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Błąd podczas aktualizacji' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Błąd podczas aktualizacji'
     };
   }
 }
@@ -322,9 +344,9 @@ export async function deleteChampionGalleryItem(
     return { success: true };
   } catch (error) {
     console.error('Error deleting champion gallery item:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Błąd podczas usuwania' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Błąd podczas usuwania'
     };
   }
 }
@@ -340,7 +362,7 @@ export async function reorderChampionGalleryItems(
     for (let i = 0; i < itemIds.length; i++) {
       await prisma.championGalleryItem.update({
         where: { id: itemIds[i] },
-        data: { 
+        data: {
           order: i + 1,
           updatedAt: new Date()
         }
@@ -353,9 +375,9 @@ export async function reorderChampionGalleryItems(
     return { success: true };
   } catch (error) {
     console.error('Error reordering champion gallery items:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Błąd podczas zmiany kolejności' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Błąd podczas zmiany kolejności'
     };
   }
 }

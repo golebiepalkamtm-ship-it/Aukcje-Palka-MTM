@@ -1,7 +1,9 @@
 "use client";
 
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { SmartImage } from "@/components/ui/SmartImage";
 
 interface Champion {
   id: string;
@@ -11,189 +13,206 @@ interface Champion {
   achievements?: string[];
 }
 
-interface ChampionsCarouselProps {
-  champions: Champion[];
-  onImageClick: (imageSrc: string, index: number, sourceEl: HTMLElement) => void;
-  onPedigreeClick: (pedigreeImage: string) => void;
-  onCentralChampionChange?: (champion: Champion | null) => void;
-  className?: string;
+interface ChampionImage {
+  championId: string;
+  imageSrc: string;
+  championIndex: number;
+  imageIndex: number;
 }
 
-const FALLBACK_URLS = [
-  "https://farm9.staticflickr.com/8461/8048823381_0fbc2d8efb.jpg",
-  "https://farm7.staticflickr.com/6217/6216951796_e50778255c.jpg",
-  "https://farm7.staticflickr.com/6083/6055581292_d94c2d90e3.jpg",
-];
+interface ChampionsCarouselProps {
+  champions: Champion[];
+}
 
-export const ChampionsCarousel = memo(function ChampionsCarousel({
-  champions,
-  onImageClick,
-  onPedigreeClick,
-  onCentralChampionChange,
-  className = "",
-}: ChampionsCarouselProps) {
-  const items = useMemo(() => {
-    const imgs: { src: string; title: string; desc: string }[] = [];
-    for (const c of champions) {
-      if (Array.isArray(c.images)) {
-        for (const s of c.images) {
-          if (typeof s === "string" && s) {
-            imgs.push({ src: s, title: c.name || `Champion ${c.id}`, desc: c.achievements?.[0] || "" });
-          }
-        }
-      }
+export function ChampionsCarousel({ champions }: ChampionsCarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Przygotuj wszystkie zdjęcia z wszystkich championów
+  const allImages: ChampionImage[] = champions.flatMap((champion, championIndex) =>
+    champion.images.map((imageSrc, imageIndex) => ({
+      championId: champion.id,
+      imageSrc: imageSrc,
+      championIndex,
+      imageIndex,
+    }))
+  );
+
+  console.log('ChampionsCarousel - Total champions:', champions.length);
+  console.log('ChampionsCarousel - Total images:', allImages.length);
+  console.log(
+    'ChampionsCarousel - Champions data:',
+    champions.map(c => ({ id: c.id, imagesCount: c.images.length }))
+  );
+
+  const nextSlide = () => {
+    setCurrentIndex(prev => (prev + 1) % allImages.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex(prev => (prev - 1 + allImages.length) % allImages.length);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  if (allImages.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-white">Brak zdjęć championów do wyświetlenia.</p>
+      </div>
+    );
+  }
+
+  // Wybierz zdjęcia do wyświetlenia (aktualne + 4 po bokach = 5 łącznie)
+  const getVisibleImages = () => {
+    const visible: Array<{
+      imageData: ChampionImage;
+      champion: Champion;
+      position: number;
+      index: number;
+      championIndex: number;
+    }> = [];
+    const total = allImages.length;
+
+    // Jeśli mamy mniej niż 5 zdjęć, powtarzaj zdjęcia
+    if (total === 0) return visible;
+
+    for (let i = -2; i <= 2; i++) {
+      const index = (currentIndex + i + total) % total;
+      const imageData = allImages[index];
+      const champion = champions[imageData.championIndex];
+
+      visible.push({
+        imageData,
+        champion,
+        position: i, // -2: far left, -1: left, 0: center, 1: right, 2: far right
+        index,
+        championIndex: imageData.championIndex,
+      });
     }
-    if (imgs.length === 0) {
-      return FALLBACK_URLS.map((u, i) => ({ src: u, title: `Image ${i + 1}`, desc: "" }));
-    }
-    return imgs;
-  }, [champions]);
 
-  const n = items.length || 1;
-  const radius = 50; // vw
-  const cardW = 18; // vw - ZWIĘKSZONE, aby powiększyć zdjęcia
-  const step = 360 / n;
-  const MOUSE_SENSITIVITY = 0.15;
-  const ROTATE_STEP_MULT = 1;
-  const TRANSITION_STYLE = "transform 0.45s cubic-bezier(0.2,0.8,0.2,1)";
+    return visible;
+  };
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [ringAngle, setRingAngle] = useState(0);
-
-  // Usunięto przewijanie muszką - zostawiono tylko scroll przyciskami
-
-  // Track central champion when angle changes
-  useEffect(() => {
-    if (onCentralChampionChange && n > 0) {
-      const idx = ((Math.round((-ringAngle) / step) % n) + n) % n;
-      const centralChamp = champions[idx];
-      onCentralChampionChange(centralChamp || null);
-    }
-  }, [ringAngle, step, n, champions, onCentralChampionChange]);
-
-  const next = useCallback(() => {
-    if (n <= 1) return;
-    setRingAngle((a) => a - step); // Pełny krok do następnego gołębia
-  }, [n, step]);
-
-  const prev = useCallback(() => {
-    if (n <= 1) return;
-    setRingAngle((a) => a + step); // Pełny krok do poprzedniego gołębia
-  }, [n, step]);
+  const visibleImages = getVisibleImages();
 
   return (
-    <div className={`relative w-full max-w-[1600px] mx-auto px-4 -mt-4 ${className}`}>
+    <div className="relative w-full max-w-[1800px] mx-auto px-2">
+
+      {/* Carousel Container */}
       <div
-        ref={containerRef}
-        className="relative overflow-hidden"
+        className="relative h-[360px] sm:h-[420px] overflow-hidden pb-6"
         style={{
-          height: "100vh",
-          perspective: "1200px",
-          transformStyle: "preserve-3d",
-          background: "transparent",
+          perspective: '1500px',
+          perspectiveOrigin: 'center center',
         }}
       >
-        <div
-          id="imgs"
-          className="absolute"
-          style={{
-            top: "50%",
-            left: "50%",
-            transformStyle: "preserve-3d",
-            transformOrigin: `0 0 -${radius}vw`,
-            transform: `translate(-50%,-50%) rotate3d(0,1,0,${ringAngle}deg)`,
-            transition: TRANSITION_STYLE,
-          }}
-        >
-          <div
-            className="pointer-events-none"
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              width: 900,
-              height: 900,
-              transform: "translate(-50%, -50%)",
-              background: "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 30%, transparent 40%)",
-              filter: "blur(3px)",
-            }}
-          />
-
-          {items.map((item, i) => {
-            const rotate = step * i;
-            return (
-              <div
-                key={`${item.src}-${i}`}
-                className="absolute focus:outline-none focus:ring-4 focus:ring-blue-500"
-                tabIndex={0}
+        <AnimatePresence>
+          {visibleImages.map(({ imageData, champion, position, index }) => (
+            <motion.div
+              key={`${imageData.championId}-${imageData.imageIndex}-${index}`}
+              className={`absolute inset-0 flex items-start justify-center pt-2 ${
+                position === 0 ? 'z-30' : position === -1 || position === 1 ? 'z-20' : 'z-10'
+              }`}
+              initial={{
+                opacity: 0,
+                x: position * 24 + '%',
+                rotateY: position * -45,
+                scale: position === 0 ? 1 : Math.abs(position) === 1 ? 0.85 : 0.75,
+                filter: Math.abs(position) >= 2 ? 'blur(2px)' : 'blur(0px)',
+                z: position === 0 ? 100 : Math.abs(position) === 1 ? 50 : 0,
+              }}
+              animate={{
+                opacity: position === 0 ? 1 : Math.abs(position) === 1 ? 0.9 : 0.8,
+                x: position * 24 + '%',
+                rotateY: position * -45,
+                scale: position === 0 ? 1 : Math.abs(position) === 1 ? 0.85 : 0.75,
+                filter: Math.abs(position) >= 2 ? 'blur(1px)' : 'blur(0px)',
+                z: position === 0 ? 100 : Math.abs(position) === 1 ? 50 : 0,
+              }}
+              exit={{ opacity: 0, x: position * 24 + '%', rotateY: position * -45, scale: 0.8, z: 0 }}
+              transition={{ type: 'spring', stiffness: 90, damping: 20, mass: 0.8 }}
+              style={{ transformStyle: 'preserve-3d' }}
+            >
+              {/* Champion Card */}
+              <motion.div
+                className={`relative overflow-hidden cursor-pointer`}
                 style={{
-                  top: 0,
-                  left: 0,
-                  width: `${cardW}vw`,
-                  minWidth: 220,
-                  maxWidth: 420,
-                  height: "auto",
-                  transformOrigin: `50% 50% -${radius}vw`,
-                  transform: `translate3d(-50%,-50%,0) rotate3d(0,1,0,${rotate}deg)`,
-                  transformStyle: "preserve-3d",
-                  willChange: "transform",
-                  backfaceVisibility: "hidden",
-                  cursor: "pointer",
+                  width: position === 0 ? '480px' : position === -1 || position === 1 ? '360px' : '260px',
+                  height: position === 0 ? '360px' : position === -1 || position === 1 ? '270px' : '195px',
+                  transform: `translateZ(${position === 0 ? '50px' : Math.abs(position) === 1 ? '25px' : '0px'})`,
+                  boxShadow: position === 0
+                    ? '0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255,255,255,0.1)'
+                    : position === -1 || position === 1
+                      ? '0 8px 20px rgba(0,0,0,0.2), 0 0 10px rgba(255,255,255,0.05)'
+                      : '0 5px 15px rgba(0,0,0,0.1), 0 0 5px rgba(255,255,255,0.02)',
                 }}
-                onClick={(e) => onImageClick(item.src, i, e.currentTarget as HTMLElement)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    onImageClick(item.src, i, e.currentTarget as HTMLElement)
+                whileHover={{
+                  scale: position === 0 ? 1.03 : 0.96,
+                  boxShadow: position === 0
+                    ? '0 15px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.15)'
+                    : '0 10px 25px rgba(0,0,0,0.3), 0 0 15px rgba(255,255,255,0.08)',
+                  transition: { duration: 0.25 },
+                }}
+                onClick={e => {
+                  if (position === 0) {
+                    // Emituj zdarzenie DOM zamiast oczekiwać callbacku w props
+                    const detail = {
+                      imageSrc: imageData.imageSrc,
+                      index,
+                      championIndex: imageData.championIndex,
+                      sourceEl: e.currentTarget as HTMLElement,
+                    };
+                    try {
+                      window.dispatchEvent(new CustomEvent('championImageClick', { detail }));
+                      console.log('Dispatched championImageClick', detail);
+                    } catch (err) {
+                      console.warn('Could not dispatch championImageClick', err);
+                    }
+                  } else if (position !== 0) {
+                    goToSlide(index);
                   }
                 }}
-                aria-label={`Zdjęcie champion ${item.title || i + 1}`}
-                role="button"
               >
-                <img
-                  src={item.src}
-                  alt={item.title || `Champion ${i + 1}`}
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    aspectRatio: "4/3",
-                    objectFit: "cover",
-                    boxSizing: "border-box",
-                    padding: 8,
-                    display: "block",
-                    borderRadius: 12,
-                    filter: "brightness(1)",
-                    boxShadow: "0 2px 32px rgba(0,0,0,.7)",
-                    border: "2px solid #fff",
-                  }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
+                {/* Champion Image */}
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <SmartImage
+                    src={imageData.imageSrc}
+                    alt={`Champion ${champion.id} - Zdjęcie ${imageData.imageIndex + 1}`}
+                    width={0}
+                    height={0}
+                    fitMode="cover"
+                    aspectRatio="auto"
+                    className={`w-full h-full transition-all duration-500 ${position === 0 ? 'grayscale-0 brightness-100' : 'grayscale brightness-75'}`}
+                    sizes="100vw"
+                  />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                </div>
+              </motion.div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
-        {n > 1 && (
+        {/* Navigation Arrows */}
+        {allImages.length > 1 && (
           <>
             <button
-              onClick={prev}
-              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-black/50 hover:bg-black/70 text-white"
-              type="button"
+              onClick={prevSlide}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all duration-300 hover:scale-110"
             >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
+              <ChevronLeft className="w-6 h-6" />
             </button>
-
             <button
-              onClick={next}
-              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-black/50 hover:bg-black/70 text-white"
-              type="button"
+              onClick={nextSlide}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all duration-300 hover:scale-110"
             >
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
+              <ChevronRight className="w-6 h-6" />
             </button>
           </>
         )}
       </div>
     </div>
   );
-});
+}

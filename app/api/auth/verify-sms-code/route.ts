@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireFirebaseAuth } from '@/lib/firebase-auth';
 import { handleApiError } from '@/lib/error-handling';
 import { verifySmsCodeSchema } from '@/lib/validators';
-import { debug as _debug, info, error as logError } from '@/lib/logger';
+import { info, error as logError } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {

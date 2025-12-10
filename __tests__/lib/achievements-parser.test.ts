@@ -1,4 +1,4 @@
-import { parseAchievementsData } from '../../lib/achievements-parser'
+import { parseAchievementsData } from '@/lib/achievements-parser'
 
 describe('parseAchievementsData', () => {
   it('parses single achievement line', () => {

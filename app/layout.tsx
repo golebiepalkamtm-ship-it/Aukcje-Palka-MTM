@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           precedence="default"
         />
       </head>
-      <body className="relative">
+      <body className="relative" suppressHydrationWarning={true}>
         <ClientRoot>{children}</ClientRoot>
       </body>
     </html>

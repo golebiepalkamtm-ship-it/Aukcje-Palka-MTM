@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
@@ -85,19 +86,19 @@ interface AppState {
   sortBy: string;
 
   // Actions
-  setUser: (user: User | null) => void;
-  setAuthenticated: (isAuthenticated: boolean) => void;
-  setAuctions: (auctions: AuctionData[]) => void;
-  setChampions: (champions: Champion[]) => void;
-  setReferences: (references: Reference[]) => void;
-  setBreederMeetings: (meetings: BreederMeeting[]) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-  setSearchTerm: (term: string) => void;
-  setSelectedCategory: (category: string) => void;
-  setSortBy: (sortBy: string) => void;
-  setCurrency: (currency: 'PLN' | 'EUR') => void;
-  setRatePLNperEUR: (rate: number) => void;
+  setUser: (_user: User | null) => void;
+  setAuthenticated: (_isAuthenticated: boolean) => void;
+  setAuctions: (_auctions: AuctionData[]) => void;
+  setChampions: (_champions: Champion[]) => void;
+  setReferences: (_references: Reference[]) => void;
+  setBreederMeetings: (_meetings: BreederMeeting[]) => void;
+  setLoading: (_isLoading: boolean) => void;
+  setError: (_error: string | null) => void;
+  setSearchTerm: (_term: string) => void;
+  setSelectedCategory: (_category: string) => void;
+  setSortBy: (_sortBy: string) => void;
+  setCurrency: (_currency: 'PLN' | 'EUR') => void;
+  setRatePLNperEUR: (_rate: number) => void;
 
   // Computed values
   getFilteredAuctions: () => AuctionData[];
@@ -124,21 +125,21 @@ export const useAppStore = create<AppState>()(
         ratePLNperEUR: 4.3,
 
         // Actions
-        setUser: user => set({ user }),
-        setAuthenticated: isAuthenticated => set({ isAuthenticated }),
-        setAuctions: auctions => {
+        setUser: (user) => set({ user }),
+        setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
+        setAuctions: (auctions) => {
           set({ auctions });
         },
-        setChampions: champions => set({ champions }),
-        setReferences: references => set({ references }),
-        setBreederMeetings: breederMeetings => set({ breederMeetings }),
-        setLoading: isLoading => set({ isLoading }),
-        setError: error => set({ error }),
-        setSearchTerm: searchTerm => set({ searchTerm }),
-        setSelectedCategory: selectedCategory => set({ selectedCategory }),
-        setSortBy: sortBy => set({ sortBy }),
-        setCurrency: currency => set({ currency }),
-        setRatePLNperEUR: rate => set({ ratePLNperEUR: rate }),
+        setChampions: (champions) => set({ champions }),
+        setReferences: (references) => set({ references }),
+        setBreederMeetings: (breederMeetings) => set({ breederMeetings }),
+        setLoading: (isLoading) => set({ isLoading }),
+        setError: (error) => set({ error }),
+        setSearchTerm: (searchTerm) => set({ searchTerm }),
+        setSelectedCategory: (selectedCategory) => set({ selectedCategory }),
+        setSortBy: (sortBy) => set({ sortBy }),
+        setCurrency: (currency) => set({ currency }),
+        setRatePLNperEUR: (rate) => set({ ratePLNperEUR: rate }),
 
         getFilteredAuctions: () => {
           const { auctions, searchTerm, selectedCategory, sortBy } = get();
@@ -192,7 +193,7 @@ export const useAppStore = create<AppState>()(
       }),
       {
         name: 'app-store',
-        partialize: state => ({
+        partialize: (state) => ({
           user: state.user,
           isAuthenticated: state.isAuthenticated,
           searchTerm: state.searchTerm,
@@ -218,15 +219,7 @@ export const useLoading = () => useAppStore(state => state.isLoading);
 export const useError = () => useAppStore(state => state.error);
 
 // Computed selectors - use simple selectors without derived state
-export const useFilteredAuctions = () => {
-  const auctions = useAppStore(state => state.auctions);
-  const searchTerm = useAppStore(state => state.searchTerm);
-  const selectedCategory = useAppStore(state => state.selectedCategory);
-  const sortBy = useAppStore(state => state.sortBy);
-
-  // This will be memoized by React via useMemo in the component
-  return { auctions, searchTerm, selectedCategory, sortBy };
-};
+export const useFilteredAuctions = () => useAppStore(state => state.getFilteredAuctions());
 
 export const useFilteredChampions = () => useAppStore(state => state.getFilteredChampions());
 export const useRatePLNperEUR = () => useAppStore(state => state.ratePLNperEUR);

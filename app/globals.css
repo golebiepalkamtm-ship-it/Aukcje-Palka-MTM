@@ -227,8 +227,7 @@ select > .glow {
   mix-blend-mode: var(--glow-blend);
 }
 
-/* Import local overrides for glass button variants */
-@import url('/glass-variants.css');
+
 
 [class*="card"] > .glow::before,
 [class*="glass"] > .glow::before,
@@ -444,9 +443,9 @@ body *:active {
   transition: none !important;
 }
 
-/* More aggressive neutralization to stop framer-motion and any inline transforms/animations */
+/* More aggressive neutralization to stop framer-motion and any inline transforms/animations
+   Note: Removed transform: none !important; from body * to allow normal scrolling */
 body * {
-  transform: none !important;
   transition: none !important;
   animation: none !important;
   will-change: auto !important;
@@ -579,7 +578,7 @@ body * {
 /* === Site base improvements - added for cleaner default look === */
 html, body {
   height: 100%;
-  background: linear-gradient(180deg, #0f1724 0%, #071023 60%);
+  /* background: linear-gradient(180deg, #0f1724 0%, #071023 60%); */
   color: #e6eef8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -636,3 +635,7 @@ h1, h2, h3, h4 {
 
 /* End of site base improvements */
 
+/* Temporarily hide Next.js route announcer */
+next-route-announcer {
+  display: none !important;
+}

@@ -18,6 +18,12 @@ export default function ClientRoot({ children }: { children: React.ReactNode }) 
     setIsClient(true);
     initGlowingCards();
 
+    // Remove Next.js route announcer for accessibility
+    const routeAnnouncer = document.querySelector('next-route-announcer');
+    if (routeAnnouncer) {
+      routeAnnouncer.remove();
+    }
+
     if (!enableLoadingOverlay || isProduction) {
       setIsLoading(false);
       return;
@@ -54,12 +60,6 @@ export default function ClientRoot({ children }: { children: React.ReactNode }) 
 
   return (
     <>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only absolute top-2 left-2 bg-yellow-500 text-black px-3 py-1 z-[9999] rounded-lg"
-      >
-        Pomiń nawigację (Skip to content)
-      </a>
       <ClientProviders>
         <main id="main" tabIndex={-1}>
           {children}

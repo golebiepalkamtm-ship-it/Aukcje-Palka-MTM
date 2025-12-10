@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
           })
           // store the public path (convertPublicPathToStorageUrl will map it)
           imagePaths.push(`/${localDirName}/${fileName}`)
-        } catch (err) {
+        } catch (_err) {
           // on error, fallback to saving locally
           await writeFile(filePath, Buffer.from(bytes));
           imagePaths.push(`/${localDirName}/${fileName}`)

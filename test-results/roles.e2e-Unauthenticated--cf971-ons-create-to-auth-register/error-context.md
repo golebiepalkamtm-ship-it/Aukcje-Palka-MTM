@@ -1,0 +1,139 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - img "Tło gołębnika Pałka MTM" [ref=e5]
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Pałka M.T.M. Mistrzowie Sprintu" [ref=e11] [cursor=pointer]:
+            - /url: /
+            - img "Pałka M.T.M. Mistrzowie Sprintu" [ref=e13]
+          - navigation [ref=e14]:
+            - generic [ref=e15]:
+              - link " Strona Główna" [ref=e17] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e18]: 
+                - generic [ref=e19]: Strona Główna
+              - link " Aukcje" [ref=e21] [cursor=pointer]:
+                - /url: /auctions
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Aukcje
+              - link " Osiągnięcia" [ref=e25] [cursor=pointer]:
+                - /url: /achievements
+                - generic [ref=e26]: 
+                - generic [ref=e27]: Osiągnięcia
+              - link " Championy" [ref=e29] [cursor=pointer]:
+                - /url: /champions
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Championy
+              - link " Spotkania" [ref=e33] [cursor=pointer]:
+                - /url: /breeder-meetings
+                - generic [ref=e34]: 
+                - generic [ref=e35]: Spotkania
+              - link " Referencje" [ref=e37] [cursor=pointer]:
+                - /url: /references
+                - generic [ref=e38]: 
+                - generic [ref=e39]: Referencje
+              - link " Prasa" [ref=e41] [cursor=pointer]:
+                - /url: /press
+                - generic [ref=e42]: 
+                - generic [ref=e43]: Prasa
+              - link " O Nas" [ref=e45] [cursor=pointer]:
+                - /url: /about
+                - generic [ref=e46]: 
+                - generic [ref=e47]: O Nas
+              - link " Kontakt" [ref=e49] [cursor=pointer]:
+                - /url: /contact
+                - generic [ref=e50]: 
+                - generic [ref=e51]: Kontakt
+        - link "Konto" [ref=e53] [cursor=pointer]:
+          - /url: /auth/register
+          - img [ref=e54]
+          - generic [ref=e57]: Konto
+      - article [ref=e71]:
+        - generic [ref=e72]:
+          - heading "Ładowanie..." [level=1] [ref=e74]
+          - paragraph [ref=e75]: Pobieranie danych aukcji...
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - generic [ref=e83]: GP
+              - generic [ref=e84]: MTM Pałka
+            - paragraph [ref=e85]: Witamy w świecie MTM Pałka – hodowli gołębi pocztowych, której fundamentem jest historia trzech pokoleń, a siłą napędową bezgraniczna miłość do lotu. W sercu Dolnego Śląska, pod niebem Lubania, od ponad czterdziestu pięciu lat piszemy sagę, w której precyzja genetyki łączy się z siłą rodzinnych więzi. Nasza nazwa to symbol jedności – Mariusz, Tadeusz, Marcin Pałka – ojciec i synowie, których połączyła wspólna pasja.
+            - generic [ref=e86]:
+              - generic [ref=e87]:
+                - img [ref=e88]
+                - generic [ref=e91]: kontakt@golebiepocztowe.pl
+              - generic [ref=e92]:
+                - generic [ref=e93]: Szczegółowe dane na stronie
+                - link "Kontakt" [ref=e94] [cursor=pointer]:
+                  - /url: /contact
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - heading "Firma" [level=3] [ref=e97]
+              - list [ref=e98]:
+                - listitem [ref=e99]:
+                  - link "O nas" [ref=e100] [cursor=pointer]:
+                    - /url: /about
+                - listitem [ref=e101]:
+                  - link "Nasze Osiągnięcia" [ref=e102] [cursor=pointer]:
+                    - /url: /achievements
+                - listitem [ref=e103]:
+                  - link "Kontakt" [ref=e104] [cursor=pointer]:
+                    - /url: /contact
+            - generic [ref=e105]:
+              - heading "Usługi" [level=3] [ref=e106]
+              - list [ref=e107]:
+                - listitem [ref=e108]:
+                  - link "Aukcje" [ref=e109] [cursor=pointer]:
+                    - /url: /auctions
+                - listitem [ref=e110]:
+                  - link "Championy" [ref=e111] [cursor=pointer]:
+                    - /url: /champions
+                - listitem [ref=e112]:
+                  - link "Referencje" [ref=e113] [cursor=pointer]:
+                    - /url: /references
+            - generic [ref=e114]:
+              - heading "Prawne" [level=3] [ref=e115]
+              - list [ref=e116]:
+                - listitem [ref=e117]:
+                  - link "Regulamin" [ref=e118] [cursor=pointer]:
+                    - /url: /terms
+                - listitem [ref=e119]:
+                  - link "Polityka Prywatności" [ref=e120] [cursor=pointer]:
+                    - /url: /privacy
+                - listitem [ref=e121]:
+                  - link "Warunki Sprzedaży" [ref=e122] [cursor=pointer]:
+                    - /url: /sales-terms
+        - generic [ref=e124]:
+          - paragraph [ref=e125]: © 2024 MTM Pałka. Wszystkie prawa zastrzeżone.
+          - generic [ref=e126]:
+            - link "Facebook" [ref=e127] [cursor=pointer]:
+              - /url: https://www.facebook.com/PalkaGolebiepl/?locale=pl_PL
+              - img [ref=e128]
+            - link "Instagram" [ref=e130] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e131]
+            - link "Twitter" [ref=e134] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e135]
+  - status [ref=e142]: Aukcja nie została znaleziona
+  - generic [ref=e143]:
+    - img [ref=e145]
+    - button "Open Tanstack query devtools" [ref=e193] [cursor=pointer]:
+      - img [ref=e194]
+  - generic [ref=e246] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e247]:
+      - img [ref=e248]
+    - generic [ref=e251]:
+      - button "Open issues overlay" [ref=e252]:
+        - generic [ref=e253]:
+          - generic [ref=e254]: "0"
+          - generic [ref=e255]: "1"
+        - generic [ref=e256]: Issue
+      - button "Collapse issues badge" [ref=e257]:
+        - img [ref=e258]
+```

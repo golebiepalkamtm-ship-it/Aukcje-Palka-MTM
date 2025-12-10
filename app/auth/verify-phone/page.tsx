@@ -10,12 +10,10 @@ import { ArrowLeft, Phone, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { 
-  signInWithPhoneNumber, 
-  RecaptchaVerifier, 
-  PhoneAuthProvider,
-  ConfirmationResult,
-  updateProfile
+import {
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  ConfirmationResult
 } from 'firebase/auth';
 
 function VerifyPhoneContent() {
@@ -32,6 +30,7 @@ function VerifyPhoneContent() {
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
+  const createdVerifierRef = useRef<RecaptchaVerifier | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -49,12 +48,15 @@ function VerifyPhoneContent() {
     return () => clearInterval(interval);
   }, [countdown]);
 
-  // Initialize Recaptcha when component mounts
+  // Initialize Recaptcha once on mount. We use a ref to store the created
+  // verifier so cleanup can run reliably without causing effect re-runs.
   useEffect(() => {
-    if (typeof window !== 'undefined' && recaptchaContainerRef.current && !recaptchaVerifier && auth) {
+    if (typeof window === 'undefined' || !recaptchaContainerRef.current || !auth) return;
+
+    if (!createdVerifierRef.current) {
       const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
-        'size': 'invisible',
-        'callback': (response: any) => {
+        size: 'invisible',
+        callback: (response: any) => {
           console.log('reCAPTCHA verified');
         },
         'expired-callback': () => {
@@ -62,15 +64,19 @@ function VerifyPhoneContent() {
         }
       });
 
+      createdVerifierRef.current = verifier;
       setRecaptchaVerifier(verifier);
     }
 
     return () => {
-      if (recaptchaVerifier) {
-        recaptchaVerifier.clear();
+      try {
+        createdVerifierRef.current?.clear();
+      } catch {
+        // ignore cleanup errors
       }
+      createdVerifierRef.current = null;
     };
-  }, [auth, recaptchaVerifier]);
+  }, []);
 
   const normalizePhoneNumber = (phone: string): string => {
     // Remove all non-digits
@@ -148,9 +154,9 @@ function VerifyPhoneContent() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           code: verificationCode,
-          verificationId: confirmationResult.verificationId 
+          verificationId: confirmationResult.verificationId
         }),
       });
 

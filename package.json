@@ -1,6 +1,7 @@
 {
   "name": "palka-mtm-auctions",
   "version": "1.0.0",
+  "type": "module",
   "description": "- Next.js 14\r - PWA (next-pwa)\r - Monitoring: Sentry, Prometheus, Grafana\r - API smart cache: Redis\r - Testy E2E: Playwright\r - Micro-interakcje: framer-motion\r - Accessibility standard\r - Feature flags (lib/features.ts)\r - Canary ready, docker ready, cloud native",
   "homepage": "https://github.com/golebiepalkamtm-ship-it/Aukcje-Palka-MTM#readme",
   "bugs": {
@@ -28,18 +29,19 @@
     "db:push": "prisma db push",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:app": "vitest run ./__tests__ ./app ./lib ./components ./hooks ./utils",
+    "test:e2e": "playwright test",
     "test:firebase": "tsx scripts/test-firebase-init.ts",
     "clean:users": "tsx scripts/clean-all-users.ts",
     "deploy:vercel": "vercel --prod",
     "deploy:homepl": "bash scripts/deploy-homepl.sh",
     "deploy:firebase": "npx firebase-tools deploy --only apphosting",
-    "deploy:firebase:all": "npx firebase-tools deploy"
-    ,
-    "diagnose:breeder-images": "node scripts/diagnose-breeder-images.js"
+    "deploy:firebase:all": "npx firebase-tools deploy",
+    "diagnose:breeder-images": "node scripts/diagnose-breeder-images.js",
+    "sharpen:img": "node scripts/sharpen-image.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -63,7 +65,7 @@
     "gsap": "^3.13.0",
     "lucide-react": "^0.548.0",
     "mapbox-gl": "^3.1.2",
-    "next": "^14.0.0",
+    "next": "^16.1.0-canary.12",
     "next-auth": "^4.24.13",
     "next-pwa": "^5.6.0",
     "next-sitemap": "^4.2.3",
@@ -108,6 +110,7 @@
     "jsdom": "^27.0.1",
     "prettier": "^3.6.2",
     "prisma": "5.22.0",
+    "sharp": "^0.34.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",

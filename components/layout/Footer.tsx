@@ -31,7 +31,7 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-gray-800/30 backdrop-blur-sm border-t border-white/20 text-white mt-auto mb-8">
+    <footer className="bg-gray-800/30 backdrop-blur-sm border-t border-white/20 text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           {/* Company Info */}

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // Wymuś dynamiczny rendering po stronie serwera
 export const dynamic = 'force-dynamic';
@@ -29,7 +29,7 @@ async function listImages(dir: string): Promise<string[]> {
   }
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const root = process.cwd();
     const championsRoot = path.join(root, 'public', 'champions');

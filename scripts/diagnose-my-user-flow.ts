@@ -30,7 +30,7 @@ if (!initialized) {
       credential: admin.credential.cert(serviceAccount),
     });
     initialized = true;
-  } catch (err) {
+  } catch {
     console.error(
       '❌ Brak poświadczeń Firebase. Ustaw zmienne środowiskowe: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY lub dostarcz firebase-key.json'
     );

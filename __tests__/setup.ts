@@ -265,7 +265,7 @@ vi.mock('@/lib/optimized-queries', () => ({
     withFullDetails: {},
   },
   createAuctionFilters: vi.fn(filters => filters),
-  createAuctionSorting: vi.fn(sortBy => ({ createdAt: 'desc' })),
+  createAuctionSorting: vi.fn(() => ({ createdAt: 'desc' })),
   createPagination: vi.fn((page, limit) => ({ skip: (page - 1) * limit, take: limit })),
 }));
 
@@ -300,4 +300,3 @@ vi.mock('@/lib/session-validation', () => ({
 (globalThis as any).mockResponse = (data: any, status: number = 200) => {
   return new Response(JSON.stringify(data), { status });
 };
-

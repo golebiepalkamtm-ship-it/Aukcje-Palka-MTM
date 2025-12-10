@@ -1,6 +1,6 @@
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuth } from 'firebase-admin/auth'
+
 import { getAdminApp } from '@/lib/firebase-admin'
 import { handleApiError } from '@/lib/error-handling'
 import { error as logError } from '@/lib/logger'
@@ -20,8 +20,6 @@ export async function POST(request: NextRequest) {
       captureMessage('CRITICAL: Firebase Admin App not initialized in verify-email.', 'fatal')
       return NextResponse.json({ error: 'Serwis jest tymczasowo niedostępny.' }, { status: 503 })
     }
-
-    const adminAuth = getAuth(adminApp)
     
     // Ten endpoint nie jest już potrzebny, ponieważ weryfikacja odbywa się po stronie klienta
     // za pomocą applyActionCode, a następnie stan jest synchronizowany przez /api/auth/sync.
@@ -42,4 +40,3 @@ export async function POST(request: NextRequest) {
     return handleApiError(error, request, { endpoint: 'auth/verify-email' })
   }
 }
-

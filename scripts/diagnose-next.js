@@ -83,7 +83,7 @@ try{
     const domains = domainsMatch[1].split(/[,\n]/).map(s=>s.replace(/[\[\]'"\s]/g,'')).filter(Boolean)
     info('Configured images.domains: ' + domains.join(', '))
   }
-}catch(e){ }
+}catch{ }
 
 console.log('\n==== End of diagnostic ====' )
 console.log('Run: node scripts/diagnose-next.js')

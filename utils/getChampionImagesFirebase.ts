@@ -66,10 +66,16 @@ export async function scanChampionFoldersFromFirebase(): Promise<ChampionImageDa
 
 // Funkcja do pobierania danych championa z Firebase Storage
 async function scanChampionFolderFromFirebase(
-  folderId: string, 
+  folderId: string,
   folderRef: any
 ): Promise<ChampionImageData | null> {
   try {
+    // Użyj folderRef do weryfikacji
+    if (!folderRef || !folderRef.name) {
+      console.error(`Nieprawidłowy folderRef dla ${folderId}`);
+      return null;
+    }
+
     // Podstawowe dane championa
     const champion: ChampionImageData = {
       id: folderId,
@@ -110,7 +116,7 @@ async function scanChampionFolderFromFirebase(
 
       champion.images = galleryImages;
       console.log(`Champion ${folderId}: ${galleryImages.length} zdjęć w galerii`);
-    } catch (error) {
+    } catch {
       console.log(`Champion ${folderId}: Brak folderu gallery`);
     }
 
@@ -134,7 +140,7 @@ async function scanChampionFolderFromFirebase(
 
       champion.videos = videos;
       console.log(`Champion ${folderId}: ${videos.length} wideo`);
-    } catch (error) {
+    } catch {
       console.log(`Champion ${folderId}: Brak folderu videos`);
     }
 
@@ -158,7 +164,7 @@ async function scanChampionFolderFromFirebase(
         };
         console.log(`Champion ${folderId}: ${pedigreeImages.length} zdjęć rodowodu`);
       }
-    } catch (error) {
+    } catch {
       console.log(`Champion ${folderId}: Brak folderu pedigree`);
     }
 
@@ -167,11 +173,11 @@ async function scanChampionFolderFromFirebase(
       if (!storage) {
         throw new Error('Firebase Storage nie jest zainicjalizowany');
       }
-      const dataRef = ref(storage, `champions/${folderId}/data.json`);
       // W rzeczywistej implementacji pobralibyśmy plik JSON
       // ale Firebase Storage nie ma łatwego sposobu na pobranie zawartości tekstowej
       // Możemy to pominąć lub zaimplementować osobno
-    } catch (error) {
+      // const dataRef = ref(storage, `champions/${folderId}/data.json`);
+    } catch {
       console.log(`Champion ${folderId}: Brak pliku data.json`);
     }
 

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authorizeApiRequest } from '@/app/api/guards/auth-guard';
 
-export async function POST(request: Request) {
+export async function POST() {
   // Guard: require level2 to perform verification update
   const auth = await authorizeApiRequest('level2-ok');
   if (!auth.ok) {

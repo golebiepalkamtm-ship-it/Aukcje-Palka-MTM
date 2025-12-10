@@ -38,13 +38,13 @@ export function UnifiedLayout({
   isHomePage = false,
 }: UnifiedLayoutProps) {
   return (
-    <div className={`relative min-h-screen flex flex-col ${className}`}>
+    <div className={`relative min-h-screen flex flex-col ${className}`} suppressHydrationWarning={true}>
       {/* Tło strony */}
       {showBackground && (
         <>
           <div className="fixed inset-0 w-full h-full -z-10">
             <Image
-              src="/pigeon-lofts-background.jpg"
+              src="/pigeon-lofts-background-sharp.jpg"
               alt="Tło gołębnika Pałka MTM"
               fill
               priority
@@ -59,46 +59,53 @@ export function UnifiedLayout({
 
       {/* Logo, Navigation Menu i User Status - IDENTYCZNE NA WSZYSTKICH STRONACH */}
       {showNavigation && (
-        <div className="absolute z-[1001] pointer-events-auto fade-in-fwd top-5 left-12 right-6" style={{ animationDelay: '0s' }}>
+        <div className="absolute z-[1001] pointer-events-auto fade-in-fwd top-8 left-12 right-6" style={{ animationDelay: '0s' }}>
           <div className="flex items-center justify-between w-full" style={{ perspective: '1500px' }}>
             {/* Logo i Navigation Menu po lewej */}
             <div className="flex items-center gap-6">
               {/* Logo */}
-              <div className="flex items-center scale-110">
+              <div className="flex items-center scale-110 animate__animated animate__slow animate__backInDown" style={{ animationDelay: '0s' }}>
                 <LogoGlow />
               </div>
 
               {/* Navigation Menu */}
               <nav className="flex items-center">
                 <div className="flex items-center gap-4">
-                  {navItems.map((item, index) => (
-                    <div
-                      key={item.href}
-                      className="fade-in-fwd flex items-center"
-                      style={{
-                        animationDelay: '0s',
-                        transformStyle: 'preserve-3d'
-                      }}
-                    >
-                      <Link
-                        href={item.href as `/${string}`}
-                        className="glass-nav-button flex items-center justify-center scale-105"
-                        title={item.title}
-                        onClick={() => {
-                          /* console.log('Clicked:', item.href) */
+                  {navItems.map((item, index) => {
+                    const directionClass = index % 2 === 0 ? 'animate__backInRight' : 'animate__backInLeft'
+                    // Zwiększone opóźnienia i wolniejsza prędkość animacji
+                    const baseDelay = 0.18
+                    const stagger = 0.08
+                    const delay = baseDelay + index * stagger
+                    return (
+                      <div
+                        key={item.href}
+                        className={`animate__animated animate__slow ${directionClass} flex items-center`}
+                        style={{
+                          animationDelay: `${delay.toFixed(2)}s`,
+                          transformStyle: 'preserve-3d'
                         }}
                       >
-                        <i className={`${item.icon} relative z-10 text-3xl`}></i>
-                        <span className="relative z-10 text-sm ml-2 font-medium">{item.label}</span>
-                      </Link>
-                    </div>
-                  ))}
+                        <Link
+                          href={item.href as `/${string}`}
+                          className="glass-nav-button flex items-center justify-center scale-105"
+                          title={item.title}
+                          onClick={() => {
+                            /* console.log('Clicked:', item.href) */
+                          }}
+                        >
+                          <i className={`${item.icon} relative z-10 text-3xl`}></i>
+                          <span className="relative z-10 text-sm ml-2 font-medium">{item.label}</span>
+                        </Link>
+                      </div>
+                    )
+                  })}
                 </div>
               </nav>
             </div>
 
             {/* User Status po prawej */}
-            <div className="flex items-center gap-4 scale-105">
+            <div className="flex items-center gap-4 scale-105 animate__animated animate__slow animate__backInUp" style={{ animationDelay: '1.00s' }}>
               <UserStatus />
             </div>
           </div>
@@ -106,13 +113,11 @@ export function UnifiedLayout({
       )}
 
       {/* Main Content */}
-      <div className="relative z-20 flex-1">
-        {children}
-      </div>
+      {children}
 
       {/* Footer */}
       {showFooter && (
-        <div className="relative z-20 mt-32 pt-16">
+        <div className="relative z-20 mt-auto">
           <Footer />
         </div>
       )}

@@ -1,4 +1,4 @@
-Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error/**
+/**
  * Skrypt diagnostyczny do testowania walidacji aukcji
  * Uruchom: npx tsx scripts/test-auction-validation.ts
  */
@@ -159,7 +159,7 @@ console.log('\n' + '='.repeat(60));
 console.log('\n✅ TEST 1: Walidacja schema klienta (auctionCreateSchema)\n');
 
 try {
-  const clientResult = auctionCreateSchema.parse(testData);
+  auctionCreateSchema.parse(testData);
   console.log('✅ SUKCES - dane przeszły walidację kliencką');
 } catch (err) {
   if (err instanceof z.ZodError) {
@@ -174,7 +174,7 @@ console.log('\n' + '='.repeat(60));
 console.log('\n✅ TEST 2: Walidacja schema API (baseAuctionSchema)\n');
 
 try {
-  const apiResult = baseAuctionSchema.parse(testData);
+  baseAuctionSchema.parse(testData);
   console.log('✅ SUKCES - dane przeszły walidację API');
 } catch (err) {
   if (err instanceof z.ZodError) {

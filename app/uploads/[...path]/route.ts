@@ -1,0 +1,62 @@
+import { handleApiError } from '@/lib/error-handling';
+import { promises as fs } from 'fs';
+import { NextRequest, NextResponse } from 'next/server';
+import { join } from 'path';
+
+export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
+  try {
+    const pathSegments = params.path;
+    if (!pathSegments || pathSegments.length === 0) {
+      return new NextResponse(JSON.stringify({ error: 'Path is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const imagePath = pathSegments.join('/');
+    const fullPath = join(process.cwd(), 'public', 'uploads', imagePath);
+
+    // Check if file exists
+    try {
+      await fs.access(fullPath);
+      const fileBuffer = await fs.readFile(fullPath);
+      const contentType = getContentType(imagePath);
+
+      return new NextResponse(fileBuffer as unknown as BodyInit, {
+        headers: {
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=31536000, immutable',
+        },
+      });
+    } catch {
+      // File doesn't exist, return 404
+      return new NextResponse(JSON.stringify({ error: 'Image not found' }), {
+        status: 404,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+  } catch (error) {
+    return handleApiError(error, request, { endpoint: 'uploads/[...path]' });
+  }
+}
+
+function getContentType(path: string): string {
+  const ext = path.split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'png':
+      return 'image/png';
+    case 'gif':
+      return 'image/gif';
+    case 'webp':
+      return 'image/webp';
+    case 'svg':
+      return 'image/svg+xml';
+    default:
+      return 'application/octet-stream';
+  }
+}

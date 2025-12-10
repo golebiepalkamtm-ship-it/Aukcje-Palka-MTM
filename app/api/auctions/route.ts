@@ -127,8 +127,7 @@ async function createAuctionHandler(request: NextRequest) {
 
   // Pobierz użytkownika z bazy po firebaseUid
   // Załaduj prisma dopiero teraz
-  const { prisma: prismaClient, isDatabaseConfigured: _isDbConfigured } = await import('@/lib/prisma');
-  const prisma = prismaClient;
+  const { prisma } = await import('@/lib/prisma');
 
   const dbUser = await prisma.user.findFirst({
     where: { firebaseUid: decodedToken.uid },

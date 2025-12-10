@@ -3,23 +3,19 @@
  * Demonstracja przełączania między V1 i V2
  */
 
-'use client';
-
-import { ThemeSwitcher } from '@/components/theme-v2';
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 
 export default function ThemeSwitcherDemoPage() {
   return (
-    <ThemeSwitcher defaultTheme="v2">
-      {/* Opcjonalna dodatkowa zawartość dla obu motywów */}
+    <UnifiedLayout>
       <div className="py-12">
         <div className="container mx-auto px-6">
           <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Dodatkowa Zawartość
+              Theme Switcher Demo
             </h2>
             <p className="text-gray-600 leading-relaxed mb-6">
-              Ta sekcja jest widoczna w obu motywach (V1 i V2). Możesz tutaj umieścić
-              uniwersalną zawartość, która będzie wyświetlana niezależnie od wybranego motywu.
+              Sekcja w przygotowaniu...
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -43,6 +39,6 @@ export default function ThemeSwitcherDemoPage() {
           </div>
         </div>
       </div>
-    </ThemeSwitcher>
+    </UnifiedLayout>
   );
 }

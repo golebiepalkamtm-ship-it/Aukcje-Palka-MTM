@@ -271,12 +271,15 @@ export default function BreederMeetingsPage() {
 
   return (
     <UnifiedLayout isHomePage={true}>
+      {/* Additional top spacing for header */}
+      <div className="pt-24"></div>
+
       {/* Hero Section - z padding-top dla miejsca na logo i nawigację, delay 0.8s czeka na animację fade-in-fwd */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.8 }}
-        className="relative z-10 pt-80 pb-12 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12"
+        className="relative z-10 pt-44 pb-12 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12"
       >
         <div className="w-full mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Spotkania z Hodowcami</h1>
@@ -292,7 +295,7 @@ export default function BreederMeetingsPage() {
       </motion.section>
 
       {/* Content */}
-      <div className="relative z-10 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12 pb-20">
+      <div className="relative z-10 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12 pb-[30rem]" style={{ minHeight: '1200px' }}>
         <div className="max-w-7xl mx-auto">
           {/* Add Meeting Form Section */}
           <motion.section
@@ -561,11 +564,10 @@ export default function BreederMeetingsPage() {
                               <SmartImage
                                 src={image}
                                 alt={`${meeting.name} - zdjęcie ${imageIndex + 1}`}
-                                width={300}
-                                height={192}
+                                fill={true}
                                 fitMode="contain"
                                 aspectRatio="landscape"
-                                className="w-full h-full transition-transform duration-500 group-hover:scale-110"
+                                className="transition-transform duration-500 group-hover:scale-110"
                                 priority={imageIndex === 0}
                               />
                               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">

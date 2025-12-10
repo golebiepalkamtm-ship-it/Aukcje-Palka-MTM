@@ -4,7 +4,7 @@ import CreateAuctionForm from '@/components/auctions/CreateAuctionForm';
 import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal';
 import { SmartImage } from '@/components/ui/SmartImage';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAppStore, useError, useFilteredAuctions, useLoading, useRatePLNperEUR } from '@/store/useAppStore';
+import { useAppStore, useAuctions, useError, useFilteredAuctions, useLoading, useRatePLNperEUR } from '@/store/useAppStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar, Gavel, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
@@ -109,49 +109,14 @@ export function AuctionsPage() {
   const router = useRouter();
 
   const { setAuctions, setSearchTerm, setLoading, setError } = useAppStore();
-  const { auctions, searchTerm, selectedCategory, sortBy } = useFilteredAuctions();
+  const auctions = useAuctions();
+  const filteredAuctions = useFilteredAuctions();
+  const searchTerm = useAppStore(state => state.searchTerm);
+  const selectedCategory = useAppStore(state => state.selectedCategory);
+  const sortBy = useAppStore(state => state.sortBy);
   const isLoading = useLoading();
   const error = useError();
   const ratePLNperEUR = useRatePLNperEUR();
-
-  // Compute filtered auctions with useMemo to prevent infinite loops
-  const filteredAuctions = useMemo(() => {
-    const filtered = auctions.filter(auction => {
-      const matchesSearch =
-        auction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        auction.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = !selectedCategory || auction.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-
-    // Sort
-    const sortedFiltered = [...filtered];
-    switch (sortBy) {
-      case 'newest':
-        sortedFiltered.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        break;
-      case 'oldest':
-        sortedFiltered.sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-        break;
-      case 'price-low':
-        sortedFiltered.sort((a, b) => a.currentPrice - b.currentPrice);
-        break;
-      case 'price-high':
-        sortedFiltered.sort((a, b) => b.currentPrice - a.currentPrice);
-        break;
-      case 'ending-soon':
-        sortedFiltered.sort(
-          (a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime()
-        );
-        break;
-    }
-
-    return sortedFiltered;
-  }, [auctions, searchTerm, selectedCategory, sortBy]);
   const [filterStatus, setFilterStatus] = useState<
     'all' | 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING'
   >('all');
@@ -307,7 +272,7 @@ export function AuctionsPage() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.8 }}
-        className="relative z-10 pt-[250px] pb-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16"
+        className="relative z-10 pt-64 pb-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16"
       >
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Nasze Aukcje</h1>

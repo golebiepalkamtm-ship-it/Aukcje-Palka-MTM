@@ -1,0 +1,183 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - img "Tło gołębnika Pałka MTM" [ref=e5]
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Pałka M.T.M. Mistrzowie Sprintu" [ref=e11] [cursor=pointer]:
+            - /url: /
+            - img "Pałka M.T.M. Mistrzowie Sprintu" [ref=e13]
+          - navigation [ref=e14]:
+            - generic [ref=e15]:
+              - link " Strona Główna" [ref=e17] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e18]: 
+                - generic [ref=e19]: Strona Główna
+              - link " Aukcje" [ref=e21] [cursor=pointer]:
+                - /url: /auctions
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Aukcje
+              - link " Osiągnięcia" [ref=e25] [cursor=pointer]:
+                - /url: /achievements
+                - generic [ref=e26]: 
+                - generic [ref=e27]: Osiągnięcia
+              - link " Championy" [ref=e29] [cursor=pointer]:
+                - /url: /champions
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Championy
+              - link " Spotkania" [ref=e33] [cursor=pointer]:
+                - /url: /breeder-meetings
+                - generic [ref=e34]: 
+                - generic [ref=e35]: Spotkania
+              - link " Referencje" [ref=e37] [cursor=pointer]:
+                - /url: /references
+                - generic [ref=e38]: 
+                - generic [ref=e39]: Referencje
+              - link " Prasa" [ref=e41] [cursor=pointer]:
+                - /url: /press
+                - generic [ref=e42]: 
+                - generic [ref=e43]: Prasa
+              - link " O Nas" [ref=e45] [cursor=pointer]:
+                - /url: /about
+                - generic [ref=e46]: 
+                - generic [ref=e47]: O Nas
+              - link " Kontakt" [ref=e49] [cursor=pointer]:
+                - /url: /contact
+                - generic [ref=e50]: 
+                - generic [ref=e51]: Kontakt
+        - link "Konto" [ref=e53] [cursor=pointer]:
+          - /url: /auth/register
+          - img [ref=e54]
+          - generic [ref=e57]: Konto
+      - main [ref=e58]:
+        - generic [ref=e60]:
+          - heading "Nasze Aukcje" [level=1] [ref=e61]
+          - paragraph [ref=e62]: Licytuj ekskluzywne gołębie pocztowe z rodowodami championów
+        - generic [ref=e64]:
+          - article [ref=e78]:
+            - generic [ref=e80]:
+              - generic [ref=e81]:
+                - img [ref=e82]
+                - textbox "Szukaj gołębi" [ref=e85]:
+                  - /placeholder: Szukaj aukcji...
+              - generic [ref=e86]:
+                - button "Wszystkie" [ref=e87] [cursor=pointer]
+                - button "Aktywne" [ref=e88] [cursor=pointer]
+                - button "Oczekujące" [ref=e89] [cursor=pointer]
+                - button "Anulowane" [ref=e90] [cursor=pointer]
+                - button "Zakończone" [ref=e91] [cursor=pointer]
+              - button "Dodaj nową aukcję" [ref=e92] [cursor=pointer]:
+                - img [ref=e93]
+                - generic [ref=e94]: Dodaj aukcję
+          - link [ref=e97] [cursor=pointer]:
+            - /url: /auctions/cmiynlomf0003twuf5u7dn32c
+            - article [ref=e110]:
+              - generic [ref=e112]:
+                - generic [ref=e113]:
+                  - generic [ref=e114]:
+                    - generic [ref=e116]:
+                      - img [ref=e117]
+                      - paragraph [ref=e121]: Błąd ładowania obrazu
+                    - img "zzzzzzzzzzzzzzzzzzzzz" [ref=e122]
+                  - img [ref=e125]
+                  - generic [ref=e129]: Aktywna
+                - generic [ref=e130]:
+                  - generic [ref=e131]:
+                    - generic [ref=e132]:
+                      - generic [ref=e133]: "#01"
+                      - heading "zzzzzzzzzzzzzzzzzzzzz" [level=3] [ref=e134]
+                    - generic [ref=e135]:
+                      - paragraph [ref=e136]: PL-DE-BE-NL
+                      - paragraph [ref=e137]: zzzzzzzzzzzzzzzzzzzzzzzzzz
+                  - generic [ref=e138]:
+                    - generic [ref=e140]: "Sprzedawca:"
+                    - generic [ref=e141]:
+                      - generic [ref=e142]: "ID:"
+                      - generic [ref=e143]: cmiynlom
+                - generic [ref=e144]:
+                  - generic [ref=e145]:
+                    - generic [ref=e146]: Czas do końca
+                    - generic [ref=e147]:
+                      - img [ref=e148]
+                      - text: 6d 2h 47m
+                  - generic [ref=e150]:
+                    - generic [ref=e151]: Aktualna cena
+                    - generic [ref=e152]: 233 EUR
+                    - generic [ref=e153]: 1,000 PLN
+                  - button "Licytuj teraz" [ref=e156]:
+                    - img [ref=e157]
+                    - text: Licytuj teraz
+      - generic [ref=e165]:
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - generic [ref=e168]:
+              - generic [ref=e170]: GP
+              - generic [ref=e171]: MTM Pałka
+            - paragraph [ref=e172]: Witamy w świecie MTM Pałka – hodowli gołębi pocztowych, której fundamentem jest historia trzech pokoleń, a siłą napędową bezgraniczna miłość do lotu. W sercu Dolnego Śląska, pod niebem Lubania, od ponad czterdziestu pięciu lat piszemy sagę, w której precyzja genetyki łączy się z siłą rodzinnych więzi. Nasza nazwa to symbol jedności – Mariusz, Tadeusz, Marcin Pałka – ojciec i synowie, których połączyła wspólna pasja.
+            - generic [ref=e173]:
+              - generic [ref=e174]:
+                - img [ref=e175]
+                - generic [ref=e178]: kontakt@golebiepocztowe.pl
+              - generic [ref=e179]:
+                - generic [ref=e180]: Szczegółowe dane na stronie
+                - link "Kontakt" [ref=e181] [cursor=pointer]:
+                  - /url: /contact
+          - generic [ref=e182]:
+            - generic [ref=e183]:
+              - heading "Firma" [level=3] [ref=e184]
+              - list [ref=e185]:
+                - listitem [ref=e186]:
+                  - link "O nas" [ref=e187] [cursor=pointer]:
+                    - /url: /about
+                - listitem [ref=e188]:
+                  - link "Nasze Osiągnięcia" [ref=e189] [cursor=pointer]:
+                    - /url: /achievements
+                - listitem [ref=e190]:
+                  - link "Kontakt" [ref=e191] [cursor=pointer]:
+                    - /url: /contact
+            - generic [ref=e192]:
+              - heading "Usługi" [level=3] [ref=e193]
+              - list [ref=e194]:
+                - listitem [ref=e195]:
+                  - link "Aukcje" [ref=e196] [cursor=pointer]:
+                    - /url: /auctions
+                - listitem [ref=e197]:
+                  - link "Championy" [ref=e198] [cursor=pointer]:
+                    - /url: /champions
+                - listitem [ref=e199]:
+                  - link "Referencje" [ref=e200] [cursor=pointer]:
+                    - /url: /references
+            - generic [ref=e201]:
+              - heading "Prawne" [level=3] [ref=e202]
+              - list [ref=e203]:
+                - listitem [ref=e204]:
+                  - link "Regulamin" [ref=e205] [cursor=pointer]:
+                    - /url: /terms
+                - listitem [ref=e206]:
+                  - link "Polityka Prywatności" [ref=e207] [cursor=pointer]:
+                    - /url: /privacy
+                - listitem [ref=e208]:
+                  - link "Warunki Sprzedaży" [ref=e209] [cursor=pointer]:
+                    - /url: /sales-terms
+        - generic [ref=e211]:
+          - paragraph [ref=e212]: © 2024 MTM Pałka. Wszystkie prawa zastrzeżone.
+          - generic [ref=e213]:
+            - link "Facebook" [ref=e214] [cursor=pointer]:
+              - /url: https://www.facebook.com/PalkaGolebiepl/?locale=pl_PL
+              - img [ref=e215]
+            - link "Instagram" [ref=e217] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e218]
+            - link "Twitter" [ref=e221] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e222]
+  - generic [ref=e224]:
+    - img [ref=e226]
+    - button "Open Tanstack query devtools" [ref=e274] [cursor=pointer]:
+      - img [ref=e275]
+  - button "Open Next.js Dev Tools" [ref=e328] [cursor=pointer]:
+    - img [ref=e329]
+```

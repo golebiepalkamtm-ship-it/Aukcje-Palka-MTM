@@ -8,7 +8,20 @@ const baseConfig = {
 
   typescript: { ignoreBuildErrors: true },
 
-  
+  // Turbopack configuration for faster builds and development
+  turbopack: {
+    // Set the application root directory to fix workspace detection warning
+    root: path.join(__dirname),
+    // Configure module resolution extensions
+    resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
+    // Configure aliases for better module resolution
+    resolveAlias: {
+      // Add any aliases if needed, similar to webpack resolve.alias
+    },
+    // Enable debug IDs for better debugging
+    debugIds: process.env.NODE_ENV === 'development',
+  },
+
   // Disable instrumentationHook during build to avoid requiring optional OpenTelemetry modules
   experimental: {},
 
@@ -51,8 +64,8 @@ const baseConfig = {
       "connect-src 'self' https://sentry.io https://m-t-m-62972.firebaseapp.com https://storage.googleapis.com https://palkamtm.pl https://palkamtm.pl/api/metrics https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://firebasestorage.googleapis.com https://firebaseinstallations.googleapis.com https://*.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:",
       "worker-src 'self' blob:",
-      "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
-      "child-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
+      "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com/maps",
+      "child-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com/maps",
       "object-src 'none'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
@@ -106,6 +119,7 @@ const baseConfig = {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    qualities: [75, 90],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",

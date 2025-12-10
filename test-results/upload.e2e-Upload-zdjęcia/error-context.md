@@ -1,0 +1,256 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - img "Tło gołębnika Pałka MTM" [ref=e5]
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Pałka M.T.M. Mistrzowie Sprintu" [ref=e11] [cursor=pointer]:
+            - /url: /
+            - img "Pałka M.T.M. Mistrzowie Sprintu" [ref=e13]
+          - navigation [ref=e14]:
+            - generic [ref=e15]:
+              - link " Strona Główna" [ref=e17] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e18]: 
+                - generic [ref=e19]: Strona Główna
+              - link " Aukcje" [ref=e21] [cursor=pointer]:
+                - /url: /auctions
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Aukcje
+              - link " Osiągnięcia" [ref=e25] [cursor=pointer]:
+                - /url: /achievements
+                - generic [ref=e26]: 
+                - generic [ref=e27]: Osiągnięcia
+              - link " Championy" [ref=e29] [cursor=pointer]:
+                - /url: /champions
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Championy
+              - link " Spotkania" [ref=e33] [cursor=pointer]:
+                - /url: /breeder-meetings
+                - generic [ref=e34]: 
+                - generic [ref=e35]: Spotkania
+              - link " Referencje" [ref=e37] [cursor=pointer]:
+                - /url: /references
+                - generic [ref=e38]: 
+                - generic [ref=e39]: Referencje
+              - link " Prasa" [ref=e41] [cursor=pointer]:
+                - /url: /press
+                - generic [ref=e42]: 
+                - generic [ref=e43]: Prasa
+              - link " O Nas" [ref=e45] [cursor=pointer]:
+                - /url: /about
+                - generic [ref=e46]: 
+                - generic [ref=e47]: O Nas
+              - link " Kontakt" [ref=e49] [cursor=pointer]:
+                - /url: /contact
+                - generic [ref=e50]: 
+                - generic [ref=e51]: Kontakt
+        - link "Konto" [ref=e53] [cursor=pointer]:
+          - /url: /auth/register
+          - img [ref=e54]
+          - generic [ref=e57]: Konto
+      - generic [ref=e60]:
+        - heading "Spotkania z Hodowcami" [level=1] [ref=e61]
+        - paragraph [ref=e62]: Galeria zdjęć z naszych spotkań z hodowcami gołębi pocztowych
+      - generic [ref=e64]:
+        - article [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - heading "Dodaj Zdjęcia ze Spotkania" [level=2] [ref=e81]
+              - paragraph [ref=e82]: Podziel się zdjęciami z naszych spotkań z hodowcami
+            - generic [ref=e83]:
+              - text: Dołącz do naszej społeczności!
+              - paragraph [ref=e84]: Aby dodać zdjęcia ze spotkania, musisz być zalogowanym i zweryfikowanym użytkownikiem.
+              - button "Zaloguj się lub Zarejestruj" [ref=e85] [cursor=pointer]: Zaloguj się lub Zarejestruj
+        - generic [ref=e87]:
+          - article [ref=e101]:
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - heading "Spotkanie z Geert Munnik" [level=3] [ref=e104]
+                - paragraph [ref=e105]: Holandia
+              - generic [ref=e107]:
+                - generic [ref=e108] [cursor=pointer]:
+                  - img "Spotkanie z Geert Munnik - zdjęcie 1" [ref=e110]
+                  - generic [ref=e113]: "1"
+                - generic [ref=e114] [cursor=pointer]:
+                  - img [ref=e117]
+                  - generic [ref=e121]: "2"
+                - generic [ref=e122] [cursor=pointer]:
+                  - img [ref=e125]
+                  - generic [ref=e129]: "3"
+                - generic [ref=e130] [cursor=pointer]:
+                  - img [ref=e133]
+                  - generic [ref=e137]: "4"
+                - generic [ref=e138] [cursor=pointer]:
+                  - img [ref=e141]
+                  - generic [ref=e145]: "5"
+                - generic [ref=e146] [cursor=pointer]:
+                  - img [ref=e149]
+                  - generic [ref=e153]: "6"
+          - article [ref=e167]:
+            - generic [ref=e168]:
+              - generic [ref=e169]:
+                - heading "Spotkanie z Jan Oost" [level=3] [ref=e170]
+                - paragraph [ref=e171]: Holandia
+              - generic [ref=e173]:
+                - generic [ref=e174] [cursor=pointer]:
+                  - img "Spotkanie z Jan Oost - zdjęcie 1" [ref=e176]
+                  - generic [ref=e179]: "1"
+                - generic [ref=e180] [cursor=pointer]:
+                  - img [ref=e183]
+                  - generic [ref=e187]: "2"
+                - generic [ref=e188] [cursor=pointer]:
+                  - img [ref=e191]
+                  - generic [ref=e195]: "3"
+                - generic [ref=e196] [cursor=pointer]:
+                  - img [ref=e199]
+                  - generic [ref=e203]: "4"
+                - generic [ref=e204] [cursor=pointer]:
+                  - img [ref=e207]
+                  - generic [ref=e211]: "5"
+                - generic [ref=e212] [cursor=pointer]:
+                  - img [ref=e215]
+                  - generic [ref=e219]: "6"
+                - generic [ref=e220] [cursor=pointer]:
+                  - img [ref=e223]
+                  - generic [ref=e227]: "7"
+                - generic [ref=e228] [cursor=pointer]:
+                  - img [ref=e231]
+                  - generic [ref=e235]: "8"
+                - generic [ref=e236] [cursor=pointer]:
+                  - img [ref=e239]
+                  - generic [ref=e243]: "9"
+          - article [ref=e257]:
+            - generic [ref=e258]:
+              - generic [ref=e259]:
+                - heading "Spotkanie z Marginus Oostenbrink" [level=3] [ref=e260]
+                - paragraph [ref=e261]: Holandia
+              - generic [ref=e263]:
+                - generic [ref=e264] [cursor=pointer]:
+                  - img "Spotkanie z Marginus Oostenbrink - zdjęcie 1" [ref=e266]
+                  - generic [ref=e269]: "1"
+                - generic [ref=e270] [cursor=pointer]:
+                  - img [ref=e273]
+                  - generic [ref=e277]: "2"
+                - generic [ref=e278] [cursor=pointer]:
+                  - img [ref=e281]
+                  - generic [ref=e285]: "3"
+          - article [ref=e299]:
+            - generic [ref=e300]:
+              - generic [ref=e301]:
+                - heading "Spotkanie z Theo Lehnen" [level=3] [ref=e302]
+                - paragraph [ref=e303]: Niemcy
+              - generic [ref=e305]:
+                - generic [ref=e306] [cursor=pointer]:
+                  - img "Spotkanie z Theo Lehnen - zdjęcie 1" [ref=e308]
+                  - generic [ref=e311]: "1"
+                - generic [ref=e312] [cursor=pointer]:
+                  - img [ref=e315]
+                  - generic [ref=e319]: "2"
+                - generic [ref=e320] [cursor=pointer]:
+                  - img [ref=e323]
+                  - generic [ref=e327]: "3"
+                - generic [ref=e328] [cursor=pointer]:
+                  - img [ref=e331]
+                  - generic [ref=e335]: "4"
+          - article [ref=e349]:
+            - generic [ref=e350]:
+              - generic [ref=e351]:
+                - heading "Spotkanie z Toni van Ravenstein" [level=3] [ref=e352]
+                - paragraph [ref=e353]: Holandia
+              - generic [ref=e355]:
+                - generic [ref=e356] [cursor=pointer]:
+                  - img "Spotkanie z Toni van Ravenstein - zdjęcie 1" [ref=e358]
+                  - generic [ref=e361]: "1"
+                - generic [ref=e362] [cursor=pointer]:
+                  - img [ref=e365]
+                  - generic [ref=e369]: "2"
+                - generic [ref=e370] [cursor=pointer]:
+                  - img [ref=e373]
+                  - generic [ref=e377]: "3"
+                - generic [ref=e378] [cursor=pointer]:
+                  - img [ref=e381]
+                  - generic [ref=e385]: "4"
+                - generic [ref=e386] [cursor=pointer]:
+                  - img [ref=e389]
+                  - generic [ref=e393]: "5"
+                - generic [ref=e394] [cursor=pointer]:
+                  - img [ref=e397]
+                  - generic [ref=e401]: "6"
+                - generic [ref=e402] [cursor=pointer]:
+                  - img [ref=e405]
+                  - generic [ref=e409]: "7"
+      - generic [ref=e412]:
+        - generic [ref=e413]:
+          - generic [ref=e414]:
+            - generic [ref=e415]:
+              - generic [ref=e417]: GP
+              - generic [ref=e418]: MTM Pałka
+            - paragraph [ref=e419]: Witamy w świecie MTM Pałka – hodowli gołębi pocztowych, której fundamentem jest historia trzech pokoleń, a siłą napędową bezgraniczna miłość do lotu. W sercu Dolnego Śląska, pod niebem Lubania, od ponad czterdziestu pięciu lat piszemy sagę, w której precyzja genetyki łączy się z siłą rodzinnych więzi. Nasza nazwa to symbol jedności – Mariusz, Tadeusz, Marcin Pałka – ojciec i synowie, których połączyła wspólna pasja.
+            - generic [ref=e420]:
+              - generic [ref=e421]:
+                - img [ref=e422]
+                - generic [ref=e425]: kontakt@golebiepocztowe.pl
+              - generic [ref=e426]:
+                - generic [ref=e427]: Szczegółowe dane na stronie
+                - link "Kontakt" [ref=e428] [cursor=pointer]:
+                  - /url: /contact
+          - generic [ref=e429]:
+            - generic [ref=e430]:
+              - heading "Firma" [level=3] [ref=e431]
+              - list [ref=e432]:
+                - listitem [ref=e433]:
+                  - link "O nas" [ref=e434] [cursor=pointer]:
+                    - /url: /about
+                - listitem [ref=e435]:
+                  - link "Nasze Osiągnięcia" [ref=e436] [cursor=pointer]:
+                    - /url: /achievements
+                - listitem [ref=e437]:
+                  - link "Kontakt" [ref=e438] [cursor=pointer]:
+                    - /url: /contact
+            - generic [ref=e439]:
+              - heading "Usługi" [level=3] [ref=e440]
+              - list [ref=e441]:
+                - listitem [ref=e442]:
+                  - link "Aukcje" [ref=e443] [cursor=pointer]:
+                    - /url: /auctions
+                - listitem [ref=e444]:
+                  - link "Championy" [ref=e445] [cursor=pointer]:
+                    - /url: /champions
+                - listitem [ref=e446]:
+                  - link "Referencje" [ref=e447] [cursor=pointer]:
+                    - /url: /references
+            - generic [ref=e448]:
+              - heading "Prawne" [level=3] [ref=e449]
+              - list [ref=e450]:
+                - listitem [ref=e451]:
+                  - link "Regulamin" [ref=e452] [cursor=pointer]:
+                    - /url: /terms
+                - listitem [ref=e453]:
+                  - link "Polityka Prywatności" [ref=e454] [cursor=pointer]:
+                    - /url: /privacy
+                - listitem [ref=e455]:
+                  - link "Warunki Sprzedaży" [ref=e456] [cursor=pointer]:
+                    - /url: /sales-terms
+        - generic [ref=e458]:
+          - paragraph [ref=e459]: © 2024 MTM Pałka. Wszystkie prawa zastrzeżone.
+          - generic [ref=e460]:
+            - link "Facebook" [ref=e461] [cursor=pointer]:
+              - /url: https://www.facebook.com/PalkaGolebiepl/?locale=pl_PL
+              - img [ref=e462]
+            - link "Instagram" [ref=e464] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e465]
+            - link "Twitter" [ref=e468] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e469]
+  - generic [ref=e471]:
+    - img [ref=e473]
+    - button "Open Tanstack query devtools" [ref=e521] [cursor=pointer]:
+      - img [ref=e522]
+  - button "Open Next.js Dev Tools" [ref=e575] [cursor=pointer]:
+    - img [ref=e576]
+```

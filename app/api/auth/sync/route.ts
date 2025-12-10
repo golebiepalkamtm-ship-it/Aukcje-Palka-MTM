@@ -4,7 +4,7 @@ import { handleApiError } from '@/lib/error-handling'
 import { requireFirebaseAuth } from '@/lib/firebase-auth'
 import { createApiSuccessResponse, createApiErrorResponse } from '@/lib/api-response'
 import { captureMessage } from '@/lib/sentry-helpers'
-import { error as logError, info as logInfo } from '@/lib/logger'
+import { info as logInfo } from '@/lib/logger'
 import { ROLE_HIERARCHY } from '@/types/auth'
 
 export async function POST(req: NextRequest) {
@@ -130,4 +130,3 @@ export async function POST(req: NextRequest) {
     return handleApiError(error, req, { endpoint: 'auth/sync' })
   }
 }
-

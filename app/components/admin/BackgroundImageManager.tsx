@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useDragAndDropFileUpload } from '@/app/hooks/useFileUpload';
-import { 
-  uploadSystemBackgroundImage,
-  type FileUploadResult 
+import {
+  uploadSystemBackgroundImage
 } from '@/app/actions/admin-storage';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
@@ -18,7 +17,7 @@ interface SystemSetting {
 
 interface BackgroundImageManagerProps {
   currentBackgroundUrl?: string | null;
-  onBackgroundUpdate?: (newUrl: string) => void;
+  onBackgroundUpdate?: (_newUrl: string) => void;
 }
 
 export default function BackgroundImageManager({
@@ -33,7 +32,7 @@ export default function BackgroundImageManager({
     dragActive,
     selectedFiles,
     isUploading,
-    progress,
+    progress: _progress,
     error,
     success,
     handleDrag,
@@ -41,7 +40,6 @@ export default function BackgroundImageManager({
     handleDragOut,
     handleDrop,
     handleFileSelect,
-    uploadSelectedFiles,
     clearSelectedFiles,
     resetState,
   } = useDragAndDropFileUpload({
@@ -52,14 +50,13 @@ export default function BackgroundImageManager({
       setIsUpdating(true);
       resetState();
     },
-    onUploadProgress: (progress) => {
+    onUploadProgress: () => {
       // Progress is handled by the hook
     },
     onUploadSuccess: (files) => {
       if (files.length > 0) {
-        const newUrl = files[0];
         if (onBackgroundUpdate) {
-          onBackgroundUpdate(newUrl);
+          onBackgroundUpdate(files[0]);
         }
         toast.success('Tło strony zostało zaktualizowane!');
       }
@@ -82,7 +79,7 @@ export default function BackgroundImageManager({
     try {
       setIsLoading(true);
       const response = await fetch('/api/admin/settings/background');
-      
+
       if (response.ok) {
         const data = await response.json();
         setSetting(data.setting);
@@ -107,7 +104,7 @@ export default function BackgroundImageManager({
       // Use server action directly for better control
       const file = selectedFiles[0];
       const result = await uploadSystemBackgroundImage(file, 'admin');
-      
+
       if (result.success && result.url) {
         if (onBackgroundUpdate) {
           onBackgroundUpdate(result.url);
@@ -180,7 +177,7 @@ export default function BackgroundImageManager({
         <h3 className="text-lg font-semibold text-gray-900 mb-3">
           Nowe Tło
         </h3>
-        
+
         {/* Drag & Drop Area */}
         <div
           className={`relative border-2 border-dashed rounded-lg p-6 transition-colors duration-200 ${
@@ -200,7 +197,7 @@ export default function BackgroundImageManager({
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             disabled={isUploading || isUpdating}
           />
-          
+
           <div className="text-center">
             {selectedFiles.length > 0 ? (
               <div className="space-y-2">
@@ -288,12 +285,12 @@ export default function BackgroundImageManager({
         <div className="mb-4">
           <div className="flex justify-between text-sm text-gray-600 mb-1">
             <span>Przesyłanie...</span>
-            <span>{progress}%</span>
+            <span>{_progress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${_progress}%` }}
             ></div>
           </div>
         </div>
@@ -323,7 +320,7 @@ export default function BackgroundImageManager({
             </>
           )}
         </button>
-        
+
         <button
           onClick={loadBackgroundSetting}
           disabled={isLoading || isUploading || isUpdating}

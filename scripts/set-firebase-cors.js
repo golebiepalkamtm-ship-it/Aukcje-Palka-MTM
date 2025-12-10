@@ -32,7 +32,7 @@ if (!initialized) {
       storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'm-t-m-62972.firebasestorage.app',
     });
     initialized = true;
-  } catch (err) {
+  } catch {
     console.error('❌ Brak poświadczeń Firebase. Ustaw ENV lub dostarcz firebase-key.json');
     process.exit(1);
   }

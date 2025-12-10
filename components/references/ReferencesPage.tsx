@@ -270,12 +270,15 @@ export function ReferencesPage() {
 
   return (
     <>
+      {/* Additional top spacing for header */}
+      <div className="pt-24"></div>
+
       {/* Hero Section - z padding-top dla miejsca na logo i nawigację, delay 0.8s czeka na animację fade-in-fwd */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.8 }}
-        className="relative z-10 pt-80 pb-12 px-4 sm:px-6 lg:px-8"
+        className="relative z-10 pt-48 pb-12 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">Opinie o Gołębiach</h1>
@@ -540,7 +543,7 @@ export function ReferencesPage() {
       </motion.div>
 
       {/* References Grid */}
-      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-20">
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-[30rem]" style={{ minHeight: '1200px' }}>
         <div className="max-w-7xl mx-auto">
           {references.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

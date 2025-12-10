@@ -182,12 +182,15 @@ export function PressPage() {
 
   return (
     <div className="relative">
+      {/* Additional top spacing for header */}
+      <div className="pt-24"></div>
+
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.8 }}
-        className="relative z-10 pt-80 pb-20 px-4 sm:px-6 lg:px-8"
+        className="relative z-10 pt-48 pb-20 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">
@@ -206,7 +209,7 @@ export function PressPage() {
       </motion.section>
 
       {/* Content */}
-      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-20">
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-[30rem]" style={{ minHeight: '1200px' }}>
         <div className="max-w-7xl mx-auto">
           {/* DVD Section - na górze */}
           <motion.section

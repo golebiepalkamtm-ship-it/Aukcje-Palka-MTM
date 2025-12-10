@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { ChampionsPage } from '../app/champions/page';
 
 test.describe('Karuzela 3D Championów - Testy E2E', () => {
   test.beforeEach(async ({ page }) => {
@@ -12,9 +11,10 @@ test.describe('Karuzela 3D Championów - Testy E2E', () => {
     test('powinna wyświetlić karuzelę championów', async ({ page }) => {
       // Sprawdź czy karuzela jest widoczna
       await expect(page.locator('[role="region"][aria-label="Karuzela championów gołębi pocztowych"]')).toBeVisible();
-      
+
       // Sprawdź czy są widoczne zdjęcia championów
-      await expect(page.locator('[data-testid="champion-image"]')).toHaveCount({ min: 1 });
+      const championImagesCount = await page.locator('[data-testid="champion-image"]').count();
+      expect(championImagesCount).toBeGreaterThan(0);
     });
 
     test('powinna pokazać przycisk RODOWÓD', async ({ page }) => {
@@ -195,4 +195,4 @@ test.describe('Karuzela 3D Championów - Testy E2E', () => {
       await expect(page.locator('button', { hasText: 'RODOWÓD' })).toBeVisible();
     });
   });
-}); ni
+});

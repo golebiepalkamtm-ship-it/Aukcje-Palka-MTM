@@ -145,7 +145,7 @@ async function scanFirebaseChampionFolder(folderId: string): Promise<ChampionIma
 
       champion.images = galleryImages;
       console.log(`Champion ${folderId}: ${galleryImages.length} zdjęć z Firebase Storage`);
-    } catch (error) {
+    } catch {
       console.log(`Champion ${folderId}: Brak folderu gallery w Firebase Storage`);
     }
 
@@ -169,7 +169,7 @@ async function scanFirebaseChampionFolder(folderId: string): Promise<ChampionIma
 
       champion.videos = videos;
       console.log(`Champion ${folderId}: ${videos.length} wideo z Firebase Storage`);
-    } catch (error) {
+    } catch {
       console.log(`Champion ${folderId}: Brak folderu videos w Firebase Storage`);
     }
 
@@ -193,7 +193,7 @@ async function scanFirebaseChampionFolder(folderId: string): Promise<ChampionIma
         };
         console.log(`Champion ${folderId}: ${pedigreeImages.length} zdjęć rodowodu z Firebase Storage`);
       }
-    } catch (error) {
+    } catch {
       console.log(`Champion ${folderId}: Brak folderu pedigree w Firebase Storage`);
     }
 

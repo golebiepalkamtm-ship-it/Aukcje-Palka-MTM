@@ -150,8 +150,8 @@
     transparent 30%
   );
   mask: linear-gradient(white, white) content-box, linear-gradient(white, white);
-  mask-composite: exclude;
   -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;

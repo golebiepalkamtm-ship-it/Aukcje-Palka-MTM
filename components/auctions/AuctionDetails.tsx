@@ -3,10 +3,9 @@
 import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileVerification } from '@/hooks/useProfileVerification';
-import { useAppStore, useRatePLNperEUR } from '@/store/useAppStore';
+import { useRatePLNperEUR } from '@/store/useAppStore';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { motion } from 'framer-motion';
 import { AlertCircle, Calendar, Eye, MapPin, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -280,15 +279,12 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
   const [auction, setAuction] = useState<Auction | null>(null);
   const [bidAmount, setBidAmount] = useState('');
   const [maxBidAmount, setMaxBidAmount] = useState('');
-  const [useAutoBid, setUseAutoBid] = useState(false);
   const [timeLeft, setTimeLeft] = useState('');
   const [isBidding, setIsBidding] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0);
   const [isPedigreeFullscreen, setIsPedigreeFullscreen] = useState(false);
-  const [wasExtended, setWasExtended] = useState(false);
-  const [isInSnipeWindow, setIsInSnipeWindow] = useState(false);
 
   // Funkcje do obsługi pełnoekranowego widoku
   const openFullscreen = (index: number) => {
@@ -338,14 +334,8 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
       const now = new Date();
       const endTime = auction.endTime;
       const diff = endTime.getTime() - now.getTime();
-      const snipeThreshold = (auction.snipeThresholdMinutes || 5) * 60 * 1000;
 
-      // Check if we're in snipe protection window
-      if (diff > 0 && diff <= snipeThreshold) {
-        setIsInSnipeWindow(true);
-      } else {
-        setIsInSnipeWindow(false);
-      }
+      // Note: snipe window detection is currently not used in UI
 
       if (diff <= 0) {
         setTimeLeft('Aukcja zakończona');
@@ -471,7 +461,8 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
       };
 
       // Dodaj maxBid jeśli użytkownik wybrał auto-licytację
-      if (useAutoBid && maxBidAmount) {
+      // Note: Auto-bidding feature is currently disabled
+      if (maxBidAmount) {
         const maxBidValue = parseFloat(maxBidAmount);
         if (maxBidValue > bidValue) {
           bidData.maxBid = maxBidValue;
@@ -495,7 +486,6 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
         
         // Sprawdź czy aukcja została przedłużona (snipe protection)
         if (result.meta?.wasExtended) {
-          setWasExtended(true);
           toast.success(`🕐 Aukcja przedłużona! Nowy czas zakończenia: ${new Date(result.meta.newEndTime).toLocaleString('pl-PL')}`, {
             duration: 6000,
           });
@@ -654,11 +644,10 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                       className="object-contain z-10 hover:scale-[1.02] transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                       priority
-                      onError={e => {
+                      onError={_e => {
                         console.error('Image failed to load:', auction.images[0]);
-                        console.error('Image error event:', e);
                         // Zamiast ukrywać obraz, pokaż komunikat o błędzie
-                        const target = e.currentTarget as HTMLImageElement;
+                        const target = _e.currentTarget as HTMLImageElement;
                         const parent = target.parentElement;
                         if (parent) {
                           parent.innerHTML = `
@@ -705,7 +694,7 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                           width={100}
                           height={100}
                           className="max-w-[100px] max-h-[100px] object-cover rounded"
-                          onError={e => console.error('Next.js Image failed:', auction.images[0])}
+                          onError={() => console.error('Next.js Image failed:', auction.images[0])}
                         />
                       )}
                     </div>

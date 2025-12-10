@@ -11,14 +11,13 @@
 
 const fs = require('fs')
 const path = require('path')
-const { execSync } = require('child_process')
 
 const repoRoot = path.resolve(__dirname, '..')
 
 function readFileSafe(p) {
   try {
     return fs.readFileSync(p, 'utf8')
-  } catch (e) {
+  } catch {
     return null
   }
 }
@@ -39,7 +38,7 @@ function checkSmartImage() {
     try {
       const matches = codeOnly.match(/\^\\\/\[\^a\]|\/\^\\\/[\^a]/g)
       if (matches) console.log('DEBUG: matched problematic patterns in SmartImage:', matches)
-    } catch (e) {
+    } catch {
       // ignore
     }
     issues.push({
