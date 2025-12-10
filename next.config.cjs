@@ -5,6 +5,7 @@ const baseConfig = {
   reactStrictMode: true,
   generateEtags: false,
   poweredByHeader: false,
+  output: 'standalone',
 
   typescript: { ignoreBuildErrors: true },
 
