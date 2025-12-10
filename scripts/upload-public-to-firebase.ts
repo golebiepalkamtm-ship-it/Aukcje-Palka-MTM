@@ -20,6 +20,7 @@
 import { initializeApp, cert } from 'firebase-admin/app'
 import { getStorage } from 'firebase-admin/storage'
 import { readFileSync, readdirSync, statSync } from 'fs'
+import util from 'util'
 import { join, relative } from 'path'
 
 // Kolory dla terminala
@@ -36,6 +37,10 @@ const colors = {
 const args = process.argv.slice(2)
 const isDryRun = args.includes('--dry-run')
 const forceOverwrite = args.includes('--force')
+
+// Obsługa wykluczeń: --exclude=public/uploads (można wielokrotnie)
+const excludeArgs = args.filter((a) => a.startsWith('--exclude='))
+const excludePatterns = excludeArgs.map((a) => a.split('=')[1] || '').map((p) => p.replace(/\\\\/g, '/').replace(/^\/+/, ''))
 
 // Inicjalizacja Firebase Admin
 function initFirebase() {
@@ -81,7 +86,7 @@ function initFirebase() {
 }
 
 // Pobierz wszystkie pliki rekursywnie
-function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
+function getAllFiles(dirPath: string, arrayOfFiles: string[] = [], excludePatterns: string[] = []): string[] {
   const files = readdirSync(dirPath)
 
   files.forEach((file) => {
@@ -90,7 +95,11 @@ function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
     if (statSync(filePath).isDirectory()) {
       arrayOfFiles = getAllFiles(filePath, arrayOfFiles)
     } else {
-      arrayOfFiles.push(filePath)
+      const rel = relative(process.cwd(), filePath).replace(/\\/g, '/')
+      const shouldExclude = excludePatterns.some((pat) => pat && rel.startsWith(pat))
+      if (!shouldExclude) {
+        arrayOfFiles.push(filePath)
+      }
     }
   })
 
@@ -158,20 +167,38 @@ async function uploadFile(
     }
     
     // Upload pliku
+    // Note: do NOT set object ACLs when the bucket has uniform bucket-level access enabled.
+    // Upload object with metadata only; bucket-level IAM controls public access.
     await file.save(fileBuffer, {
       metadata: {
         contentType: getContentType(localPath),
         cacheControl: 'public, max-age=31536000', // 1 year cache
       },
-      public: true, // Make file publicly accessible
     })
-    
+
     console.log(`  ${colors.green}✓${colors.reset} ${storagePath}`)
     return true
   } catch (error) {
     console.error(`  ${colors.red}✗${colors.reset} ${storagePath}`)
-    console.error(`    Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    return false
+    console.error(`    Primary save error: ${error instanceof Error ? error.message : util.inspect(error, {depth:1})}`)
+
+    // Fallback: try using bucket.upload with predefinedAcl
+    try {
+      // Fallback upload without object ACLs (rely on bucket IAM for public access)
+      await bucket.upload(localPath, {
+        destination: storagePath,
+        metadata: {
+          contentType: getContentType(localPath),
+          cacheControl: 'public, max-age=31536000',
+        },
+      })
+
+      console.log(`  ${colors.green}✓${colors.reset} ${storagePath} (via fallback)`)
+      return true
+    } catch (err2) {
+      console.error(`    Fallback upload failed: ${err2 instanceof Error ? err2.message : util.inspect(err2, {depth:2})}`)
+      return false
+    }
   }
 }
 
@@ -197,7 +224,7 @@ async function main() {
   
   // Pobierz wszystkie pliki
   console.log(`\n${colors.cyan}Scanning public/ folder...${colors.reset}`)
-  const allFiles = getAllFiles(publicDir)
+  const allFiles = getAllFiles(publicDir, [], excludePatterns)
   console.log(`Found ${allFiles.length} files\n`)
   
   if (allFiles.length === 0) {

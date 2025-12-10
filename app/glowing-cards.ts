@@ -1,3 +1,4 @@
+
 // Globalny efekt glowing edges dla wszystkich kart - DOKŁADNIE z CodePen
 // https://codepen.io/simeydotme/pen/RNWoPRj
 
@@ -71,6 +72,56 @@ export function initGlowingCards() {
     card.style.setProperty('--pointer-d', `${round(edge * 100)}`);
   };
 
+  // Helper: animate a numeric CSS variable on an element
+  const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+  const easeInCubic = (t: number) => t * t * t;
+
+  const animateNumber = (
+    el: HTMLElement,
+    varName: string,
+    from: number,
+    to: number,
+    duration = 400,
+    easing: (t: number) => number = easeOutCubic,
+    unit = ''
+  ) => {
+    return new Promise<void>((resolve) => {
+      const start = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        const v = from + (to - from) * easing(t);
+        const out = Number.isFinite(v) ? v : to;
+        el.style.setProperty(varName, `${Math.round(out * 1000) / 1000}${unit}`);
+        if (t < 1) requestAnimationFrame(tick);
+        else resolve();
+      };
+      requestAnimationFrame(tick);
+    });
+  };
+
+  // Play a short intro animation on a card to make the glow shimmer in
+  const playAnimation = async (card: HTMLElement) => {
+    try {
+      // ensure vars exist
+      card.style.setProperty('--pointer-d', '0');
+      card.style.setProperty('--pointer-°', '0deg');
+
+      // Stage 1: quick burst of distance
+      await animateNumber(card, '--pointer-d', 0, 70, 450, easeOutCubic, '');
+
+      // Stage 2: rotate the highlight a bit
+      await animateNumber(card, '--pointer-°', 0, 45, 380, easeInCubic, 'deg');
+
+      // Stage 3: settle down to a softer glow
+      await animateNumber(card, '--pointer-d', 70, 24, 520, easeOutCubic, '');
+
+      // Stage 4: return angle to 0
+      await animateNumber(card, '--pointer-°', 45, 0, 420, easeOutCubic, 'deg');
+    } catch (err) {
+      // ignore animation errors
+    }
+  };
+
   // Znajdź wszystkie karty i elementy interaktywne
   const cards = document.querySelectorAll<HTMLElement>(
     '.card-glow-edge, .card-glass, .glass-container, .card, [class*="card"], [class*="glass"], .btn-primary, .btn-secondary, .glass-nav-button, input:not([type="checkbox"]):not([type="radio"]), textarea, select'
@@ -97,6 +148,10 @@ export function initGlowingCards() {
     card.addEventListener('pointerleave', () => {
       card.style.setProperty('--pointer-d', '0');
     });
+    // Set initial CSS vars and play intro animation
+    card.style.setProperty('--pointer-d', '0');
+    card.style.setProperty('--pointer-°', '0deg');
+    void playAnimation(card);
   });
 
   // Observer dla dynamicznie dodanych kart
@@ -127,6 +182,10 @@ export function initGlowingCards() {
             card.addEventListener('pointerleave', () => {
               card.style.setProperty('--pointer-d', '0');
             });
+            // initial vars + intro animation for dynamically added cards
+            card.style.setProperty('--pointer-d', '0');
+            card.style.setProperty('--pointer-°', '0deg');
+            void playAnimation(card);
           });
         }
       });

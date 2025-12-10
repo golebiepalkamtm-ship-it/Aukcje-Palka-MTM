@@ -44,6 +44,7 @@ export default function ProfilePage() {
     <UnifiedLayout>
       <div className="min-h-screen pt-20 pl-80 pr-8 py-8">
         <motion.div
+          // @ts-ignore
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}

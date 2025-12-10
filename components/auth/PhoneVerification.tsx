@@ -221,6 +221,7 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
   if (step === 'success') {
     return (
       <motion.div
+        // @ts-ignore
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="bg-white/5 rounded-xl border border-white/10 p-6"
@@ -263,6 +264,7 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
 
   return (
     <motion.div
+      // @ts-ignore
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-white/5 rounded-xl border border-white/10 p-6"

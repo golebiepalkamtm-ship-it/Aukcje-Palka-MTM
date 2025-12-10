@@ -48,6 +48,8 @@ export function SmartImage({
   // Również API routes wymagają regularnych img tagów
   const isBlobOrDataUrl = typeof src === 'string' && (/^blob:/.test(src) || /^data:/.test(src));
   const isApiRoute = typeof src === 'string' && /^\/api\//.test(src);
+  // Firebase Storage URLs - użyj zwykłego img tagu
+  const isFirebaseStorageUrl = typeof src === 'string' && /firebasestorage\.googleapis\.com/.test(src);
   // Treat any path starting with '/' as a local public asset, but exclude API routes
   // Previous detection used a narrow regex which incorrectly ignored some local paths; it has been replaced
   const isLocalUrl = typeof src === 'string' && src.startsWith('/') && !isApiRoute && !isBlobOrDataUrl;
@@ -176,7 +178,7 @@ export function SmartImage({
 
       {/* Actual image */}
       {isInView && (
-        isBlobOrDataUrl || isApiRoute || isLocalUrl ? (
+        isBlobOrDataUrl || isApiRoute || isLocalUrl || isFirebaseStorageUrl ? (
           <img
             src={src}
             alt={alt}
@@ -217,62 +219,4 @@ export function SmartImage({
 }
 
 // Hook dla preloadingu obrazów
-export function useImagePreload(src: string) {
-  const [isPreloaded, setIsPreloaded] = useState(false);
-
-  useEffect(() => {
-    if (!src || typeof window === 'undefined') return;
-
-    const img = new window.Image();
-    img.onload = () => setIsPreloaded(true);
-    img.onerror = () => setIsPreloaded(false);
-    img.src = src;
-
-    return () => {
-      try {
-        img.onload = null;
-        img.onerror = null;
-      } catch {
-        // ignore
-      }
-    };
-  }, [src]);
-
-  return isPreloaded;
-}
-
-// Hook dla batch preloadingu
-export function useBatchImagePreload(srcs: string[]) {
-  const [preloadedCount, setPreloadedCount] = useState(0);
-  const [isAllPreloaded, setIsAllPreloaded] = useState(false);
-
-  useEffect(() => {
-    if (!srcs.length) return;
-
-    let loadedCount = 0;
-    const totalCount = srcs.length;
-
-    const preloadImage = (src: string) => {
-      const img = new window.Image();
-      img.onload = () => {
-        loadedCount++;
-        setPreloadedCount(loadedCount);
-        if (loadedCount === totalCount) {
-          setIsAllPreloaded(true);
-        }
-      };
-      img.onerror = () => {
-        loadedCount++;
-        setPreloadedCount(loadedCount);
-        if (loadedCount === totalCount) {
-          setIsAllPreloaded(true);
-        }
-      };
-      img.src = src;
-    };
-
-    srcs.forEach(preloadImage);
-  }, [srcs]);
-
-  return { preloadedCount, isAllPreloaded, progress: preloadedCount / srcs.length };
-}
+export { useImagePreload, useBatchImagePreload } from '@/lib/image-hooks';

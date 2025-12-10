@@ -95,12 +95,96 @@ export function ChampionsCarousel({ champions }: ChampionsCarouselProps) {
     return visible;
   };
 
+<<<<<<< HEAD
   const visibleImages = getVisibleImages();
+=======
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [ringAngle, setRingAngle] = useState(0);
+
+  // Usunięto przewijanie muszką - zostawiono tylko scroll przyciskami
+
+  const next = useCallback(() => {
+    if (n <= 1) return;
+    setRingAngle((a) => a - step); // Pełny krok do następnego gołębia
+  }, [n, step]);
+
+  const prev = useCallback(() => {
+    if (n <= 1) return;
+    setRingAngle((a) => a + step); // Pełny krok do poprzedniego gołębia
+  }, [n, step]);
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
+
+  // Track central champion when angle changes
+  useEffect(() => {
+    if (onCentralChampionChange && n > 0) {
+      const idx = ((Math.round((-ringAngle) / step) % n) + n) % n;
+      const centralChamp = champions[idx];
+      onCentralChampionChange(centralChamp || null);
+    }
+  }, [ringAngle, step, n, champions, onCentralChampionChange]);
+
+  // Get current central champion
+  const currentCentralIndex = n > 0 ? ((Math.round((-ringAngle) / step) % n) + n) % n : 0;
+  const currentCentralChampion = champions[currentCentralIndex];
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && e.target.closest('[role="dialog"], input, textarea, select')) {
+        return; // Don't interfere with dialogs or form elements
+      }
+
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          prev();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          next();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [next, prev]);
 
   return (
+<<<<<<< HEAD
     <div className="relative w-full max-w-[1800px] mx-auto px-2">
 
       {/* Carousel Container */}
+=======
+    <div
+      className={`relative w-full max-w-[1600px] mx-auto px-4 -mt-4 ${className}`}
+      role="region"
+      aria-label="Karuzela championów gołębi pocztowych"
+    >
+      {/* Navigation arrows outside carousel */}
+      {n > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-30 p-4 sm:p-5 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-white/80 hover:bg-white text-gray-800 -ml-20 sm:-ml-24"
+            type="button"
+            aria-label="Poprzedni champion"
+          >
+            <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" aria-hidden="true" />
+          </button>
+
+          <button
+            onClick={next}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-30 p-4 sm:p-5 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-white/80 hover:bg-white text-gray-800 -mr-20 sm:-mr-24"
+            type="button"
+            aria-label="Następny champion"
+          >
+            <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8" aria-hidden="true" />
+          </button>
+        </>
+      )}
+
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
       <div
         className="relative h-[360px] sm:h-[420px] overflow-hidden pb-6"
         style={{
@@ -108,6 +192,7 @@ export function ChampionsCarousel({ champions }: ChampionsCarouselProps) {
           perspectiveOrigin: 'center center',
         }}
       >
+<<<<<<< HEAD
         <AnimatePresence>
           {visibleImages.map(({ imageData, champion, position, index }) => (
             <motion.div
@@ -138,6 +223,41 @@ export function ChampionsCarousel({ champions }: ChampionsCarouselProps) {
               {/* Champion Card */}
               <motion.div
                 className={`relative overflow-hidden cursor-pointer`}
+=======
+        <div
+          id="imgs"
+          className="absolute"
+          style={{
+            top: "35%", // Przesunięcie wyżej dla lepszego wycentrowania
+            left: "50%",
+            transformStyle: "preserve-3d",
+            transformOrigin: `0 0 -${radius}vw`,
+            transform: `translate(-50%,-50%) rotate3d(0,1,0,${ringAngle}deg)`,
+            transition: TRANSITION_STYLE,
+          }}
+        >
+          <div
+            className="pointer-events-none"
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: 900,
+              height: 900,
+              transform: "translate(-50%, -50%)",
+              background: "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 30%, transparent 40%)",
+              filter: "blur(3px)",
+            }}
+          />
+
+          {items.map((item, i) => {
+            const rotate = step * i;
+            return (
+              <div
+                key={`${item.src}-${i}`}
+                className="absolute focus:outline-none focus:ring-4 focus:ring-blue-500"
+                tabIndex={0}
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
                 style={{
                   width: position === 0 ? '480px' : position === -1 || position === 1 ? '360px' : '260px',
                   height: position === 0 ? '360px' : position === -1 || position === 1 ? '270px' : '195px',
@@ -175,6 +295,7 @@ export function ChampionsCarousel({ champions }: ChampionsCarouselProps) {
                   }
                 }}
               >
+<<<<<<< HEAD
                 {/* Champion Image */}
                 <div className="relative w-full h-full flex items-center justify-center">
                   <SmartImage
@@ -211,8 +332,79 @@ export function ChampionsCarousel({ champions }: ChampionsCarouselProps) {
               <ChevronRight className="w-6 h-6" />
             </button>
           </>
+=======
+                <img
+                  src={item.src}
+                  alt={item.title || `Champion ${i + 1}`}
+                  data-testid="champion-image"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    aspectRatio: "4/3",
+                    objectFit: "cover",
+                    boxSizing: "border-box",
+                    padding: 8,
+                    display: "block",
+                    borderRadius: 12,
+                    filter: "brightness(1)",
+                    boxShadow: "0 2px 32px rgba(0,0,0,.7)",
+                    border: "2px solid #fff",
+                  }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+
+
+        {/* RODOWÓD Button - positioned above progress dots */}
+        {currentCentralChampion?.pedigreeImage && (
+          <button
+            onClick={() => onPedigreeClick(currentCentralChampion.pedigreeImage!)}
+            className="absolute top-[50%] -translate-y-1/2 left-1/2 -translate-x-1/2 z-30 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            type="button"
+          >
+            RODOWÓD
+          </button>
+        )}
+
+        {/* Progress Dots - positioned slightly below RODOWÓD button */}
+        {n > 1 && (
+          <div
+            className="absolute top-[60%] left-1/2 -translate-x-1/2 z-30 flex space-x-2"
+            role="tablist"
+            aria-label="Wskaźniki pozycji w karuzeli championów"
+          >
+            {Array.from({ length: n }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  const targetAngle = -step * i;
+                  setRingAngle(targetAngle);
+                }}
+                className={`w-3 h-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 ${
+                  Math.abs(currentCentralIndex - i) < 0.5
+                    ? 'bg-white scale-125'
+                    : 'bg-white/50 hover:bg-white/75'
+                }`}
+                role="tab"
+                aria-label={`Przejdź do zdjęcia ${i + 1}`}
+                aria-selected={Math.abs(currentCentralIndex - i) < 0.5}
+                type="button"
+              />
+            ))}
+          </div>
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
         )}
       </div>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+});
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9

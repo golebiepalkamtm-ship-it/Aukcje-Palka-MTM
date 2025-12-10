@@ -33,20 +33,6 @@ export default function ThemeToggle() {
     localStorage.setItem('theme', theme);
   }, [theme, mounted]);
 
-  const cycleTheme = () => {
-    setTheme(current => {
-      switch (current) {
-        case 'light':
-          return 'dark';
-        case 'dark':
-          return 'system';
-        case 'system':
-        default:
-          return 'light';
-      }
-    });
-  };
-
   if (!mounted) {
     return (
       <button className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800" aria-label="Toggle theme">
@@ -79,6 +65,10 @@ export default function ThemeToggle() {
       case 'system':
         return 'Switch to light mode';
     }
+  };
+
+  const cycleTheme = () => {
+    setTheme(prev => (prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light'));
   };
 
   return (

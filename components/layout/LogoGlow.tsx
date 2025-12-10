@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 export function LogoGlow() {
   return (
+<<<<<<< HEAD
     <div className="relative z-[100]" suppressHydrationWarning={true}>
       <Link href="/">
         <div className="relative">
@@ -26,6 +27,11 @@ export function LogoGlow() {
           />
         </div>
       </Link>
+=======
+    <div>
+      {/* Przywrócono logo */}
+      <img src="/logo.png" alt="Logo" />
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
     </div>
   );
 }

@@ -23,7 +23,7 @@ export function Button3D({
   size = 'md',
   className = '',
   disabled = false,
-  glow = true,
+  glow = false,
   intensity = 'medium',
 }: Button3DProps) {
   const sizeClasses = {

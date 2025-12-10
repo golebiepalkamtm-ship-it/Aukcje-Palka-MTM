@@ -149,9 +149,10 @@ function VerifyEmailContent() {
             </div>
 
             <motion.button
-              onClick={() => router.push('/')}
+              // @ts-ignore
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => router.push('/')}
               className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm shadow-lg"
             >
               Przejdź na stronę główną →
@@ -176,9 +177,10 @@ function VerifyEmailContent() {
 
           <div className="space-y-2">
             <motion.button
-              onClick={() => router.push('/auth/register')}
+              // @ts-ignore
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => router.push('/auth/register')}
               className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm"
             >
               Zaloguj się

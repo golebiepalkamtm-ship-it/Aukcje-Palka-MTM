@@ -86,7 +86,14 @@ export function UpcomingAuctions() {
               viewport={{ once: true }}
             >
               <Link href={`/auctions/${auction.id}`} className="block h-full">
-                <div className="bg-secondary-800 rounded-2xl p-8 h-full flex flex-col group transition-all duration-300 hover:bg-secondary-700 hover:shadow-xl">
+                <div
+                  className="bg-secondary-800 rounded-2xl p-8 h-full flex flex-col group glowing-card-effect"
+                  style={{
+                    background:
+                      'radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.8), transparent 70%)',
+                    animation: 'gradientBG 12s ease infinite',
+                  }}
+                >
                   <h3 className="font-display font-bold text-xl text-white">{auction.title}</h3>
                   <p className="text-secondary-200 mt-2 text-base flex-grow">{auction.description}</p>
                   <div className="mt-6 space-y-3 text-base">

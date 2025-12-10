@@ -133,6 +133,7 @@ const AdminOverview = memo(function AdminOverview({ stats, isLoading }: AdminOve
     <div className="space-y-8">
       {/* Main Stats Grid - 8 cards */}
       <motion.div
+        // @ts-ignore
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -141,13 +142,14 @@ const AdminOverview = memo(function AdminOverview({ stats, isLoading }: AdminOve
         {statsCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
+            // @ts-ignore
             <motion.div
               key={stat.title}
+              // @ts-ignore
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.05 }}
-              className={`card hover-3d-lift ${stat.bgColor} ${stat.borderColor} border p-6`}
-            >
+              className={`card hover-3d-lift ${stat.bgColor} ${stat.borderColor} border p-6`}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-white/70 text-sm font-medium mb-1">{stat.title}</p>
@@ -172,6 +174,7 @@ const AdminOverview = memo(function AdminOverview({ stats, isLoading }: AdminOve
 
       {/* Quick Actions - Expanded */}
       <motion.div
+        // @ts-ignore
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}

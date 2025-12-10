@@ -1,116 +1,9 @@
 'use client';
 
 import { SmartImage } from '@/components/ui/SmartImage';
-import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-
-// Scroll reveal hook from AchievementTimeline
-const useScrollReveal = () => {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    if (prefersReducedMotion.matches) {
-      setIsVisible(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.35 }
-    );
-
-    observer.observe(node);
-
-    return () => {
-      if (node) {
-        observer.unobserve(node);
-      }
-    };
-  }, []);
-
-  return { ref, isVisible };
-};
-
-// Styled card component matching AchievementTimeline
-interface GoldenCardProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-function GoldenCard({ children, className = '' }: GoldenCardProps) {
-  const { ref, isVisible } = useScrollReveal();
-
-  return (
-    <div className="relative">
-      {/* 3D Shadow layers */}
-      {[...Array(11)].map((_, i) => {
-        const layer = 11 - i;
-        const offset = layer * 1.5;
-        const opacity = Math.max(0.2, 0.7 - layer * 0.05);
-        
-        return (
-          <div
-            key={i}
-            className="absolute inset-0 rounded-3xl border-2 backdrop-blur-sm"
-            style={{
-              borderColor: `rgba(0, 0, 0, ${opacity})`,
-              backgroundColor: `rgba(0, 0, 0, ${opacity * 0.8})`,
-              transform: `translateX(${offset}px) translateY(${offset / 2}px) translateZ(-${offset}px)`,
-              zIndex: i + 1
-            }}
-            aria-hidden="true"
-          />
-        );
-      })}
-
-      <article
-        ref={ref}
-        className={`glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 text-white transition-all duration-[2000ms] overflow-hidden backdrop-blur-xl ${className} ${
-          !isVisible ? 'opacity-0' : 'opacity-100'
-        }`}
-        style={{
-          transform: !isVisible ? 'translateZ(-200px) scale(0.5)' : 'translateZ(0) scale(1)',
-          transition: 'all 2000ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-          background: 'linear-gradient(135deg, rgba(139, 117, 66, 1) 0%, rgba(133, 107, 56, 1) 25%, rgba(107, 91, 49, 1) 50%, rgba(89, 79, 45, 1) 75%, rgba(71, 61, 38, 1) 100%)',
-          borderColor: 'rgba(218, 182, 98, 1)',
-          boxShadow: '0 0 30px rgba(218, 182, 98, 1), 0 0 50px rgba(189, 158, 88, 1), 0 0 70px rgba(165, 138, 78, 0.8), inset 0 0 40px rgba(71, 61, 38, 0.5), inset 0 2px 0 rgba(218, 182, 98, 1), inset 0 -2px 0 rgba(61, 51, 33, 0.6)'
-        }}
-      >
-        {/* Inner light effects */}
-        <div
-          className="absolute inset-0 pointer-events-none rounded-3xl"
-          style={{
-            background: `
-              radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255, 245, 200, 0.25) 0%, transparent 50%),
-              radial-gradient(ellipse 600px 500px at 80% 70%, rgba(218, 182, 98, 0.2) 0%, transparent 50%),
-              radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255, 235, 180, 0.15) 0%, transparent 60%)
-            `,
-            backdropFilter: 'blur(80px)',
-            mixBlendMode: 'soft-light',
-            zIndex: 1
-          }}
-        />
-        <div className="relative z-10">
-          {children}
-        </div>
-      </article>
-    </div>
-  );
-}
+import { useEffect, useState } from 'react';
+import GoldenCard from '@/components/ui/GoldenCard';
 
 // Automatyczne wykrywanie gazet z folderów
 const newspaperFolders = [
@@ -186,49 +79,39 @@ export function PressPage() {
       <div className="pt-24"></div>
 
       {/* Hero Section */}
+<<<<<<< HEAD
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.8 }}
         className="relative z-10 pt-48 pb-20 px-4 sm:px-6 lg:px-8"
+=======
+      <section
+        className="relative z-10 pt-44 pb-20 px-4 sm:px-6 lg:px-8"
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
       >
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold uppercase tracking-[0.5em] text-white/60 mb-6">
             Prasa i Media
           </h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.2 }}
+          <p
             className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
           >
             Opinie hodowców o naszych gołębiach, artykuły, wywiady i materiały prasowe o hodowli MTM
             Pałka
-          </motion.p>
+          </p>
         </div>
-      </motion.section>
+      </section>
 
       {/* Content */}
       <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-[30rem]" style={{ minHeight: '1200px' }}>
         <div className="max-w-7xl mx-auto">
           {/* DVD Section - na górze */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="mb-20"
-          >
-            <GoldenCard className="p-8 sm:p-12 lg:p-16 xl:p-20 2xl:p-24">
+          <section className="mb-20">
+            <GoldenCard className="glass-morphism relative z-[12] w-full rounded-3xl border-2 p-8 sm:p-12 lg:p-16 xl:p-20 2xl:p-24 text-white backdrop-blur-xl">
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 2xl:gap-20 items-stretch w-full">
                 {/* Okładka DVD (dopasowana do proporcji pudełka DVD) */}
-                <motion.div
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  viewport={{ once: true }}
-                  className="flex justify-center"
-                >
+                <div className="flex justify-center">
                   <div className="relative">
                     {/* Subtelniejsze białe podświetlenie ZA ramką (nieprzycinane) */}
                     <div className="absolute -inset-4 -z-10 pointer-events-none blur-2xl shadow-2xl shadow-white/50" />
@@ -262,16 +145,10 @@ export function PressPage() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Film YouTube */}
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  viewport={{ once: true }}
-                  className="flex justify-center"
-                >
+                <div className="flex justify-center">
                   <div className="relative w-full max-w-[320px] sm:max-w-[360px] md:max-w-[400px] h-full rounded-xl overflow-hidden shadow-2xl">
                     <iframe
                       src="https://www.youtube.com/embed/utXkaMWyZfk"
@@ -280,27 +157,17 @@ export function PressPage() {
                       allowFullScreen
                     ></iframe>
                   </div>
-                </motion.div>
+                </div>
               </div>
             </GoldenCard>
-          </motion.section>
+          </section>
 
           {/* Gazety Grid - na dole */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-20"
-          >
+          <section className="mb-20">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-full mx-auto">
               {newspaperFolders.map((folder, index) => (
-                <motion.div
+                <div
                   key={folder.id}
-                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.8, delay: index * 0.1 }}
-                  viewport={{ once: true }}
                   className="aspect-[3/4] w-full"
                 >
                   <div
@@ -334,10 +201,10 @@ export function PressPage() {
                       }}
                     />
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.section>
+          </section>
         </div>
       </div>
 
@@ -397,13 +264,7 @@ export function PressPage() {
             {/* Okładka lub Strony gazety */}
             {!isNewspaperOpen ? (
               // Okładka gazety
-              <motion.div
-                key="cover"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, ease: 'easeInOut' }}
-                className="w-auto h-auto max-w-[85vw] max-h-[85vh]"
-              >
+              <div className="w-auto h-auto max-w-[85vw] max-h-[85vh]">
                 <SmartImage
                   src={`/press/articles/older/${selectedImagePair.folderId}/${selectedImagePair.left}`}
                   alt="Okładka gazety"
@@ -413,24 +274,12 @@ export function PressPage() {
                   aspectRatio="portrait"
                   className="w-auto h-full max-h-[85vh] rounded-lg shadow-2xl"
                 />
-              </motion.div>
+              </div>
             ) : (
               // Strony gazety - 2 obok siebie
-              <motion.div
-                key={`pages-${currentPageIndex}`}
-                initial={{ opacity: 0, x: 100, rotateY: 15 }}
-                animate={{ opacity: 1, x: 0, rotateY: 0 }}
-                exit={{ opacity: 0, x: -100, rotateY: -15 }}
-                transition={{ duration: 0.8, ease: 'easeInOut' }}
-                className="flex gap-6 w-full h-full items-center justify-center px-4"
-              >
+              <div className="flex gap-6 w-full h-full items-center justify-center px-4">
                 {/* Lewa strona */}
-                <motion.div
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="flex-1 max-w-[42vw] max-h-[85vh]"
-                >
+                <div className="flex-1 max-w-[42vw] max-h-[85vh]">
                   <SmartImage
                     src={`/press/articles/older/${selectedImagePair.folderId}/${currentNewspaperImages[currentPageIndex] || selectedImagePair.left}`}
                     alt={`Strona ${currentPageIndex + 1}`}
@@ -440,16 +289,11 @@ export function PressPage() {
                     aspectRatio="portrait"
                     className="w-full h-full max-h-[85vh] rounded-lg shadow-2xl"
                   />
-                </motion.div>
+                </div>
 
                 {/* Prawa strona */}
                 {currentNewspaperImages[currentPageIndex + 1] && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                    className="flex-1 max-w-[42vw] max-h-[85vh]"
-                  >
+                  <div className="flex-1 max-w-[42vw] max-h-[85vh]">
                     <SmartImage
                       src={`/press/articles/older/${selectedImagePair.folderId}/${currentNewspaperImages[currentPageIndex + 1]}`}
                       alt={`Strona ${currentPageIndex + 2}`}
@@ -459,9 +303,9 @@ export function PressPage() {
                       aspectRatio="portrait"
                       className="w-full h-full max-h-[85vh] rounded-lg shadow-2xl"
                     />
-                  </motion.div>
+                  </div>
                 )}
-              </motion.div>
+              </div>
             )}
 
             {/* Wskaźnik stron */}

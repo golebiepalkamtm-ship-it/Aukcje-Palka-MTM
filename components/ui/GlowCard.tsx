@@ -45,7 +45,7 @@ export function GlowCard({
   
   const variantClasses = {
     default: 'card border-2 border-white/15 bg-gradient-to-br from-white/10 via-white/5 to-transparent',
-    glass: 'card-glass border-2 border-white/20 bg-gradient-to-br from-white/15 via-white/8 to-transparent',
+    glass: 'card-glass border-2 border-white/20',
     solid: 'card-solid border-2 border-white/25 bg-gradient-to-br from-white/20 via-white/10 to-white/5',
     gradient: 'card-gradient border-2 border-white/20 bg-gradient-to-br from-blue-900/20 via-purple-900/10 to-transparent',
     floating: 'card-floating border-2 border-white/15 bg-gradient-to-br from-white/12 via-white/6 to-transparent',
@@ -83,7 +83,6 @@ export function GlowCard({
       aria-label={ariaLabel}
       {...clickableProps}
     >
-      <span className="glow" aria-hidden="true" />
       <div className="relative z-10">{children}</div>
     </Component>
   );
@@ -142,7 +141,6 @@ export function GlowButton({
         className
       )}
     >
-      <span className="glow" aria-hidden="true" />
       {children}
     </button>
   );

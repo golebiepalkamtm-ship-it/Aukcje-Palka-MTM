@@ -6,7 +6,7 @@
 // guarded by server-only checks.
 
 // Wyciszone logi - nie używamy importu z ./logger
-const SILENT_MODE = true;
+const SILENT_MODE = false; // Tymczasowo włączone dla debugowania produkcji
 const debug = (..._args: any[]) => { if (!SILENT_MODE) console.debug('[DEBUG]', ..._args); };
 const info = (..._args: any[]) => { if (!SILENT_MODE) console.info('[INFO]', ..._args); };
 const error = (..._args: any[]) => { if (!SILENT_MODE) console.error('[ERROR]', ..._args); };
@@ -35,10 +35,39 @@ function initializeFirebaseAdmin() {
   initializationAttempted = true;
 
   // Sprawdź czy wszystkie wymagane zmienne środowiskowe są ustawione
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  let projectId = process.env.FIREBASE_PROJECT_ID;
+  let clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  let privateKey = process.env.FIREBASE_PRIVATE_KEY;
   const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET;
+
+  // If a full service account JSON is provided via Secret Manager, parse it and
+  // override individual fields. We expect `FIREBASE_SERVICE_ACCOUNT_JSON` to
+  // contain the entire JSON content of the service account key.
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  if (serviceAccountJson) {
+    try {
+      const parsed = typeof serviceAccountJson === 'string' ? JSON.parse(serviceAccountJson) : serviceAccountJson;
+      // prefer parsed values if available
+      if (parsed.project_id) {
+        // eslint-disable-next-line prefer-const
+        // assign to local variables used below
+        // (we don't set process.env to avoid mutating global env)
+      }
+      // Use local shadowed variables
+      const saProjectId = parsed.project_id || projectId;
+      const saClientEmail = parsed.client_email || clientEmail;
+      const saPrivateKey = parsed.private_key || privateKey;
+      // Reassign the three variables used later
+      // @ts-ignore
+      projectId = saProjectId;
+      // @ts-ignore
+      clientEmail = saClientEmail;
+      // @ts-ignore
+      privateKey = saPrivateKey;
+    } catch (err) {
+      error('❌ Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON:', err instanceof Error ? err.message : String(err));
+    }
+  }
 
   if (isDev && !isTest && !isBuildTime) {
     debug('🔧 Firebase Admin SDK initialization check:');
@@ -74,6 +103,15 @@ function initializeFirebaseAdmin() {
       .replace(/\\n/g, '\n')
       // Handle literal newlines (already present)
       .trim();
+
+    if (isDev) {
+      debug('🔑 Private key debug:');
+      debug('- Original length:', privateKey.length);
+      debug('- Normalized length:', normalizedPrivateKey.length);
+      debug('- Starts with BEGIN:', normalizedPrivateKey.startsWith('-----BEGIN'));
+      debug('- Ends with END:', normalizedPrivateKey.endsWith('-----END'));
+      debug('- Contains newlines:', normalizedPrivateKey.includes('\n'));
+    }
     
     // Check if private key looks valid (should start with -----BEGIN)
     if (!normalizedPrivateKey.includes('-----BEGIN')) {

@@ -1,0 +1,9 @@
+{
+  "id": "7",
+  "name": "Champion Golf",
+  "achievements": ["Mistrz Krajowy 2021", "Rekordzista w locie długodystansowym"],
+  "images": [
+    "/champions/7/gallery/pl-0446-12-1046_c.jpg"
+  ],
+  "pedigreeImage": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop"
+}

@@ -3,24 +3,29 @@
 ## Method 1: Using the Admin API (Recommended)
 
 ### Step 1: Create a user account
+
 1. Go to your application's registration page
 2. Create a new account with your desired admin email and password
 3. Verify the email address
 
 ### Step 2: Get the user ID
+
 After registration, you need the user ID from the database. You can get this by:
 
-**Option A: Check database directly**
+### Option A: Check database directly
+
 ```sql
 SELECT id, email, role FROM "User" WHERE email = 'your-admin@email.com';
 ```
 
-**Option B: Use the admin users endpoint**
+### Option B: Use the admin users endpoint
+
 ```bash
 GET /api/admin/users
 ```
 
 ### Step 3: Promote to ADMIN
+
 Use the admin API to promote the user:
 
 ```bash
@@ -32,7 +37,7 @@ Content-Type: application/json
 }
 ```
 
-This requires you to already have an admin token. If you don't have one yet, use Method 2.
+This requires an existing admin token. If you don't have one, use Method 2.
 
 ## Method 2: Database Direct Update
 

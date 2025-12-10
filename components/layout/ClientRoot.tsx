@@ -1,11 +1,12 @@
 "use client";
 
-import ClientProviders from '@/components/providers/ClientProviders';
-import { ToastProvider } from '@/components/providers/ToastProvider';
-import { useState, useEffect } from 'react';
-import { initGlowingCards } from '@/app/glowing-cards';
+import '@/lib/suppress-hydration-warnings';
+import { ClientProviders } from '@/components/providers/ClientProviders';
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
+import { usePathname } from 'next/navigation';
 
 export default function ClientRoot({ children }: { children: React.ReactNode }) {
+<<<<<<< HEAD
   const isProduction = typeof window !== 'undefined' && process.env.NODE_ENV === 'production';
   const enableLoadingOverlay = process.env.NEXT_PUBLIC_ENABLE_LOADING_OVERLAY !== 'false';
 
@@ -90,5 +91,14 @@ export default function ClientRoot({ children }: { children: React.ReactNode }) 
         </div>
       )}
     </>
+=======
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
+
+  return (
+    <ClientProviders>
+      <UnifiedLayout isHomePage={isHomePage}>{children}</UnifiedLayout>
+    </ClientProviders>
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   );
 }

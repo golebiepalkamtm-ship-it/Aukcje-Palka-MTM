@@ -279,6 +279,16 @@ export function createAuctionFilters(params: {
     where.isApproved = params.isApproved;
   }
 
+  // Filtruj aukcje po czasie - widoczne tylko jeśli czas bieżący jest między startTime a endTime
+  const now = new Date();
+  where.startTime = {
+    lte: now, // Aukcja już się rozpoczęła
+  };
+  where.endTime = {
+    gte: now, // Aukcja jeszcze się nie zakończyła
+  };
+  where.status = 'ACTIVE'; // Tylko aktywne aukcje
+
   return where;
 }
 

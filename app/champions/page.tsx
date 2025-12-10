@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 'use client';
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
@@ -68,4 +69,11 @@ export default function ChampionsPage() {
       )}
     </UnifiedLayout>
   );
+=======
+// Using client component `ChampionsClient` — other imports were unused and removed
+import ChampionsClient from '@/components/champions/ChampionsClient';
+
+export default function ChampionsPage() {
+  return <ChampionsClient />;
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 }

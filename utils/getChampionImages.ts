@@ -24,10 +24,8 @@ export interface ChampionImageData {
 
 // Funkcja do skanowania folderów championów z obsługą Firebase Storage
 export async function scanChampionFolders(): Promise<ChampionImageData[]> {
-  // Jeśli wymuszone lokalne lub pracujemy lokalnie (dev), użyj lokalnych plików najpierw
-  const forceLocal =
-    String(process.env.FORCE_LOCAL_CHAMPIONS || '').toLowerCase() === '1' ||
-    String(process.env.FORCE_LOCAL_CHAMPIONS || '').toLowerCase() === 'true';
+  const forceLocal = ['1', 'true'].includes(String(process.env.FORCE_LOCAL_CHAMPIONS).toLowerCase());
+
   const isDev = process.env.NODE_ENV !== 'production';
 
   if (forceLocal || isDev) {
@@ -42,7 +40,7 @@ export async function scanChampionFolders(): Promise<ChampionImageData[]> {
     }
   }
 
-  // Jeśli nie wymuszone lokalnie lub lokalne nie zawiera danych, spróbuj Firebase Storage
+  // Jeśli nie wymuszone lokalnie lub lokalne nie zawiera danych, spróbuj Firebase Storage.
   try {
     const firebaseChampions = await scanFromFirebaseStorage();
     if (firebaseChampions.length > 0) {
@@ -50,7 +48,10 @@ export async function scanChampionFolders(): Promise<ChampionImageData[]> {
       return firebaseChampions;
     }
   } catch (error) {
-    console.log('Firebase Storage niedostępne lub puste, używam lokalnych plików jako fallback:', error);
+    console.warn(
+      'Firebase Storage niedostępne lub puste, używam lokalnych plików jako fallback:',
+      error
+    );
   }
 
   // Ostateczny fallback do lokalnych plików
@@ -61,29 +62,24 @@ export async function scanChampionFolders(): Promise<ChampionImageData[]> {
 // Pobierz championów z Firebase Storage
 async function scanFromFirebaseStorage(): Promise<ChampionImageData[]> {
   const champions: ChampionImageData[] = [];
-  
+
   if (!storage) {
     throw new Error('Firebase Storage nie jest zainicjalizowany');
   }
 
   try {
-    // Referencja do folderu champions w Firebase Storage
     const championsRef = ref(storage, 'champions');
-    
-    // Pobierz listę wszystkich folderów championów
     const championsList = await listAll(championsRef);
-    
-    // Filtruj tylko foldery
-    const championFolders = championsList.items.filter(item => 
-      !item.name.includes('.') // Foldery nie mają rozszerzenia
-    );
+
+    // Prefixes w Firebase Storage reprezentują foldery
+    const championFolders = championsList.prefixes;
 
     console.log(`Znaleziono ${championFolders.length} folderów championów w Firebase Storage`);
 
     for (const folderRef of championFolders) {
       const championId = folderRef.name;
       const champion = await scanFirebaseChampionFolder(championId);
-      
+
       if (champion) {
         champions.push(champion);
       }
@@ -105,6 +101,10 @@ async function scanFromFirebaseStorage(): Promise<ChampionImageData[]> {
 
 // Pobierz dane championa z Firebase Storage
 async function scanFirebaseChampionFolder(folderId: string): Promise<ChampionImageData | null> {
+  if (!storage) {
+    throw new Error('Firebase Storage nie jest zainicjalizowany');
+  }
+
   try {
     const champion: ChampionImageData = {
       id: folderId,
@@ -127,12 +127,9 @@ async function scanFirebaseChampionFolder(folderId: string): Promise<ChampionIma
 
     // Pobierz zdjęcia z folderu gallery
     try {
-      if (!storage) {
-        throw new Error('Firebase Storage nie jest zainicjalizowany');
-      }
       const galleryRef = ref(storage, `champions/${folderId}/gallery`);
       const galleryList = await listAll(galleryRef);
-      
+
       const galleryImages = await Promise.all(
         galleryList.items.map(async (item, index) => {
           const url = await getDownloadURL(item);
@@ -151,12 +148,9 @@ async function scanFirebaseChampionFolder(folderId: string): Promise<ChampionIma
 
     // Pobierz wideo z folderu videos
     try {
-      if (!storage) {
-        throw new Error('Firebase Storage nie jest zainicjalizowany');
-      }
       const videosRef = ref(storage, `champions/${folderId}/videos`);
       const videosList = await listAll(videosRef);
-      
+
       const videos = await Promise.all(
         videosList.items.map(async (item, index) => {
           const url = await getDownloadURL(item);
@@ -175,12 +169,9 @@ async function scanFirebaseChampionFolder(folderId: string): Promise<ChampionIma
 
     // Pobierz zdjęcia rodowodu z folderu pedigree
     try {
-      if (!storage) {
-        throw new Error('Firebase Storage nie jest zainicjalizowany');
-      }
       const pedigreeRef = ref(storage, `champions/${folderId}/pedigree`);
       const pedigreeList = await listAll(pedigreeRef);
-      
+
       const pedigreeImages = await Promise.all(
         pedigreeList.items.map(async (item) => {
           return await getDownloadURL(item); // Firebase Storage URL
@@ -191,7 +182,9 @@ async function scanFirebaseChampionFolder(folderId: string): Promise<ChampionIma
         champion.pedigree = {
           images: pedigreeImages,
         };
-        console.log(`Champion ${folderId}: ${pedigreeImages.length} zdjęć rodowodu z Firebase Storage`);
+        console.log(
+          `Champion ${folderId}: ${pedigreeImages.length} zdjęć rodowodu z Firebase Storage`
+        );
       }
     } catch {
       console.log(`Champion ${folderId}: Brak folderu pedigree w Firebase Storage`);

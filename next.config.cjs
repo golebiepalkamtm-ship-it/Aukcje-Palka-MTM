@@ -12,7 +12,7 @@ const baseConfig = {
   // Turbopack configuration for faster builds and development
   turbopack: {
     // Set the application root directory to fix workspace detection warning
-    root: path.join(__dirname),
+    root: path.resolve(__dirname),
     // Configure module resolution extensions
     resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
     // Configure aliases for better module resolution
@@ -22,6 +22,12 @@ const baseConfig = {
     // Enable debug IDs for better debugging
     debugIds: process.env.NODE_ENV === 'development',
   },
+  // Dev server cross-origin requests (e.g. network IPs) — helps avoid noisy dev warnings
+  allowedDevOrigins: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://192.168.177.1:3000'
+  ],
 
   // Disable instrumentationHook during build to avoid requiring optional OpenTelemetry modules
   experimental: {},
@@ -42,14 +48,17 @@ const baseConfig = {
     const redirects = [
       { source: '/metrics', destination: '/api/metrics', permanent: false },
     ];
-    if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+
+    // Wymuszenie HTTPS w środowisku lokalnym
+    if (process.env.NODE_ENV === 'development') {
       redirects.push({
         source: '/:path*',
         has: [{ type: 'header', key: 'x-forwarded-proto', value: 'http' }],
-        destination: 'https://:path*',
-        permanent: true,
+        destination: 'https://localhost:443/:path*',
+        permanent: false,
       });
     }
+
     return redirects;
   },
 
@@ -118,6 +127,7 @@ const baseConfig = {
       { protocol: 'http', hostname: 'localhost', pathname: '/**' },
     ],
     formats: ['image/webp', 'image/avif'],
+    qualities: [75, 90],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     qualities: [75, 90],
@@ -236,7 +246,10 @@ nextConfig.webpack = (config, options) => {
     config.watchOptions.ignored = [
       ...(config.watchOptions.ignored || []),
       /(^|[\\/])node_modules([\\/]|$)/,
-      /(^|[\\/])C:[\\/](?:pagefile|swapfile)\.sys$/i
+      /(^|[\\/])C:[\\/](?:pagefile|swapfile)\.sys$/i,
+      /swapfile\.sys$/i,
+      /C:\\swapfile\.sys$/i,
+      /C:\\pagefile\.sys$/i,
     ]
   } catch (e) {
     // ignore
@@ -244,7 +257,5 @@ nextConfig.webpack = (config, options) => {
 
   return config;
 };
-
-
 
 module.exports = nextConfig;

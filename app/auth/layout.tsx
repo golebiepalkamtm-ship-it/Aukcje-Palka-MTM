@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Auth Layout
  * Filepath: app/auth/layout.tsx
  *
@@ -11,6 +11,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 }
 
 export const metadata = {
-  title: 'Autentykacja | Pałka MTM',
-  description: 'Zaloguj się lub zarejestruj na platformie Pałka MTM',
+  title: 'Autentykacja | Pąka MTM',
+  description: 'Zaloguj się lub zarejestruj na platformie Pąka MTM',
 };

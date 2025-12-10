@@ -1,10 +1,10 @@
-﻿# Pałka MTM - Platforma Aukcyjna Gołębi Pocztowych
+﻿kugo# Pałka MTM - Platforma Aukcyjna Gołębi Pocztowych
 
 > **Mistrzowie Sprintu** - Profesjonalna platforma aukcyjna z pełnym stackiem produkcyjnym
 
-##  Quick Start
+## Quick Start
 
-\\\powershell
+```powershell
 # Install dependencies
 npm install
 
@@ -16,9 +16,9 @@ npm run dev:windows
 
 # Start monitoring stack
 docker-compose up -d
-\\\
+```
 
-##  Dokumentacja
+## Dokumentacja
 
 Cała dokumentacja projektu znajduje się w folderze [\docs/\](docs/):
 
@@ -27,7 +27,7 @@ Cała dokumentacja projektu znajduje się w folderze [\docs/\](docs/):
 - [README.md](docs/README.md) - Szczegółowy opis projektu
 - [QUICK-DEPLOY-HOMEPL.md](docs/QUICK-DEPLOY-HOMEPL.md) - Szybki deployment
 
-##  Tech Stack
+## Tech Stack
 
 - **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS
 - **Backend**: Next.js API Routes, Prisma ORM, PostgreSQL
@@ -37,7 +37,7 @@ Cała dokumentacja projektu znajduje się w folderze [\docs/\](docs/):
 - **Tests**: Playwright (E2E), Vitest (Unit)
 - **PWA**: next-pwa (offline support)
 
-##  Autoryzacja
+## Autoryzacja
 
 Projekt używa 3-poziomowego systemu weryfikacji:
 
@@ -46,24 +46,24 @@ Projekt używa 3-poziomowego systemu weryfikacji:
 3. **USER_FULL_VERIFIED** - tworzenie aukcji, licytowanie
 4. **ADMIN** - pełny dostęp administratora
 
-##  Główne Komendy
+## Główne Komendy
 
-\\\powershell
+```powershell
 npm run dev:windows      # Dev server (Windows)
 npm run build            # Production build
 npm test                 # Unit tests
 npm run playwright test  # E2E tests
 npx prisma migrate dev   # Database migrations
 npx prisma generate      # Generate Prisma client
-\\\
+```
 
-##  Wymagania
+## Wymagania
 
 - Node.js 18+
 - PostgreSQL 14+
 - Redis 7+
 - Docker (opcjonalnie, dla monitoringu)
 
-##  Więcej Informacji
+## Więcej Informacji
 
 Sprawdź folder [\docs/\](docs/) dla pełnej dokumentacji projektu.

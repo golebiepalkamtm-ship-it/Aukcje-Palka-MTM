@@ -1,7 +1,6 @@
 "use client";
 
 import { HeroSection } from '@/components/home/HeroSection';
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 
@@ -29,10 +28,10 @@ function HomePageContent() {
 
 export default function HomePage() {
   return (
-    <UnifiedLayout showNavigation={true} showFooter={true} showBackground={true} isHomePage={true}>
-      <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-white">Ładowanie...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-white">Ładowanie...</div></div>}>
+      <div className="min-h-[200vh]"> {/* Wydłużenie strony */}
         <HomePageContent />
-      </Suspense>
-    </UnifiedLayout>
+      </div>
+    </Suspense>
   );
 }

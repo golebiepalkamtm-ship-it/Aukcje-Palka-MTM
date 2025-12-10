@@ -199,7 +199,7 @@ export function UserDashboard() {
     if (editParam === 'true' && tab === 'profile') {
       setIsEditingProfile(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [searchParams]); // tabs jest memoized z pustą tablicą, więc nie jest potrzebny
 
   // Inicjalizacja danych profilu - tylko raz przy załadowaniu
@@ -246,7 +246,7 @@ export function UserDashboard() {
       });
       fetchUserProfile();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [user?.uid, dbUser?.id]); // Używamy tylko konkretnych identyfikatorów
 
   if (!user) {

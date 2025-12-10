@@ -18,7 +18,7 @@
   },
   "apphosting": [
     {
-      "backendId": "palkamtm",
+      "backendId": "mtm",
       "rootDir": ".",
       "ignore": [
         "node_modules",
