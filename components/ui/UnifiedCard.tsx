@@ -1,19 +1,30 @@
 'use client';
 
+<<<<<<< HEAD
 import { motion } from 'framer-motion';
 import { memo, ReactNode, useRef, useState, useEffect, type MouseEvent } from 'react';
+=======
+import { memo, ReactNode } from 'react';
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 
 interface UnifiedCardProps {
   children: ReactNode;
   className?: string;
   variant?: 'default' | 'glass' | '3d' | 'floating' | 'gradient';
   glow?: boolean;
+  noTransparency?: boolean;
   hover?: boolean;
   delay?: number;
+<<<<<<< HEAD
   intensity?: number; // 0-1 scale for holographic effect intensity
   glowingEdges?: boolean; // Enable colored glowing edges effect
   edgeGlowIntensity?: number; // 0-1 scale for edge glow intensity
   noTransparency?: boolean;
+=======
+  intensity?: number;
+  glowingEdges?: boolean;
+  edgeGlowIntensity?: number;
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 }
 
 export const UnifiedCard = memo(function UnifiedCard({
@@ -28,6 +39,7 @@ export const UnifiedCard = memo(function UnifiedCard({
   edgeGlowIntensity = 0.5,
   noTransparency = false,
 }: UnifiedCardProps) {
+<<<<<<< HEAD
   const cardRef = useRef<HTMLDivElement>(null);
   const [disabledByNoHover, setDisabledByNoHover] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -41,6 +53,8 @@ export const UnifiedCard = memo(function UnifiedCard({
 
   const maxRotation = 15 * intensity; // Subtle 3D rotation
 
+=======
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   const variantClasses = {
     default: 'card',
     glass: 'card-glass',
@@ -49,6 +63,7 @@ export const UnifiedCard = memo(function UnifiedCard({
     gradient: 'card-gradient',
   };
 
+<<<<<<< HEAD
   function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
     if (!hover || disabledByNoHover || !cardRef.current) return;
 
@@ -139,6 +154,10 @@ export const UnifiedCard = memo(function UnifiedCard({
         type: 'spring' as const,
         stiffness: 100,
       }}
+=======
+  return (
+    <div
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
       className={`
         ${glow ? 'animate-glow3D' : ''}
         ${hover ? 'unified-card-hover-highlight' : ''}
@@ -148,6 +167,7 @@ export const UnifiedCard = memo(function UnifiedCard({
       style={{
         position: 'relative',
         overflow: 'hidden',
+<<<<<<< HEAD
         transformStyle: 'preserve-3d',
         transform: disabledByNoHover
           ? 'none'
@@ -155,6 +175,8 @@ export const UnifiedCard = memo(function UnifiedCard({
           ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(30px)`
           : 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)',
         transition: disabledByNoHover ? 'none' : isHovering ? 'transform 0.1s ease-out, box-shadow 0.3s ease' : 'transform 0.3s ease-out, box-shadow 0.3s ease',
+=======
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
         // DOKŁADNIE jak w AchievementTimeline - złoty gradient
         background: noTransparency
           ? 'linear-gradient(135deg, #8B7542 0%, #856B38 25%, #6B5B31 50%, #594F2D 75%, #473D26 100%)'
@@ -162,6 +184,7 @@ export const UnifiedCard = memo(function UnifiedCard({
         // Jasny fallback kolor, żeby blend-modey nie mogły całkowicie przyciemnić tła
         backgroundColor: noTransparency ? '#8B7542' : 'transparent',
         backgroundBlendMode: 'normal',
+<<<<<<< HEAD
         // Gdy noTransparency, nadpisujemy globalne zmienne używane przez ::before/::after
         ['--card-bg' as any]: noTransparency
           ? 'linear-gradient(135deg, #8B7542 0%, #856B38 25%, #6B5B31 50%, #594F2D 75%, #473D26 100%)'
@@ -180,13 +203,17 @@ export const UnifiedCard = memo(function UnifiedCard({
           : isHovering
           ? '0 0 25px rgba(218, 182, 98, 1), 0 0 40px rgba(189, 158, 88, 0.9), 0 0 55px rgba(165, 138, 78, 0.6), inset 0 0 40px rgba(71, 61, 38, 0.15), inset 0 2px 0 rgba(218, 182, 98, 0.6), inset 0 -2px 0 rgba(61, 51, 33, 0.4)'
           : '0 0 20px rgba(218, 182, 98, 1), 0 0 35px rgba(189, 158, 88, 0.8), 0 0 50px rgba(165, 138, 78, 0.5), inset 0 0 40px rgba(71, 61, 38, 0.15), inset 0 2px 0 rgba(218, 182, 98, 0.6), inset 0 -2px 0 rgba(61, 51, 33, 0.4)',
+=======
+        // DOKŁADNIE jak w AchievementTimeline - złota ramka
+        border: '2px solid rgba(218, 182, 98, 1)',
+        borderRadius: '1.5rem',
+        boxShadow: '0 0 20px rgba(218, 182, 98, 1), 0 0 35px rgba(189, 158, 88, 0.8), 0 0 50px rgba(165, 138, 78, 0.5), inset 0 0 40px rgba(71, 61, 38, 0.15), inset 0 2px 0 rgba(218, 182, 98, 0.6), inset 0 -2px 0 rgba(61, 51, 33, 0.4)',
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
         backdropFilter: noTransparency ? 'none' : 'blur(16px)',
         WebkitBackdropFilter: noTransparency ? 'none' : 'blur(16px)',
       }}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
+<<<<<<< HEAD
       {/* Glowing Edges Effect */}
       {glowingEdges && (
         <>
@@ -326,12 +353,14 @@ export const UnifiedCard = memo(function UnifiedCard({
         }}
       />
 
+=======
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
       {!noTransparency && <div className="card-glow-animated-border" aria-hidden="true" />}
       
-      {/* Content with depth */}
-      <div style={{ transform: 'translateZ(20px)', position: 'relative', zIndex: 10 }}>
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 10 }}>
         {children}
       </div>
-    </motion.div>
+    </div>
   );
 });

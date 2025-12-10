@@ -14,12 +14,15 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 ## ✅ 1. Konfiguracja Firebase
 
 ### Client SDK (`lib/firebase.ts`, `lib/firebase.client.ts`)
+
 - ✅ Lazy initialization z walidacją konfiguracji
 - ✅ Obsługa środowiska build-time (Next.js)
 - ✅ Eksport Auth, Firestore, Storage
 - ✅ Separacja client/server
 
+
 ### Admin SDK (`lib/firebase-admin.ts`)
+
 - ✅ Lazy initialization
 - ✅ Normalizacja private key (obsługa `\n`, cudzysłowów)
 - ✅ Walidacja formatu PEM
@@ -34,6 +37,7 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 ## ✅ 2. Rejestracja Użytkowników
 
 ### Endpoint: `app/api/auth/register/route.ts`
+
 - ✅ Walidacja Zod (`registerSchema`)
 - ✅ Rate limiting
 - ✅ Sprawdzenie duplikatów w Prisma przed utworzeniem w Firebase
@@ -44,7 +48,8 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 - ✅ Error handling z `handleApiError`
 
 **Flow:**
-```
+
+```text
 1. Walidacja input → 2. Sprawdź duplikaty → 3. Utwórz Firebase → 4. Utwórz Prisma → 5. Rollback jeśli błąd
 ```
 
@@ -55,6 +60,7 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 ## ✅ 3. Weryfikacja Email
 
 ### Generowanie linku: `app/api/auth/send-verification-email/route.ts`
+
 - ✅ Wymaga autoryzacji Firebase
 - ✅ Sprawdza czy email już zweryfikowany
 - ✅ `adminAuth.generateEmailVerificationLink()` z `actionCodeSettings`
@@ -62,6 +68,7 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 - ✅ Error handling
 
 ### Weryfikacja: `app/auth/verify-email/page.tsx`
+
 - ✅ Parsowanie `oobCode` z URL
 - ✅ `checkActionCode()` + `applyActionCode()` (Firebase Client SDK)
 - ✅ Automatyczne logowanie przez `createCustomToken`
@@ -70,7 +77,8 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 - ✅ Event `email-verified-complete` dla AuthContext
 
 **Flow:**
-```
+
+```text
 1. Kliknięcie linku → 2. Weryfikacja oobCode → 3. createCustomToken → 4. Auto-login → 5. Sync → 6. Cookies
 ```
 
@@ -81,6 +89,7 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 ## ✅ 4. Synchronizacja Firebase ↔ Prisma
 
 ### Endpoint: `app/api/auth/sync/route.ts`
+
 - ✅ Weryfikacja tokenu Firebase (`requireFirebaseAuth`)
 - ✅ Pobranie użytkownika z Prisma (`findUnique` z `firebaseUid`)
 - ✅ Aktualizacja `emailVerified`, `isActive`, `lastLogin`
@@ -90,6 +99,7 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 - ✅ Tworzenie użytkownika w Prisma jeśli nie istnieje (scenariusz OAuth)
 
 **AuthContext:** `contexts/AuthContext.tsx`
+
 - ✅ `onAuthStateChanged` → automatyczna synchronizacja
 - ✅ `syncUserWithDatabase()` z debouncing (ref)
 - ✅ Ustawienie cookies po synchronizacji
@@ -102,12 +112,14 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 ## ✅ 5. Weryfikacja Tokenów
 
 ### `lib/firebase-auth.ts`
+
 - ✅ `verifyFirebaseToken()` - weryfikacja ID token z nagłówka `Authorization: Bearer`
 - ✅ `requireFirebaseAuth()` - middleware dla API routes
 - ✅ Obsługa błędów (graceful, nie rzuca wyjątków)
 - ✅ Skip logowania w build-time
 
 **Użycie:**
+
 - ✅ Wszystkie endpointy auth używają `requireFirebaseAuth`
 - ✅ Middleware auth (`lib/auth-middleware.ts`) używa `requireFirebaseAuth`
 
@@ -118,12 +130,14 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 ## ✅ 6. Weryfikacja Telefonu (SMS)
 
 ### Client: `components/auth/PhoneVerification.tsx`
+
 - ✅ Firebase Phone Auth (`PhoneAuthProvider`)
 - ✅ reCAPTCHA verifier
 - ✅ `verifyPhoneNumber()` - wysyłka SMS przez Firebase
 - ✅ Aktualizacja profilu przez `/api/phone/send-verification`
 
 ### Server: `app/api/auth/verify-sms-code/route.ts`
+
 - ✅ Walidacja Zod (`verifySmsCodeSchema`)
 - ✅ Weryfikacja kodu z bazy (`phoneVerificationCode`, `phoneVerificationExpires`)
 - ✅ Ustawienie `isPhoneVerified: true`
@@ -137,14 +151,17 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 ## ⚠️ 7. Potencjalne Problemy i Rekomendacje
 
 ### A. Brakujące walidacje (NISKI PRIORYTET)
+
 - `app/api/auth/verify-email-auto-login/route.ts` - brak walidacji Zod dla `email` w body
-- **Rekomendacja:** Dodać `z.string().email()` dla spójności
+- **Rekomendacja** Dodać `z.string().email()` dla spójności
 
 ### B. Obsługa błędów Firebase (INFORMACYJNE)
+
 - Wszystkie endpointy używają `handleApiError` ✅
 - Firebase errors są mapowane przez `handleFirebaseError()` w `lib/error-handling.ts` ✅
 
 ### C. Konfiguracja środowiskowa
+
 - ✅ `env.local.example` zawiera wszystkie wymagane zmienne
 - ✅ `firebase.env.example` jako dodatkowy reference
 - **Rekomendacja:** Upewnić się, że `.env.local` jest w `.gitignore`
@@ -153,7 +170,7 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 
 ## 📊 8. Testy i Weryfikacja
 
-### Scenariusze do przetestowania:
+### Scenariusze do przetestowania
 
 1. **Rejestracja:**
    - ✅ Utworzenie użytkownika w Firebase i Prisma
@@ -165,7 +182,7 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
    - ✅ Weryfikacja `oobCode`
    - ✅ Auto-login i sync
 
-3. **Synchronizacja:**
+3. **Synchronizacja**
    - ✅ Auto-promocja ról
    - ✅ Cookies UX
    - ✅ OAuth fallback (tworzenie użytkownika)
@@ -184,7 +201,7 @@ System Firebase działa **zgodnie z założeniami** dokumentacji SYSTEM_AUTORYZA
 
 ## ✅ 9. Zgodność z Dokumentacją
 
-### SYSTEM_AUTORYZACJI.md - Weryfikacja:
+### SYSTEM_AUTORYZACJI.md - Weryfikacja
 
 | Wymaganie | Status | Implementacja |
 |-----------|--------|---------------|
@@ -214,8 +231,8 @@ System Firebase jest **produkcyjny i bezpieczny**, zgodny z dokumentacją SYSTEM
 - ✅ Auto-promocja ról
 
 **Drobne rekomendacje:**
+
 1. Dodać walidację Zod w `verify-email-auto-login` (opcjonalne)
 2. Upewnić się, że `.env.local` jest w `.gitignore`
 
 **Gotowe do produkcji:** ✅ TAK
-

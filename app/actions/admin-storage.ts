@@ -1,9 +1,14 @@
 "use server";
+<<<<<<< HEAD
 
 /* eslint-disable */
 
 import { revalidatePath } from 'next/cache';
 import { getAdminApp } from '@/lib/firebase-admin';
+=======
+ 
+import { revalidatePath } from 'next/cache';
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 
 // Avoid top-level import of 'firebase-admin/storage' which pulls node-only modules
 // into the client bundle. We'll require it at runtime (server-only) where needed.
@@ -56,7 +61,15 @@ async function uploadToFirebaseStorage(
   folder: string,
   userId: string
 ): Promise<string> {
-  const app = getAdminApp();
+  // Require firebase-admin initializer at runtime to avoid bundling it into client builds
+  let getAdminAppFn: any;
+  try {
+    getAdminAppFn = require('../../lib/firebase-admin').getAdminApp;
+  } catch (err) {
+    throw new Error('Server environment required: firebase-admin initializer not available');
+  }
+
+  const app = getAdminAppFn();
   if (!app) {
     throw new Error('Firebase Admin SDK not initialized');
   }
@@ -69,7 +82,11 @@ async function uploadToFirebaseStorage(
   // Require storage helper at runtime to prevent Next.js from bundling node-only modules
   let runtimeGetStorage: any;
   try {
+<<<<<<< HEAD
     // eslint-disable-next-line @typescript-eslint/no-var-requires
+=======
+     
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
     runtimeGetStorage = require('firebase-admin/storage').getStorage;
   } catch (err) {
     throw new Error('Server environment required: firebase-admin/storage not available')
@@ -103,7 +120,15 @@ async function uploadToFirebaseStorage(
  */
 async function deleteFromFirebaseStorage(fileUrl: string): Promise<void> {
   try {
-    const app = getAdminApp();
+    // Require firebase-admin initializer at runtime
+    let getAdminAppFn: any;
+    try {
+      getAdminAppFn = require('../../lib/firebase-admin').getAdminApp;
+    } catch (err) {
+      throw new Error('Server environment required: firebase-admin initializer not available');
+    }
+
+    const app = getAdminAppFn();
     if (!app) {
       throw new Error('Firebase Admin SDK not initialized');
     }
@@ -115,14 +140,22 @@ async function deleteFromFirebaseStorage(fileUrl: string): Promise<void> {
 
     let runtimeGetStorage: any;
     try {
+<<<<<<< HEAD
       // eslint-disable-next-line @typescript-eslint/no-var-requires
+=======
+       
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
       runtimeGetStorage = require('firebase-admin/storage').getStorage;
     } catch (err) {
       throw new Error('Server environment required: firebase-admin/storage not available')
     }
 
     const bucket = runtimeGetStorage(app).bucket(storageBucketName);
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
     // Extract file path from URL
     const urlPattern = /\/o\/([^?]+)/;
     const match = fileUrl.match(urlPattern);

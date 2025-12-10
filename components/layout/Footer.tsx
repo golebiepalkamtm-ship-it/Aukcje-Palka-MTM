@@ -31,7 +31,14 @@ const socialLinks = [
 
 export function Footer() {
   return (
+<<<<<<< HEAD
     <footer className="bg-gray-800/30 backdrop-blur-sm border-t border-white/20 text-white mt-auto">
+=======
+    <footer
+      className="bg-gray-800/30 backdrop-blur-sm border-t border-white/20 text-white mt-auto relative w-full"
+      style={{ position: 'relative', marginTop: 'auto' }}
+    >
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           {/* Company Info */}
@@ -68,56 +75,25 @@ export function Footer() {
 
           {/* All Links - Right Side */}
           <div className="flex flex-wrap gap-4 lg:gap-6">
-            {/* Company Links */}
-            <div>
-              <h3 className="font-semibold text-xs mb-1 text-white">Firma</h3>
-              <ul className="space-y-0.5">
-                {footerLinks.company.map(link => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href as `/${string}`}
-                      className="text-gray-400 hover:text-white transition-colors duration-200 text-xs"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Services Links */}
-            <div>
-              <h3 className="font-semibold text-xs mb-1 text-white">Usługi</h3>
-              <ul className="space-y-0.5">
-                {footerLinks.services.map(link => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href as `/${string}`}
-                      className="text-gray-400 hover:text-white transition-colors duration-200 text-xs"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal Links */}
-            <div>
-              <h3 className="font-semibold text-xs mb-1 text-white">Prawne</h3>
-              <ul className="space-y-0.5">
-                {footerLinks.legal.map(link => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href as `/${string}`}
-                      className="text-gray-400 hover:text-white transition-colors duration-200 text-xs"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {Object.entries(footerLinks).map(([key, links]) => (
+              <div key={key}>
+                <h3 className="font-semibold text-xs mb-1 text-white">
+                  {key === 'company' ? 'Firma' : key === 'services' ? 'Usługi' : 'Prawne'}
+                </h3>
+                <ul className="space-y-0.5">
+                  {links.map(link => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href as `/${string}`}
+                        className="text-gray-400 hover:text-white transition-colors duration-200 text-xs"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
 

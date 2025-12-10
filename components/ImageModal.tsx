@@ -438,7 +438,7 @@ export default function ImageModal({
                     }}
                     drag={isDragging && animationComplete}
                     dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                    onDrag={(e, info) => {
+                    onDrag={(e: any, info: any) => {
                       if (zoomLevel > 1 && animationComplete) {
                         setImagePosition({
                           x: imagePosition.x + info.delta.x,

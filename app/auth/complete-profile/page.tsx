@@ -124,6 +124,7 @@ function CompleteProfileContent() {
   return (
     <div className="min-h-screen flex items-start justify-center p-4 pt-8">
       <motion.div
+        // @ts-ignore
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
@@ -253,10 +254,11 @@ function CompleteProfileContent() {
 
             {/* Przycisk */}
             <motion.button
-              type="submit"
-              disabled={isLoading}
+              // @ts-ignore
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={isLoading}
               className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Zapisywanie...' : 'Uzupełnij profil'}

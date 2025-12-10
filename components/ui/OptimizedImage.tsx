@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { ImageIcon, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -145,7 +144,7 @@ export function OptimizedImage({
 
       {/* Actual image */}
       {isInView && (
-        <motion.img
+        <img
           src={optimizedSrc}
           alt={alt}
           width={width}
@@ -161,37 +160,14 @@ export function OptimizedImage({
 
       {/* Fade in animation */}
       {isLoaded && (
-        <motion.div
-          className="absolute inset-0 bg-white dark:bg-gray-900"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-        />
+        <div className="absolute inset-0 bg-white dark:bg-gray-900" />
       )}
     </div>
   );
 }
 
 // Hook for image preloading
-export function useImagePreload(src: string) {
-  const [isPreloaded, setIsPreloaded] = useState(false);
-
-  useEffect(() => {
-    if (!src) return;
-
-    const img = new Image();
-    img.onload = () => setIsPreloaded(true);
-    img.onerror = () => setIsPreloaded(false);
-    img.src = src;
-
-    return () => {
-      img.onload = null;
-      img.onerror = null;
-    };
-  }, [src]);
-
-  return isPreloaded;
-}
+export { useImagePreload } from '@/lib/image-hooks';
 
 // Component for image gallery with lazy loading
 interface ImageGalleryProps {

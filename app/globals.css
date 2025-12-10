@@ -1,8 +1,8 @@
 /* UnifiedCard hover highlight effect */
 /* stylelint-disable at-rule-no-unknown */
+
 /* csslint ignore:start */
-@import url("mapbox-gl/dist/mapbox-gl.css");
-@import url("./holographic-effects.css");
+
 
 @tailwind base;
 @tailwind components;
@@ -16,7 +16,7 @@
 :root {
   --glow-sens: 20;
   --color-sens: 35;
-  --card-bg: linear-gradient(8deg, hsl(var(--h, 260), 18%, 12%) 75%, color-mix(in hsl, hsl(var(--h, 260), 18%, 12%), white 2.5%) 75.5%);
+  --card-bg: linear-gradient(8deg, hsl(var(--h, 260) 18% 12%) 75%, color-mix(in hsl, hsl(var(--h, 260) 18% 12%), rgb(212 28 28) 2.5%) 75.5%);
   --blend: soft-light;
   --glow-blend: plus-lighter;
   --glow-color: 210deg 100% 85%;
@@ -34,7 +34,7 @@
 .btn-primary,
 .btn-secondary,
 .glass-nav-button,
-input:not([type="checkbox"]):not([type="radio"]),
+input:not([type="checkbox"], [type="radio"]),
 textarea,
 select {
   position: relative;
@@ -65,10 +65,10 @@ select {
   border: 2px solid rgb(255 255 255 / 20%);
   background: var(--card-bg);
   box-shadow: 
-    rgba(0, 0, 0, 0.1) 0px 1px 2px,
-    rgba(0, 0, 0, 0.1) 0px 2px 4px,
-    rgba(0, 0, 0, 0.1) 0px 4px 8px,
-    rgba(0, 0, 0, 0.1) 0px 8px 16px;
+    rgb(0 0 0 / 10%) 0 1px 2px,
+    rgb(0 0 0 / 10%) 0 2px 4px,
+    rgb(0 0 0 / 10%) 0 4px 8px,
+    rgb(0 0 0 / 10%) 0 8px 16px;
   transition: all 0.5s ease-out;
 }
 
@@ -77,10 +77,10 @@ select {
 .card-glass:hover,
 .glass-container:hover,
 .card:hover {
-  border: 2px solid rgb(255 255 255 / 100%);
+  border: 2px solid rgb(92 70 0);
   box-shadow: 
-    0 0 60px 20px rgba(255,255,255,1),
-    0 0 100px 30px rgba(255,255,255,0.7);
+    0 0 60px 20px rgb(114 87 0),
+    0 0 100px 30px rgb(85 76 0 / 70%);
 }
 
 [class*="card"]::before,
@@ -93,8 +93,8 @@ select {
 .btn-secondary::after,
 .glass-nav-button::before,
 .glass-nav-button::after,
-input:not([type="checkbox"]):not([type="radio"])::before,
-input:not([type="checkbox"]):not([type="radio"])::after,
+input:not([type="checkbox"], [type="radio"])::before,
+input:not([type="checkbox"], [type="radio"])::after,
 textarea::before,
 textarea::after,
 select::before,
@@ -114,31 +114,22 @@ select::after {
 .btn-primary::before,
 .btn-secondary::before,
 .glass-nav-button::before,
-input:not([type="checkbox"]):not([type="radio"])::before,
+input:not([type="checkbox"], [type="radio"])::before,
 textarea::before,
 select::before {
   border: 1px solid transparent;
   background:
     linear-gradient(var(--card-bg) 0 100%) padding-box,
     linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
-    radial-gradient(at 80% 55%, hsla(268,100%,76%,1) 0px, transparent 50%) border-box,
-    radial-gradient(at 69% 34%, hsla(349,100%,74%,1) 0px, transparent 50%) border-box,
-    radial-gradient(at 8% 6%, hsla(136,100%,78%,1) 0px, transparent 50%) border-box,
-    radial-gradient(at 41% 38%, hsla(192,100%,64%,1) 0px, transparent 50%) border-box,
-    radial-gradient(at 86% 85%, hsla(186,100%,74%,1) 0px, transparent 50%) border-box,
-    radial-gradient(at 82% 18%, hsla(52,100%,65%,1) 0px, transparent 50%) border-box,
-    radial-gradient(at 51% 4%, hsla(12,100%,72%,1) 0px, transparent 50%) border-box,
+    radial-gradient(at 80% 55%, hsl(268deg 100% 76% / 100%) 0, transparent 50%) border-box,
+    radial-gradient(at 69% 34%, hsl(349deg 100% 74% / 100%) 0, transparent 50%) border-box,
+    radial-gradient(at 8% 6%, hsl(136deg 100% 78% / 100%) 0, transparent 50%) border-box,
+    radial-gradient(at 41% 38%, hsl(192deg 100% 64% / 100%) 0, transparent 50%) border-box,
+    radial-gradient(at 86% 85%, hsl(186deg 100% 74% / 100%) 0, transparent 50%) border-box,
+    radial-gradient(at 82% 18%, hsl(52deg 100% 65% / 100%) 0, transparent 50%) border-box,
+    radial-gradient(at 51% 4%, hsl(12deg 100% 72% / 100%) 0, transparent 50%) border-box,
     linear-gradient(#c299ff 0 100%) border-box;
-  
   opacity: calc((var(--pointer-d) - var(--color-sens)) / (100 - var(--color-sens)));
-  
-  -webkit-mask-image: conic-gradient(
-    from var(--pointer-°) at center,
-    black 25%,
-    transparent 40%,
-    transparent 60%,
-    black 75%
-  );
   mask-image: conic-gradient(
     from var(--pointer-°) at center,
     black 25%,
@@ -154,28 +145,19 @@ select::before {
 .btn-primary::after,
 .btn-secondary::after,
 .glass-nav-button::after,
-input:not([type="checkbox"]):not([type="radio"])::after,
+input:not([type="checkbox"], [type="radio"])::after,
 textarea::after,
 select::after {
   border: 1px solid transparent;
   background:
-    radial-gradient(at 80% 55%, hsla(268,100%,76%,1) 0px, transparent 50%) padding-box,
-    radial-gradient(at 69% 34%, hsla(349,100%,74%,1) 0px, transparent 50%) padding-box,
-    radial-gradient(at 8% 6%, hsla(136,100%,78%,1) 0px, transparent 50%) padding-box,
-    radial-gradient(at 41% 38%, hsla(192,100%,64%,1) 0px, transparent 50%) padding-box,
-    radial-gradient(at 86% 85%, hsla(186,100%,74%,1) 0px, transparent 50%) padding-box,
-    radial-gradient(at 82% 18%, hsla(52,100%,65%,1) 0px, transparent 50%) padding-box,
-    radial-gradient(at 51% 4%, hsla(12,100%,72%,1) 0px, transparent 50%) padding-box,
+    radial-gradient(at 80% 55%, hsl(268deg 100% 76% / 100%) 0, transparent 50%) padding-box,
+    radial-gradient(at 69% 34%, hsl(349deg 100% 74% / 100%) 0, transparent 50%) padding-box,
+    radial-gradient(at 8% 6%, hsl(136deg 100% 78% / 100%) 0, transparent 50%) padding-box,
+    radial-gradient(at 41% 38%, hsl(192deg 100% 64% / 100%) 0, transparent 50%) padding-box,
+    radial-gradient(at 86% 85%, hsl(186deg 100% 74% / 100%) 0, transparent 50%) padding-box,
+    radial-gradient(at 82% 18%, hsl(52deg 100% 65% / 100%) 0, transparent 50%) padding-box,
+    radial-gradient(at 51% 4%, hsl(12deg 100% 72% / 100%) 0, transparent 50%) padding-box,
     linear-gradient(#c299ff 0 100%) padding-box;
-  
-  -webkit-mask-image:
-    linear-gradient(to bottom, black, black),
-    radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
-    radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
-    radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
-    radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
-    radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
-    conic-gradient(from var(--pointer-°) at center, transparent 5%, black 15%, black 85%, transparent 95%);
   mask-image:
     linear-gradient(to bottom, black, black),
     radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
@@ -184,10 +166,8 @@ select::after {
     radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
     radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
     conic-gradient(from var(--pointer-°) at center, transparent 5%, black 15%, black 85%, transparent 95%);
-  
-  -webkit-mask-composite: source-over;
+  mask-composite: source-over;
   mask-composite: subtract, add, add, add, add, add;
-  
   opacity: calc((var(--pointer-d) - var(--color-sens)) / (100 - var(--color-sens)));
   mix-blend-mode: var(--blend);
 }
@@ -198,7 +178,7 @@ select::after {
 .btn-primary > .glow,
 .btn-secondary > .glow,
 .glass-nav-button > .glow,
-input:not([type="checkbox"]):not([type="radio"]) > .glow,
+input:not([type="checkbox"], [type="radio"]) > .glow,
 textarea > .glow,
 select > .glow {
   content: "";
@@ -207,14 +187,6 @@ select > .glow {
   pointer-events: none;
   z-index: 1;
   border-radius: inherit;
-  
-  -webkit-mask-image: conic-gradient(
-    from var(--pointer-°) at center,
-    black 2.5%,
-    transparent 10%,
-    transparent 90%,
-    black 97.5%
-  );
   mask-image: conic-gradient(
     from var(--pointer-°) at center,
     black 2.5%,
@@ -222,19 +194,21 @@ select > .glow {
     transparent 90%,
     black 97.5%
   );
-  
   opacity: calc((var(--pointer-d) - var(--glow-sens)) / (100 - var(--glow-sens)));
   mix-blend-mode: var(--glow-blend);
 }
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 [class*="card"] > .glow::before,
 [class*="glass"] > .glow::before,
 .btn-primary > .glow::before,
 .btn-secondary > .glow::before,
 .glass-nav-button > .glow::before,
-input:not([type="checkbox"]):not([type="radio"]) > .glow::before,
+input:not([type="checkbox"], [type="radio"]) > .glow::before,
 textarea > .glow::before,
 select > .glow::before {
   content: "";
@@ -270,20 +244,20 @@ select > .glow::before {
   /* Wypukły efekt - cienie tworzące wrażenie wypukłości */
   box-shadow: 
     /* Zewnętrzne cienie - głębia */
-    0 1px 1px rgba(0, 0, 0, 0.05),
-    0 2px 4px rgba(0, 0, 0, 0.05),
-    0 4px 8px rgba(0, 0, 0, 0.05),
-    0 8px 16px rgba(0, 0, 0, 0.05),
+    0 1px 1px rgb(0 0 0 / 5%),
+    0 2px 4px rgb(0 0 0 / 5%),
+    0 4px 8px rgb(0 0 0 / 5%),
+    0 8px 16px rgb(0 0 0 / 5%),
     /* Wewnętrzny highlight - "wypukłość" */
-    inset 0 -1px 2px rgba(255, 255, 255, 0.1),
-    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    inset 0 -1px 2px rgb(255 255 255 / 10%),
+    inset 0 1px 1px rgb(255 255 255 / 20%);
   
   /* Gradient dla efektu 3D */
   background: linear-gradient(
     145deg,
-    rgba(255, 255, 255, 0.15) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(0, 0, 0, 0.05) 100%
+    rgb(255 255 255 / 15%) 0%,
+    rgb(255 255 255 / 5%) 50%,
+    rgb(0 0 0 / 5%) 100%
   );
 }
 
@@ -292,47 +266,45 @@ select > .glow::before {
   
   /* Intensywniejsze cienie przy hover */
   box-shadow: 
-    0 2px 2px rgba(0, 0, 0, 0.06),
-    0 4px 8px rgba(0, 0, 0, 0.06),
-    0 8px 16px rgba(0, 0, 0, 0.06),
-    0 16px 32px rgba(0, 0, 0, 0.08),
-    0 32px 64px rgba(0, 0, 0, 0.1),
-    inset 0 -2px 4px rgba(255, 255, 255, 0.15),
-    inset 0 2px 2px rgba(255, 255, 255, 0.25);
+    0 2px 2px rgb(0 0 0 / 6%),
+    0 4px 8px rgb(0 0 0 / 6%),
+    0 8px 16px rgb(0 0 0 / 6%),
+    0 16px 32px rgb(0 0 0 / 8%),
+    0 32px 64px rgb(0 0 0 / 10%),
+    inset 0 -2px 4px rgb(255 255 255 / 15%),
+    inset 0 2px 2px rgb(255 255 255 / 25%);
 }
 
 /* Wariant: Bardzo wypukły (strong emboss) */
 .card-3d-raised-strong {
   box-shadow: 
     /* Mocniejsze zewnętrzne cienie */
-    0 2px 4px rgba(0, 0, 0, 0.08),
-    0 4px 8px rgba(0, 0, 0, 0.08),
-    0 8px 16px rgba(0, 0, 0, 0.08),
-    0 16px 32px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgb(0 0 0 / 8%),
+    0 4px 8px rgb(0 0 0 / 8%),
+    0 8px 16px rgb(0 0 0 / 8%),
+    0 16px 32px rgb(0 0 0 / 10%),
     /* Mocniejszy wewnętrzny highlight */
-    inset 0 -2px 4px rgba(255, 255, 255, 0.2),
-    inset 0 2px 3px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgb(255 255 255 / 20%),
+    inset 0 2px 3px rgb(255 255 255 / 30%),
     /* Dodatkowy efekt "krawędzi" */
-    inset -1px 0 1px rgba(255, 255, 255, 0.15),
-    inset 1px 0 1px rgba(0, 0, 0, 0.1);
-  
+    inset -1px 0 1px rgb(255 255 255 / 15%),
+    inset 1px 0 1px rgb(0 0 0 / 10%);
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0.08) 40%,
-    rgba(0, 0, 0, 0.05) 60%,
-    rgba(0, 0, 0, 0.1) 100%
+    rgb(255 255 255 / 20%) 0%,
+    rgb(255 255 255 / 8%) 40%,
+    rgb(0 0 0 / 5%) 60%,
+    rgb(0 0 0 / 10%) 100%
   );
 }
 
 .card-3d-raised-strong:hover {
   transform: translateY(-6px) translateZ(30px);
-
   box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.1),
-    0 8px 16px rgba(0, 0, 0, 0.1),
-    0 16px 32px rgba(0, 0, 0, 0.12),
-    0 32px 64px rgba(0, 0, 0, 0.15);
+    0 4px 8px rgb(0 0 0 / 10%),
+    0 8px 16px rgb(0 0 0 / 10%),
+    0 16px 32px rgb(0 0 0 / 12%),
+    0 32px 64px rgb(0 0 0 / 15%);
 }
 
 /* Essential glass navigation button */
@@ -351,26 +323,22 @@ select > .glow::before {
   color: #fef3c7;
   font-size: 0.9rem;
   font-weight: 600;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-
+  text-shadow: 0 2px 6px rgb(0 0 0 / 60%);
   background: linear-gradient(to bottom,
-    rgba(210, 185, 125, 0.95) 0%,
-    rgba(190, 160, 95, 0.85) 30%,
-    rgba(160, 135, 75, 0.75) 60%,
-    rgba(90, 70, 40, 0.6) 100%);
-
-  border: 3px solid rgba(218, 182, 98, 1);
+    rgb(210 185 125 / 95%) 0%,
+    rgb(190 160 95 / 85%) 30%,
+    rgb(160 135 75 / 75%) 60%,
+    rgb(90 70 40 / 60%) 100%);
+  border: 3px solid rgb(218 182 98 / 100%);
   border-radius: 1.6rem;
-
   box-shadow:
-    0 18px 40px rgba(0,0,0,0.45),
-    0 8px 20px rgba(0,0,0,0.35),
-    0 0 24px rgba(218,182,98,0.12),
-    6px 6px 0 rgba(0,0,0,0.25),
-    10px 10px 6px rgba(0,0,0,0.18),
-    inset 0 10px 20px rgba(255,255,255,0.08),
-    inset 0 -8px 12px rgba(0,0,0,0.5);
-
+    0 18px 40px rgb(0 0 0 / 45%),
+    0 8px 20px rgb(0 0 0 / 35%),
+    0 0 24px rgb(218 182 98 / 12%),
+    6px 6px 0 rgb(0 0 0 / 25%),
+    10px 10px 6px rgb(0 0 0 / 18%),
+    inset 0 10px 20px rgb(255 255 255 / 8%),
+    inset 0 -8px 12px rgb(0 0 0 / 50%);
   transition:
     transform var(--transition-duration) var(--transition-easing),
     box-shadow var(--transition-duration) var(--transition-easing),
@@ -378,7 +346,6 @@ select > .glow::before {
     background var(--transition-duration) var(--transition-easing);
   overflow: hidden;
   position: relative;
-  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   margin: 0;
 }
@@ -386,24 +353,24 @@ select > .glow::before {
 .glass-nav-button:hover {
   transform: scale(1.03);
   box-shadow:
-    0 34px 64px rgba(0,0,0,0.55),
-    0 16px 36px rgba(0,0,0,0.42),
-    0 0 36px rgba(218,182,98,0.18),
-    inset 0 14px 28px rgba(255,255,255,0.12),
-    inset 0 -12px 18px rgba(0,0,0,0.6);
+    0 34px 64px rgb(0 0 0 / 55%),
+    0 16px 36px rgb(0 0 0 / 42%),
+    0 0 36px rgb(218 182 98 / 18%),
+    inset 0 14px 28px rgb(255 255 255 / 12%),
+    inset 0 -12px 18px rgb(0 0 0 / 60%);
 }
 
 .glass-nav-button.no-glow:hover {
   transform: scale(1.02) !important;
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.3),
-    0 2px 4px rgba(0, 0, 0, 0.25),
-    0 4px 8px rgba(0, 0, 0, 0.2),
-    0 8px 16px rgba(0, 0, 0, 0.15),
-    0 16px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 248, 220, 0.15),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
-  border-color: rgba(255, 191, 0, 0.5) !important;
+    0 1px 2px rgb(0 0 0 / 30%),
+    0 2px 4px rgb(0 0 0 / 25%),
+    0 4px 8px rgb(0 0 0 / 20%),
+    0 8px 16px rgb(0 0 0 / 15%),
+    0 16px 32px rgb(0 0 0 / 10%),
+    inset 0 1px 0 rgb(255 248 220 / 15%),
+    inset 0 -1px 0 rgb(0 0 0 / 20%) !important;
+  border-color: rgb(255 191 0 / 50%) !important;
 }
 
 .glass-nav-button.no-glow:hover::before {
@@ -424,6 +391,7 @@ select > .glow::before {
 .hero-title-nav-style {
   font-weight: 800;
   background: linear-gradient(to bottom,
+<<<<<<< HEAD
     rgba(255, 250, 210, 1) 0%,
     rgba(255, 245, 200, 0.95) 25%,
     rgba(218, 182, 98, 0.9) 50%,
@@ -461,24 +429,30 @@ body * {
   box-shadow: none !important;
 }
   background-clip: text;
+=======
+    rgb(255 250 210 / 100%) 0%,
+    rgb(255 245 200 / 95%) 25%,
+    rgb(218 182 98 / 90%) 50%,
+    rgb(160 135 75 / 80%) 75%,
+    rgb(120 100 55 / 70%) 100%);
+  background-clip: text; /* Added standard property for compatibility */
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   -webkit-text-fill-color: transparent;
   text-shadow:
-    1px 1px 0px rgba(120, 100, 60, 0.9),
-    2px 2px 2px rgba(100, 80, 50, 0.8),
-    3px 3px 4px rgba(80, 65, 40, 0.7),
-    4px 4px 6px rgba(60, 50, 30, 0.6);
-  filter: drop-shadow(0 4px 8px rgba(80, 65, 35, 0.5));
+    1px 1px 0 rgb(120 100 60 / 90%),
+    2px 2px 2px rgb(100 80 50 / 80%),
+    3px 3px 4px rgb(80 65 40 / 70%),
+    4px 4px 6px rgb(60 50 30 / 60%);
+  filter: drop-shadow(0 4px 8px rgb(80 65 35 / 50%));
   position: relative;
   z-index: 1000;
+}
 
 .hero-title-nav-style::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(255, 235, 180, 0.1) 0%, transparent 70%);
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgb(255 235 180 / 10%) 0%, transparent 70%);
   z-index: 900;
   pointer-events: none;
 }
@@ -533,11 +507,6 @@ body * {
   box-shadow: none !important;
 }
 
-/* In case framer-motion applies inline styles, this attempts to override transform/translate inline values */
-.no-hover [style] {
-  /* leaving this mainly to override transforms with !important in rules above */
-}
-
 /* Super-enforced rule: disable all hover/transform/animation/shadow inside admin root */
 .no-hover,
 .no-hover * {
@@ -551,11 +520,8 @@ body * {
 .hero-title-nav-style::after {
   content: '';
   position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
-  background: linear-gradient(45deg, rgba(255, 245, 200, 0.05) 0%, rgba(255, 235, 180, 0.08) 50%, rgba(255, 245, 200, 0.05) 100%);
+  inset: -10px;
+  background: linear-gradient(45deg, rgb(255 245 200 / 5%) 0%, rgb(255 235 180 / 8%) 50%, rgb(255 245 200 / 5%) 100%);
   z-index: 900;
   pointer-events: none;
   border-radius: 8px;
@@ -564,21 +530,64 @@ body * {
 .hero-title-nav-style span::before {
   content: '';
   position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 220, 0.15) 0%, transparent 50%);
+  inset: -5px;
+  background: radial-gradient(circle at 30% 30%, rgb(255 255 220 / 15%) 0%, transparent 50%);
   z-index: 900;
   pointer-events: none;
   border-radius: 50%;
 }
+
+/* Poprawki animacji dla kafli nawigacji i logo */
+
+/* Definicje kluczowych klatek dla animacji */
+@keyframes slideInBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInDepth {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Styl dla logo z animacją pojawiania się z głębi */
+.logo {
+  animation: fadeInDepth 0.8s ease-out;
+}
+
+/* Styl dla kafla nawigacji z prawej strony z animacją przylatywania od dołu */
+.nav-tile-right {
+  animation: slideInBottom 0.8s ease-out;
+}
+
+/* Środkowe kafle nawigacji bez animacji */
+.nav-tile-center {
+  animation: none;
 }
 
 /* === Site base improvements - added for cleaner default look === */
 html, body {
   height: 100%;
+<<<<<<< HEAD
   /* background: linear-gradient(180deg, #0f1724 0%, #071023 60%); */
+=======
+  background: url('/pigeon-lofts-background-sharp.jpg') no-repeat center center fixed;
+  background-size: cover;
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   color: #e6eef8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -606,13 +615,13 @@ button:focus,
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 3px solid rgba(165,243,252,0.15);
+  outline: 3px solid rgb(165 243 252 / 15%);
   outline-offset: 2px;
 }
 
 /* Improve headings contrast and spacing */
 h1, h2, h3, h4 {
-  color: #ffffff;
+  color: #fff;
   letter-spacing: -0.02em;
 }
 
@@ -623,7 +632,7 @@ h1, h2, h3, h4 {
   border: none;
   padding: 0.6rem 1rem;
   border-radius: 0.6rem;
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.12);
+  box-shadow: 0 8px 24px rgb(16 185 129 / 12%);
 }
 
 /* Small utility to center content vertically */
@@ -631,6 +640,29 @@ h1, h2, h3, h4 {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Usunięcie białego światła w środku kontenera na stronie osiągnięć */
+.achievements-container {
+  box-shadow: none !important;
+  background-color: #2a2a2a !important; /* Zmieniono na ciemnoszary */
+}
+
+/* Ustawienie karuzeli championów do prawej strony z większym przesunięciem */
+.champions-carousel {
+  margin-left: auto;
+  margin-right: -4rem; /* Zwiększono ujemny margines z prawej strony */
+}
+
+/* Przywrócenie domyślnego położenia karuzeli championów */
+.champions-carousel {
+  margin-left: auto;
+  margin-right: auto; /* Wyśrodkowanie */
+}
+
+/* Przesunięcie nagłówka w dół */
+.header {
+  margin-top: 2rem; /* Dodano odstęp od góry */
 }
 
 /* End of site base improvements */

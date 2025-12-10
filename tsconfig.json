@@ -48,6 +48,10 @@
       "@/utils/*": [
         "./utils/*"
       ]
+      ,
+      "motion-dom": [
+        "./types/motion-dom.d.ts"
+      ]
     }
   },
   "include": [
@@ -66,6 +70,7 @@
     "functions",
     "scripts",
     "__tests__",
+    "e2e",
     ".next",
     ".next-temp"
   ]

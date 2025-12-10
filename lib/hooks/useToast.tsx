@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 /**
  * Toast Hook and Context Provider
@@ -138,15 +138,15 @@ export const ToastContainer: FC = () => {
   const getIcon = (type: ToastType): string => {
     switch (type) {
       case 'success':
-        return '✅';
+        return '?';
       case 'error':
-        return '❌';
+        return '?';
       case 'info':
-        return 'ℹ️';
+        return '??';
       case 'warning':
-        return '⚠️';
+        return '??';
       default:
-        return '📢';
+        return '??';
     }
   };
 
@@ -170,7 +170,7 @@ export const ToastContainer: FC = () => {
               className="ml-4 text-lg opacity-70 hover:opacity-100"
               type="button"
             >
-              ×
+              �
             </button>
           </div>
         </div>

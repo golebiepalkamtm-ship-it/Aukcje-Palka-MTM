@@ -12,6 +12,7 @@ export function AuthErrorBanner() {
   return (
     <AnimatePresence>
       <motion.div
+        // @ts-ignore
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -50 }}

@@ -1,4 +1,8 @@
 /* OPAQUE OVERRIDES: remove transparency and backdrop blur from glass elements */
+<<<<<<< HEAD
+=======
+
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 /* This file is loaded after globals.css to override generated styles */
 
 /* Target common glass/card selectors and force opaque backgrounds */
@@ -21,9 +25,14 @@
 .offspring-card,
 .champion-card {
   background: #111827 !important; /* dark opaque background for high contrast */
+<<<<<<< HEAD
   border-color: #ffffff !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
   -webkit-backdrop-filter: none !important;
+=======
+  border-color: #fff !important;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 50%) !important;
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   backdrop-filter: none !important;
 }
 
@@ -35,8 +44,12 @@
 .btn-ghost {
   background: #111827 !important;
   border-color: #fff !important;
+<<<<<<< HEAD
   box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
   -webkit-backdrop-filter: none !important;
+=======
+  box-shadow: 0 8px 24px rgb(0 0 0 / 60%) !important;
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   backdrop-filter: none !important;
 }
 
@@ -55,7 +68,11 @@
 .text-glow,
 .hero-title,
 .text-gradient {
+<<<<<<< HEAD
   color: #ffffff !important;
+=======
+  color: #fff !important;
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 }
 
 /* Increase border contrast for clear separation */
@@ -64,11 +81,18 @@
 .glass-container,
 .champion-profile-card,
 .pedigree-card {
+<<<<<<< HEAD
   border: 2px solid rgba(255,255,255,1) !important;
+=======
+  border: 2px solid rgb(255 255 255 / 100%) !important;
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 }
 
 /* Disable backdrop filter utility globally as a last resort */
 *:where(-webkit-backdrop-filter, backdrop-filter) {
+<<<<<<< HEAD
   -webkit-backdrop-filter: none !important;
+=======
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   backdrop-filter: none !important;
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, useSpring, useTransform } from 'framer-motion';
+import useMotionValue from 'framer-motion';
 import { achievementsData } from '@/lib/achievements/data';
 import type { YearData } from '@/lib/achievements/types';
 import { Trophy, Award, Sparkles, ChevronRight } from 'lucide-react';
@@ -88,17 +89,7 @@ function YearCard({ data, index, total, onClick, isSelected, isVisible }: YearCa
 
         {/* Main Card */}
         <GlowingEdgeCard
-          className={`relative bg-gradient-to-br ${
-            isMasterYear
-              ? 'from-yellow-900/90 via-yellow-800/80 to-yellow-900/90'
-              : 'from-gray-900/95 via-gray-800/90 to-gray-900/95'
-          } backdrop-blur-2xl p-8 transition-all duration-500 overflow-hidden ${
-            isSelected
-              ? 'shadow-2xl shadow-yellow-500/50'
-              : hovered
-              ? 'shadow-xl shadow-blue-500/40'
-              : 'shadow-lg'
-          }`}
+          className={`relative bg-gradient-to-br from-yellow-500 via-yellow-400 to-yellow-500` /* Zmieniono na złoty gradient */}
           glowSensitivity={25}
           colorSensitivity={45}
         >
@@ -202,7 +193,7 @@ function YearCard({ data, index, total, onClick, isSelected, isVisible }: YearCa
 
             {/* CTA */}
             <motion.div
-              className="flex items-center justify-center gap-2 text-xs text-gray-400 group-hover:text-white transition-colors"
+              className="flex items-center justify-center gap-2 text-xs text-gray-400 group-hover:text-white transition-colors bg-gold"
               animate={hovered ? { x: [0, 5, 0] } : {}}
               transition={{ duration: 1.5, repeat: Infinity }}
             >

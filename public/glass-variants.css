@@ -5,6 +5,10 @@
 .glass-nav-button-inline{
   --transition-duration:500ms;
   --transition-easing:ease-out;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   display:flex;
   flex-direction:row;
   align-items:center;
@@ -14,6 +18,10 @@
   font-size:.9rem;
   font-weight:600;
   text-shadow:0 1px 2px #00000080;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   /* keep same visual background as original */
   border:2px solid #fff;
   background-color:#ffffff1a;
@@ -26,16 +34,28 @@
   margin:0;
   padding:.375rem .75rem;
 }
+<<<<<<< HEAD
 @supports (gap:0.5rem){.glass-nav-button-inline{-webkit-gap:.5rem;gap:.5rem}}
 @supports ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))) or (-webkit-backdrop-filter:blur(2px)){
   .glass-nav-button-inline{
     -webkit-backdrop-filter:blur(24px);
+=======
+
+@supports (gap:0.5rem){.glass-nav-button-inline{-webkit-gap:.5rem;gap:.5rem}}
+
+@supports ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))) or (-webkit-backdrop-filter:blur(2px)){
+  .glass-nav-button-inline{
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
     backdrop-filter:blur(24px);
   }
 }
 
 /* shimmer stripe */
+<<<<<<< HEAD
 .glass-nav-button-inline:before{
+=======
+.glass-nav-button-inline::before{
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
   content:"";
   background:#fff6;
   width:60%;
@@ -50,12 +70,21 @@
 /* hover matches original glass-nav-button feel */
 .glass-nav-button-inline:hover{
   transform:translateY(-15%);
+<<<<<<< HEAD
   box-shadow:0 10px 30px rgba(0,0,0,0.25),0 0 35px 15px rgba(255,255,255,0.95);
   border-width:2px;
   border-color:#fffc;
 }
 .glass-nav-button-inline:hover:before{left:150%}
 .glass-nav-button-inline.no-glow:hover{transform:translateY(-15%)!important;box-shadow:0 10px 30px rgba(0,0,0,0.25)!important;border-width:2px!important;border-color:#fffc!important}
+=======
+  box-shadow:0 10px 30px rgb(0 0 0 / 25%),0 0 35px 15px rgb(255 255 255 / 95%);
+  border-width:2px;
+  border-color:#fffc;
+}
+.glass-nav-button-inline:hover::before{left:150%}
+.glass-nav-button-inline.no-glow:hover{transform:translateY(-15%)!important;box-shadow:0 10px 30px rgb(0 0 0 / 25%)!important;border-width:2px!important;border-color:#fffc!important}
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 
 /* ensure inline variant supports the same glow child if present */
 .glass-nav-button-inline > .glow{position:absolute;inset:-40px;pointer-events:none;z-index:1;border-radius:inherit}

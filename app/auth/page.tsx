@@ -1,5 +1,4 @@
 import AuthFlipCard from '@/components/auth/AuthFlipCard';
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 import { Suspense } from 'react';
 
 export const metadata = {
@@ -9,12 +8,10 @@ export const metadata = {
 
 export default function AuthPage() {
   return (
-    <UnifiedLayout showNavigation={true} showFooter={true}>
-      <div className="flex items-start justify-center pt-48" style={{ minHeight: '3000px' }}>
-        <Suspense fallback={<div className="text-white">Ładowanie...</div>}>
-          <AuthFlipCard />
-        </Suspense>
-      </div>
-    </UnifiedLayout>
+    <div className="flex items-start justify-center pt-48" style={{ minHeight: '3000px' }}>
+      <Suspense fallback={<div className="text-white">Ładowanie...</div>}>
+        <AuthFlipCard />
+      </Suspense>
+    </div>
   );
 }

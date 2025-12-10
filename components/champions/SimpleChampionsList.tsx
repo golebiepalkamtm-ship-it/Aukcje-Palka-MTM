@@ -238,6 +238,7 @@ export function SimpleChampionsList({
   if (isLoading) {
     return (
       <motion.div
+        // @ts-ignore
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="flex flex-col items-center justify-center py-12"
@@ -247,6 +248,7 @@ export function SimpleChampionsList({
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-300 absolute top-2 left-2"></div>
         </div>
         <motion.div
+          // @ts-ignore
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -274,6 +276,7 @@ export function SimpleChampionsList({
   if (error && champions.length === 0) {
     return (
       <motion.div
+        // @ts-ignore
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="flex flex-col items-center justify-center py-12 px-4"
@@ -327,7 +330,23 @@ export function SimpleChampionsList({
   return (
     <>
       {/* Champions Carousel */}
+<<<<<<< HEAD
       <ChampionsCarousel champions={champions} />
+=======
+      <ChampionsCarousel
+        champions={champions}
+        onImageClick={(src, idx) => handleImageClick(src, idx)}
+        onPedigreeClick={pedigreeImage => {
+          console.log('=== onPedigreeClick CALLED ===');
+          console.log('Pedigree image received:', pedigreeImage);
+          console.log('Setting selectedPedigreeImage to:', pedigreeImage);
+          setSelectedPedigreeImage(pedigreeImage);
+          console.log('selectedPedigreeImage set successfully');
+          console.log('=== END onPedigreeClick ===');
+        }}
+        onCentralChampionChange={onCentralChampionChange}
+      />
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 
       {/* Image Modal - renderowany lokalnie */}
       {selectedImage && selectedImageIndex !== null && (
@@ -383,6 +402,7 @@ export function SimpleChampionsList({
       {/* Warning for partial data with errors */}
       {error && champions.length > 0 && (
         <motion.div
+          // @ts-ignore
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-4 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg"
@@ -411,6 +431,7 @@ export function SimpleChampionsList({
       {/* Debug info */}
       {process.env.NODE_ENV === 'development' && (
         <motion.div
+          // @ts-ignore
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="fixed bottom-4 right-4 bg-black/90 text-white p-3 rounded-lg text-xs z-50 max-w-xs backdrop-blur-sm"

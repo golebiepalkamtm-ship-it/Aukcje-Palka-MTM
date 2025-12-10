@@ -1,6 +1,5 @@
 
 import { AuctionsPage } from '@/components/auctions/AuctionsPage'
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
 
 export const metadata = {
   title: 'Aukcje - Gołębie Pocztowe',
@@ -9,10 +8,8 @@ export const metadata = {
 
 export default function Auctions() {
   return (
-    <UnifiedLayout isHomePage={true}>
-      <main>
-        <AuctionsPage />
-      </main>
-    </UnifiedLayout>
+    <main>
+      <AuctionsPage />
+    </main>
   )
 }

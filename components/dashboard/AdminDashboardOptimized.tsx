@@ -3,6 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+<<<<<<< HEAD
+=======
+import { UnifiedCard } from '@/components/ui/UnifiedCard';
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
 import {
   LogOut,
   Shield,
@@ -193,6 +197,7 @@ export default function AdminDashboard() {
 
   // Add top spacing to push admin header down
   return (
+<<<<<<< HEAD
     <>
       <div className="pt-24"></div>
       <div className="min-h-screen relative w-full no-hover">
@@ -255,6 +260,206 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => setActiveTab('overview')}
                       className="glass-nav-button-inline w-full flex items-center gap-3 text-left px-3 py-1.5 rounded-md bg-white/6 text-white/90"
+=======
+    <div className="min-h-screen relative w-full no-hover">
+      {/* SVG filter for sharpening background image */}
+      <svg aria-hidden="true" style={{ position: 'absolute', width: 0, height: 0 }}>
+        <filter id="sharpen">
+          <feConvolveMatrix
+            order="3"
+            kernelMatrix="0 -1 0 -1 5 -1 0 -1 0"
+            divisor="1"
+          />
+        </filter>
+      </svg>
+
+      {/* Admin dashboard uses the global background from UnifiedLayout; removed duplicate background here */}
+      <div className="max-w-[1920px] mx-auto px-6 sm:px-8 lg:px-12 pt-40 pb-10 text-white">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-5xl font-bold text-gradient bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent mb-2">
+                Panel Administratora
+              </h1>
+              <p className="text-white/70 mt-2 text-xl">
+                Kompleksowe zarządzanie platformą, użytkownikami, aukcjami i transakcjami
+              </p>
+            </div>
+            <button
+              onClick={() => router.push('/api/auth/signout')}
+              className="glass-nav-button flex items-center gap-2 px-6 py-3 text-white rounded-xl backdrop-blur-sm border border-white/30"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Wyloguj</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.6} className="sticky top-8 glass-morphism-strong">
+              {/* Admin Info */}
+              <div className="text-center mb-8 pb-8 border-b border-white/20">
+                <div className="w-32 h-32 bg-gradient-to-br from-red-500 via-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-red-500/40">
+                  <Shield className="w-16 h-16 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  {firebaseUser.displayName || `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() || 'Administrator'}
+                </h2>
+                <p className="text-white/70 text-base mb-4">{firebaseUser.email || dbUser.email}</p>
+                <div className="flex items-center justify-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-full">
+                  <div className="w-2.5 h-2.5 bg-red-400 rounded-full animate-pulse"></div>
+                  <span className="text-red-400 text-sm font-semibold">Administrator</span>
+                </div>
+              </div>
+
+              {/* Sidebar navigation kept minimal - tiles moved to main area */}
+              <nav aria-label="Panel nawigacji" className="text-sm">
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => setActiveTab('overview')}
+                    className="glass-nav-button-inline w-full flex items-center gap-3 text-left px-3 py-1.5 rounded-md bg-white/6 text-white/90"
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center rounded-md bg-white/10">
+                      <BarChart3 className="w-4 h-4" />
+                    </div>
+                    <span className="text-sm font-semibold">Przegląd</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('users')}
+                    className="glass-nav-button-inline w-full flex items-center gap-3 text-left px-3 py-1.5 rounded-md bg-white/6 text-white/90"
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center rounded-md bg-white/10">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <span className="text-sm font-semibold">Użytkownicy</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('auctions')}
+                    className="glass-nav-button-inline w-full flex items-center gap-3 text-left px-3 py-1.5 rounded-md bg-white/6 text-white/90"
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center rounded-md bg-white/10">
+                      <Gavel className="w-4 h-4" />
+                    </div>
+                    <span className="text-sm font-semibold">Aukcje</span>
+                  </button>
+                </div>
+              </nav>
+
+              {/* Compact vertical tab buttons (moved from top grid) */}
+              <div className="mt-6">
+                <div className="flex flex-col gap-3">
+                  {tabs.map(tab => {
+                    const Icon = tab.icon
+                    const isActive = activeTab === tab.id
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        aria-pressed={isActive}
+                        className={`glass-nav-button-inline m-0 flex items-center gap-3 text-left px-3 py-1.5 rounded-md focus:outline-none w-full transition-colors ${
+                              isActive ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white' : 'bg-white/6 text-white/90 hover:bg-white/10'
+                            }`}
+                      >
+                        <div className="w-8 h-8 flex items-center justify-center rounded-md bg-white/10">
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-semibold">{tab.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </UnifiedCard>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-4">
+            {/* Large tile navigation was moved to the sidebar for compact vertical navigation */}
+            <div key={activeTab}>
+              {activeTab === 'overview' && <AdminOverview stats={stats} isLoading={isLoading} />}
+
+              {activeTab === 'users' && (
+                <AdminUsers
+                  users={users}
+                  usersTotal={usersTotal}
+                  usersPage={usersPage}
+                  usersPageSize={usersPageSize}
+                  usersRole={usersRole}
+                  usersStatus={usersStatus}
+                  editingUser={editingUser}
+                  editForm={editForm}
+                  saving={saving}
+                  deleting={deleting}
+                  onPageChange={setUsersPage}
+                  onPageSizeChange={setUsersPageSize}
+                  onRoleFilter={setUsersRole}
+                  onStatusFilter={setUsersStatus}
+                  onEditUser={handleEditUser}
+                  onSaveUser={handleSaveUser}
+                  onDeleteUser={handleDeleteUser}
+                  onCancelEdit={() => setEditingUser(null)}
+                  onFormChange={(field, value) =>
+                    setEditForm(prev => ({ ...prev, [field]: value }))
+                  }
+                />
+              )}
+
+              {activeTab === 'auctions' && (
+                <AdminAuctions
+                  auctions={auctions}
+                  auctionsTotal={auctionsTotal}
+                  auctionsPage={auctionsPage}
+                  auctionsPageSize={auctionsPageSize}
+                  auctionTab={auctionTab}
+                  activeAuctions={activeAuctions}
+                  activeAuctionsTotal={activeAuctionsTotal}
+                  activeAuctionsPage={activeAuctionsPage}
+                  activeAuctionsPageSize={activeAuctionsPageSize}
+                  selectedAuction={selectedAuction}
+                  auctionBidders={auctionBidders}
+                  editingAuction={editingAuction}
+                  editingAuctionData={editingAuctionData}
+                  approving={approving}
+                  onPageChange={setAuctionsPage}
+                  onPageSizeChange={setAuctionsPageSize}
+                  onTabChange={setAuctionTab}
+                  onActivePageChange={setActiveAuctionsPage}
+                  onActivePageSizeChange={setActiveAuctionsPageSize}
+                  onSelectAuction={handleSelectAuction}
+                  onApproveAuction={handleApproveAuction}
+                  onRejectAuction={handleRejectAuction}
+                  onEditAuction={handleEditAuction}
+                  onSaveAuction={handleSaveAuction}
+                  onCancelEdit={() => setEditingAuction(null)}
+                  onAuctionDataChange={(field, value) =>
+                    setEditingAuctionData((prev: Partial<Auction>) => ({ ...prev, [field]: value }))
+                  }
+                />
+              )}
+
+              {activeTab === 'transactions' && (
+                <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="p-8 glass-morphism-strong">
+                  <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                    <DollarSign className="w-8 h-8 text-yellow-400" />
+                    Zarządzanie Transakcjami
+                  </h3>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-white/70 mb-2">Status</label>
+                    <select
+                      value={txsStatus}
+                      onChange={e => {
+                        setTxsPage(1);
+                        setTxsStatus(e.target.value);
+                      }}
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white"
+                      aria-label="Filtr statusu transakcji"
+                      title="Filtr statusu transakcji"
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
                     >
                       <div className="w-8 h-8 flex items-center justify-center rounded-md bg-white/10">
                         <BarChart3 className="w-4 h-4" />
@@ -402,6 +607,7 @@ export default function AdminDashboard() {
                         <option value="DISPUTED">Spór</option>
                       </select>
                     </div>
+<<<<<<< HEAD
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
@@ -459,6 +665,50 @@ export default function AdminDashboard() {
                           )}
                         </tbody>
                       </table>
+=======
+                  </div>
+                </UnifiedCard>
+              )}
+
+              {activeTab === 'references' && (
+                <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="p-8 glass-morphism-strong">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-3xl font-bold text-white flex items-center gap-3">
+                      <Star className="w-8 h-8 text-purple-400" />
+                      Zarządzanie Referencjami
+                    </h3>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setReferencesStatus('pending')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          referencesStatus === 'pending'
+                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                            : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        }`}
+                      >
+                        Oczekujące ({referencesStatus === 'pending' ? references.length : 0})
+                      </button>
+                      <button
+                        onClick={() => setReferencesStatus('approved')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          referencesStatus === 'approved'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        }`}
+                      >
+                        Zatwierdzone
+                      </button>
+                      <button
+                        onClick={() => setReferencesStatus('all')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          referencesStatus === 'all'
+                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        }`}
+                      >
+                        Wszystkie
+                      </button>
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
                     </div>
                     <div className="flex items-center justify-between mt-6">
                       <p className="text-white/70 text-sm">
@@ -738,6 +988,7 @@ export default function AdminDashboard() {
                                   )}
                                 </div>
                               </div>
+<<<<<<< HEAD
                             )}
                             <div className="flex justify-between items-center pt-3 border-t border-white/10">
                               <span className="text-sm text-white/50">
@@ -761,6 +1012,146 @@ export default function AdminDashboard() {
                                       Odrzuć
                                     </button>
                                   </>
+=======
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center pt-3 border-t border-white/10">
+                            <span className="text-sm text-white/50">
+                              Dodano: {new Date(reference.createdAt).toLocaleDateString('pl-PL')}
+                            </span>
+                            <div className="flex gap-2">
+                              {!reference.isApproved && (
+                                <>
+                                  <button
+                                    onClick={() => approveReference(reference.id, true)}
+                                    className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                                  >
+                                    <CheckCircle className="w-4 h-4" />
+                                    Zatwierdź
+                                  </button>
+                                  <button
+                                    onClick={() => approveReference(reference.id, false)}
+                                    className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors text-sm"
+                                  >
+                                    <XCircle className="w-4 h-4" />
+                                    Odrzuć
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                onClick={() => deleteReference(reference.id)}
+                                className="flex items-center gap-1 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors text-sm"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Usuń
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </UnifiedCard>
+              )}
+
+              {activeTab === 'meetings' && (
+                <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="p-8 glass-morphism-strong">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-3xl font-bold text-white flex items-center gap-3">
+                      <Camera className="w-8 h-8 text-pink-400" />
+                      Zarządzanie Spotkaniami z Hodowcami
+                    </h3>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setMeetingsStatus('pending')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          meetingsStatus === 'pending'
+                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                            : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        }`}
+                      >
+                        Oczekujące ({meetingsStatus === 'pending' ? meetings.length : 0})
+                      </button>
+                      <button
+                        onClick={() => setMeetingsStatus('approved')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          meetingsStatus === 'approved'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        }`}
+                      >
+                        Zatwierdzone
+                      </button>
+                      <button
+                        onClick={() => setMeetingsStatus('all')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                          meetingsStatus === 'all'
+                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        }`}
+                      >
+                        Wszystkie
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    {meetings.length === 0 ? (
+                      <div className="text-center py-8 text-white/70">
+                        Brak spotkań do wyświetlenia
+                      </div>
+                    ) : (
+                      meetings.map(meeting => (
+                        <div key={meeting.id} className="border border-white/20 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-semibold text-white">{meeting.title}</h4>
+                              <p className="text-sm text-white/70">{meeting.location}</p>
+                              <p className="text-sm text-white/70">
+                                Data: {new Date(meeting.date).toLocaleDateString('pl-PL')}
+                              </p>
+                              <p className="text-sm text-white/70">
+                                Dodane przez: {meeting.user.firstName} {meeting.user.lastName}
+                              </p>
+                            </div>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                meeting.isApproved
+                                  ? 'bg-green-500/20 text-green-400'
+                                  : 'bg-yellow-500/20 text-yellow-400'
+                              }`}
+                            >
+                              {meeting.isApproved ? 'Zatwierdzone' : 'Oczekuje'}
+                            </span>
+                          </div>
+                          {meeting.description && (
+                            <p className="text-white/80 mb-3">{meeting.description}</p>
+                          )}
+                          {meeting.images && meeting.images.length > 0 && (
+                            <div className="mb-3">
+                              <h5 className="font-medium text-white mb-2">
+                                Zdjęcia ({meeting.images.length}):
+                              </h5>
+                              <div className="grid grid-cols-4 gap-2">
+                                {meeting.images.slice(0, 4).map((image: string, index: number) => (
+                                  <div
+                                    key={index}
+                                    className="aspect-square bg-gray-700 rounded-lg overflow-hidden relative"
+                                  >
+                                    <Image
+                                      src={image}
+                                      alt={`Zdjęcie ${index + 1}`}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                  </div>
+                                ))}
+                                {meeting.images.length > 4 && (
+                                  <div className="aspect-square bg-gray-700 rounded-lg flex items-center justify-center">
+                                    <span className="text-sm text-white/70">
+                                      +{meeting.images.length - 4}
+                                    </span>
+                                  </div>
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
                                 )}
                                 <button
                                   onClick={() => deleteMeeting(meeting.id)}
@@ -790,6 +1181,7 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
+<<<<<<< HEAD
                 {activeTab === 'gallery' && (
                   <div className="space-y-6">
                     <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="p-8 glass-morphism-strong">
@@ -896,13 +1288,324 @@ export default function AdminDashboard() {
                 )}
 
                 {activeTab === 'logs' && (
+=======
+              {activeTab === 'appearance' && (
+                <div className="space-y-6">
+                  <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="p-8 glass-morphism-strong">
+                    <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                      <Camera className="w-8 h-8 text-blue-400" />
+                      Zarządzanie Wyglądem Strony
+                    </h3>
+                    <BackgroundImageManager />
+                  </UnifiedCard>
+                </div>
+              )}
+
+              {activeTab === 'gallery' && (
+                <div className="space-y-6">
+                  <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="p-8 glass-morphism-strong">
+                    <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                      <Star className="w-8 h-8 text-purple-400" />
+                      Galeria Championów
+                    </h3>
+                    <ChampionGalleryManager items={[]} />
+                  </UnifiedCard>
+                </div>
+              )}
+
+              {activeTab === 'metrics' && (
+                <div className="space-y-6">
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
                   <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="glass-morphism-strong">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
                         <FileText className="w-6 h-6 text-yellow-400" />
                         Logi Systemowe
                       </h3>
+<<<<<<< HEAD
                       <button className="btn-secondary flex items-center gap-2">
+=======
+                      <a
+                        href="/api/metrics"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-primary flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Eksportuj
+                      </a>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                      <div className="p-6 bg-blue-500/10 border border-blue-500/30 rounded-xl hover:bg-blue-500/15 transition-all">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-white/70 text-base font-medium">Prometheus</p>
+                          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                        </div>
+                        <p className="text-3xl font-bold text-white mb-2">Aktywny</p>
+                        <p className="text-white/60 text-sm mb-4">Zbieranie metryk w czasie rzeczywistym</p>
+                        <a
+                          href="http://localhost:9090"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 text-base font-semibold hover:underline inline-flex items-center gap-2"
+                        >
+                          Otwórz dashboard →
+                        </a>
+                      </div>
+                      <div className="p-6 bg-purple-500/10 border border-purple-500/30 rounded-xl hover:bg-purple-500/15 transition-all">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-white/70 text-base font-medium">Grafana</p>
+                          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                        </div>
+                        <p className="text-3xl font-bold text-white mb-2">Aktywny</p>
+                        <p className="text-white/60 text-sm mb-4">Wizualizacja metryk i dashboardy</p>
+                        <a
+                          href="http://localhost:4000"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-purple-400 text-base font-semibold hover:underline inline-flex items-center gap-2"
+                        >
+                          Otwórz dashboard →
+                        </a>
+                      </div>
+                    </div>
+                    <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+                      <p className="text-white/70 text-base font-medium mb-3">Endpoint metryk</p>
+                      <code className="text-white text-base bg-black/40 px-4 py-3 rounded-lg block font-mono">
+                        /api/metrics
+                      </code>
+                      <p className="text-white/60 text-sm mt-3">Dostępny w formacie Prometheus</p>
+                    </div>
+                  </UnifiedCard>
+
+                  <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="p-8 glass-morphism-strong">
+                    <h4 className="text-2xl font-bold text-white mb-6">Metryki w czasie rzeczywistym</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="p-6 bg-white/5 rounded-xl border border-white/10">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-white/80 text-base font-medium">Żądania HTTP (24h)</span>
+                          <Activity className="w-5 h-5 text-blue-400" />
+                        </div>
+                        <p className="text-3xl font-bold text-white mb-2">Ładowanie...</p>
+                        <p className="text-white/60 text-sm">Wszystkie requesty do API</p>
+                      </div>
+                      <div className="p-6 bg-white/5 rounded-xl border border-white/10">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-white/80 text-base font-medium">Średni czas odpowiedzi</span>
+                          <Database className="w-5 h-5 text-green-400" />
+                        </div>
+                        <p className="text-3xl font-bold text-white mb-2">Ładowanie...</p>
+                        <p className="text-white/60 text-sm">Czas odpowiedzi API</p>
+                      </div>
+                      <div className="p-6 bg-white/5 rounded-xl border border-white/10">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-white/80 text-base font-medium">Błędy (24h)</span>
+                          <AlertCircle className="w-5 h-5 text-red-400" />
+                        </div>
+                        <p className="text-3xl font-bold text-red-400 mb-2">Ładowanie...</p>
+                        <p className="text-white/60 text-sm">Błędy serwera i klienta</p>
+                      </div>
+                    </div>
+                  </UnifiedCard>
+                </div>
+              )}
+
+              {activeTab === 'logs' && (
+                <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="glass-morphism-strong">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
+                      <FileText className="w-6 h-6 text-yellow-400" />
+                      Logi Systemowe
+                    </h3>
+                    <button className="btn-secondary flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4" />
+                      Odśwież
+                    </button>
+                  </div>
+                  <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                    <div className="p-4 bg-red-500/10 border-l-4 border-red-500 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-red-400 font-semibold text-sm">ERROR</span>
+                        <span className="text-white/50 text-xs">2025-11-15 10:18:17</span>
+                      </div>
+                      <p className="text-white/90 text-sm">
+                        PrismaClientKnownRequestError: The table `public.User` does not exist
+                      </p>
+                      <p className="text-white/60 text-xs mt-1">app/api/profile/route.ts:170</p>
+                    </div>
+                    <div className="p-4 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-yellow-400 font-semibold text-sm">WARN</span>
+                        <span className="text-white/50 text-xs">2025-11-15 10:15:00</span>
+                      </div>
+                      <p className="text-white/90 text-sm">Rate limit warning: User approaching limit</p>
+                    </div>
+                    <div className="p-4 bg-blue-500/10 border-l-4 border-blue-500 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-blue-400 font-semibold text-sm">INFO</span>
+                        <span className="text-white/50 text-xs">2025-11-15 10:14:48</span>
+                      </div>
+                      <p className="text-white/90 text-sm">User sync completed: admin@palka-mtm.pl</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <select className="input-field flex-1">
+                      <option>Wszystkie poziomy</option>
+                      <option>ERROR</option>
+                      <option>WARN</option>
+                      <option>INFO</option>
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Szukaj w logach..."
+                      className="input-field flex-1"
+                    />
+                  </div>
+                </UnifiedCard>
+              )}
+
+              {activeTab === 'reports' && (
+                <div className="space-y-6">
+                  <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="glass-morphism-strong">
+                    <h3 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
+                      <TrendingUp className="w-6 h-6 text-green-400" />
+                      Raporty i Analizy
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button className="p-6 bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-xl text-left">
+                        <BarChart3 className="w-8 h-8 text-blue-400 mb-3" />
+                        <h4 className="text-white font-semibold mb-2">Raport Użytkowników</h4>
+                        <p className="text-white/70 text-sm">Analiza aktywności i rejestracji</p>
+                      </button>
+                      <button className="p-6 bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-xl text-left">
+                        <DollarSign className="w-8 h-8 text-green-400 mb-3" />
+                        <h4 className="text-white font-semibold mb-2">Raport Finansowy</h4>
+                        <p className="text-white/70 text-sm">Przychody, prowizje, transakcje</p>
+                      </button>
+                      <button className="p-6 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-xl text-left">
+                        <Gavel className="w-8 h-8 text-purple-400 mb-3" />
+                        <h4 className="text-white font-semibold mb-2">Raport Aukcji</h4>
+                        <p className="text-white/70 text-sm">Statystyki aukcji i licytacji</p>
+                      </button>
+                      <button className="p-6 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 rounded-xl text-left">
+                        <AlertTriangle className="w-8 h-8 text-yellow-400 mb-3" />
+                        <h4 className="text-white font-semibold mb-2">Raport Błędów</h4>
+                        <p className="text-white/70 text-sm">Analiza błędów i problemów</p>
+                      </button>
+                    </div>
+                  </UnifiedCard>
+
+                  <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="glass-morphism-strong">
+                    <h4 className="text-xl font-semibold text-white mb-4">Eksport Danych</h4>
+                    <div className="space-y-3">
+                      <button className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl transition-all duration-300 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Database className="w-5 h-5 text-blue-400" />
+                          <span className="text-white">Backup bazy danych</span>
+                        </div>
+                        <Download className="w-5 h-5 text-white/70" />
+                      </button>
+                      <button className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl transition-all duration-300 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-green-400" />
+                          <span className="text-white">Eksport użytkowników (CSV)</span>
+                        </div>
+                        <Download className="w-5 h-5 text-white/70" />
+                      </button>
+                      <button className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl transition-all duration-300 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <BarChart3 className="w-5 h-5 text-purple-400" />
+                          <span className="text-white">Eksport transakcji (CSV)</span>
+                        </div>
+                        <Download className="w-5 h-5 text-white/70" />
+                      </button>
+                    </div>
+                  </UnifiedCard>
+                </div>
+              )}
+
+              {activeTab === 'settings' && (
+                <UnifiedCard variant="glass" noTransparency={true} glow={true} glowingEdges={true} edgeGlowIntensity={0.5} className="glass-morphism-strong">
+                  <h3 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
+                    <Settings className="w-6 h-6 text-blue-400" />
+                    Ustawienia Platformy
+                  </h3>
+                  <div className="space-y-6">
+                    <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                      <label className="block text-sm font-medium text-white/90 mb-2">
+                        Prowizja platformy (%)
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue="5"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        className="input-field"
+                        aria-label="Prowizja platformy w procentach"
+                        title="Prowizja platformy w procentach"
+                      />
+                      <p className="text-white/60 text-xs mt-1">
+                        Procent od każdej transakcji pobierany przez platformę
+                      </p>
+                    </div>
+                    <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                      <label className="block text-sm font-medium text-white/90 mb-2">
+                        Maksymalny czas trwania aukcji (dni)
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue="30"
+                        min="1"
+                        max="365"
+                        className="input-field"
+                        aria-label="Maksymalny czas trwania aukcji w dniach"
+                        title="Maksymalny czas trwania aukcji w dniach"
+                      />
+                    </div>
+                    <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                      <label className="block text-sm font-medium text-white/90 mb-2">
+                        Minimalna cena wywoławcza (zł)
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue="100"
+                        min="0"
+                        step="10"
+                        className="input-field"
+                        aria-label="Minimalna cena wywoławcza w złotych"
+                        title="Minimalna cena wywoławcza w złotych"
+                      />
+                    </div>
+                    <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                      <label className="block text-sm font-medium text-white/90 mb-2 mb-3">
+                        Funkcje platformy
+                      </label>
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
+                          <span className="text-white/90">Wymagana weryfikacja email</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
+                          <span className="text-white/90">Wymagana weryfikacja telefonu</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input type="checkbox" className="w-5 h-5 rounded" />
+                          <span className="text-white/90">Automatyczna akceptacja aukcji</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
+                          <span className="text-white/90">Powiadomienia email</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <button className="btn-primary flex-1">
+                        Zapisz ustawienia
+                      </button>
+                      <button className="btn-secondary">
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
                         <RefreshCw className="w-4 h-4" />
                         Odśwież
                       </button>
@@ -1007,6 +1710,7 @@ export default function AdminDashboard() {
                       </div>
                     </UnifiedCard>
                   </div>
+<<<<<<< HEAD
                 )}
 
                 {activeTab === 'settings' && (
@@ -1098,6 +1802,10 @@ export default function AdminDashboard() {
                   </UnifiedCard>
                 )}
               </div>
+=======
+                </UnifiedCard>
+              )}
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
             </div>
           </div>
         </div>

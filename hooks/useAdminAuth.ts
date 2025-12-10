@@ -33,16 +33,21 @@ export function useAdminAuth(): AdminStatus {
     setAdminStatus(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      const token = await firebaseUser.getIdToken();
+      const token = await firebaseUser.getIdToken(true); // Wymuś odświeżenie tokena
+      console.log('🔐 [AdminAuth] Pobieranie tokena Firebase - sukces');
+
       const response = await fetch('/api/profile', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
+      console.log('🔐 [AdminAuth] Odpowiedź API profile:', response.status, response.statusText);
+
       if (response.ok) {
         const data = await response.json();
         const userRole = data.user?.role || 'USER';
+        console.log('🔐 [AdminAuth] Pobrane dane użytkownika:', { role: userRole, email: data.user?.email });
 
         setAdminStatus({
           loading: false,
@@ -51,7 +56,8 @@ export function useAdminAuth(): AdminStatus {
           error: null,
         });
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ error: 'Nieznany błąd' }));
+        console.error('🔐 [AdminAuth] Błąd API profile:', errorData);
         setAdminStatus({
           loading: false,
           isAdmin: false,
@@ -60,7 +66,7 @@ export function useAdminAuth(): AdminStatus {
         });
       }
     } catch (err) {
-      console.error('Błąd podczas sprawdzania uprawnień administratora:', err);
+      console.error('🔐 [AdminAuth] Wyjątek podczas sprawdzania uprawnień:', err);
       setAdminStatus({
         loading: false,
         isAdmin: false,

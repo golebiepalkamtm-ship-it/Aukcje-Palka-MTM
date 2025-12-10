@@ -17,7 +17,7 @@ export function FloatingCard({
   className = '',
   delay = 0,
   intensity = 'medium',
-  glow = true,
+  glow = false,
   hoverEffect = 0.5,
 }: FloatingCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);

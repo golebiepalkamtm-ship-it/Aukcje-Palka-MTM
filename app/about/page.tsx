@@ -1,5 +1,4 @@
 import AboutPageClient from '@/components/about/AboutPageClient';
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 
 export const metadata = {
   title: 'O nas - Pałka MTM | Mistrzowie Sprintu',
@@ -8,9 +7,5 @@ export const metadata = {
 };
 
 export default function AboutPage() {
-  return (
-      <UnifiedLayout isHomePage={true}>
-        <AboutPageClient />
-      </UnifiedLayout>
-  );
+  return <AboutPageClient />;
 }

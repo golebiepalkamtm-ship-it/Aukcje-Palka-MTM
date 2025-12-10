@@ -137,7 +137,7 @@ export function GlowingEdgeCard({
         ${className}
       `}
       style={{
-        background: 'linear-gradient(8deg, hsl(var(--h, 260), 18%, 12%) 75%, color-mix(in hsl, hsl(var(--h, 260), 18%, 12%), white 2.5%) 75.5%)',
+        background: 'linear-gradient(8deg, hsla(var(--h, 260), 18%, 12%, 0.3) 75%, color-mix(in hsl, hsla(var(--h, 260), 18%, 12%, 0.3), white 2.5%) 75.5%)',
         isolation: 'isolate',
         transform: 'translate3d(0, 0, 0.01px)',
         boxShadow: `

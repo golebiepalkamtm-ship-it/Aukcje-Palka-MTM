@@ -13,8 +13,13 @@ test.describe('Karuzela 3D Championów - Testy E2E', () => {
       await expect(page.locator('[role="region"][aria-label="Karuzela championów gołębi pocztowych"]')).toBeVisible();
 
       // Sprawdź czy są widoczne zdjęcia championów
+<<<<<<< HEAD
       const championImagesCount = await page.locator('[data-testid="champion-image"]').count();
       expect(championImagesCount).toBeGreaterThan(0);
+=======
+      const imageCount = await page.locator('[data-testid="champion-image"]').count();
+      expect(imageCount).toBeGreaterThan(0);
+>>>>>>> 37190d0b63b671515d651f0bf7fbdd3ff16cc7a9
     });
 
     test('powinna pokazać przycisk RODOWÓD', async ({ page }) => {

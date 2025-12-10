@@ -1,12 +1,9 @@
 {
-  "name": "Silver Arrow",
-  "ringNumber": "DV-07136-10-202",
-  "bloodline": "Janssen",
-  "gender": "FEMALE",
-  "birthDate": "2010-05-10T00:00:00.000Z",
-  "color": "Silver",
-  "weight": 420,
-  "breeder": "MTM Pałka",
-  "description": "Elegancka championka o srebrnym upierzeniu, specjalistka w lotach krótkodystansowych.",
-  "achievements": ["Mistrzyni Polski 2010", "1. miejsce - Kraków 2010", "2. miejsce - Gdańsk 2009"]
+  "id": "3",
+  "name": "Champion Gamma",
+  "achievements": ["Trzecie miejsce w Mistrzostwach Europy", "Najlepszy w kategorii młodszej"],
+  "images": [
+    "/champions/3/gallery/dv-07136-10-202_c.jpg"
+  ],
+  "pedigreeImage": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop"
 }

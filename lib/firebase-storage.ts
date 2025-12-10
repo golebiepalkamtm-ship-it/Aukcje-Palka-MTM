@@ -101,9 +101,10 @@ export function convertPublicPathToStorageUrl(publicPath: string): string {
   if (process.env.NODE_ENV === 'development') {
     const localPath = cleanPath.replace('public/', '')
     // Ensure proper URL encoding for spaces and special characters
-    return `/${encodeURIComponent(localPath).replace(/%2F/g, '/')}`
+    return `/${localPath}`
   }
 
+  // In production, return Firebase Storage URL
   return getFirebaseStorageUrlSync(cleanPath)
 }
 

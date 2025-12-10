@@ -40,13 +40,18 @@ export function AuthNavigation() {
   return (
     <nav className="absolute top-8 left-8 z-[1001] pointer-events-auto">
       <motion.div
-        className="flex items-center gap-3"
+        // @ts-ignore
         variants={navContainerVariants}
         initial="hidden"
         animate="visible"
+        className="flex items-center gap-3"
       >
         {navItems.map(item => (
-          <motion.div key={item.href} variants={navItemVariants}>
+          <motion.div
+            key={item.href}
+            // @ts-ignore
+            variants={navItemVariants}
+          >
             <Link href={item.href as `/${string}`} className="glass-nav-button" title={item.title}>
               <i className={`${item.icon} relative z-10 text-3xl`}></i>
               <span className="relative z-10 text-sm">{item.label}</span>

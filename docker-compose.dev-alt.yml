@@ -248,17 +248,15 @@ services:
 
   # Nginx - Reverse Proxy & Load Balancer (Development)
   nginx:
-    image: nginx:alpine
+    image: nginx:latest
     container_name: pigeon-auction-nginx-dev-alt
     restart: unless-stopped
     ports:
-      - '18080:80'
-      - '18443:443'
+      - "443:443" # HTTPS
+      - "80:80"   # HTTP
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./certs:/etc/nginx/certs:ro
-    depends_on:
-      - app
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - pigeon-network-alt
 

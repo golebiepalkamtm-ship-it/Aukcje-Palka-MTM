@@ -1,5 +1,4 @@
 import ContactPageClient from '@/components/contact/ContactPageClient';
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 
 export const metadata = {
   title: 'Kontakt - Gołębie Pocztowe',
@@ -7,9 +6,5 @@ export const metadata = {
 };
 
 export default function ContactPage() {
-  return (
-    <UnifiedLayout isHomePage={true}>
-      <ContactPageClient />
-    </UnifiedLayout>
-  );
+  return <ContactPageClient />;
 }
