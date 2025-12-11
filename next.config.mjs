@@ -12,12 +12,6 @@ const nextConfig = {
   generateEtags: false,
   poweredByHeader: false,
 
-  // Egzekwuj ESLint i TypeScript podczas build
-  // Dla Firebase App Hosting - wyłączone ESLint żeby build się udał
-  eslint: {
-    ignoreDuringBuilds: true, // Wyłączone dla Firebase App Hosting
-  },
-
   typescript: {
     ignoreBuildErrors: true, // Wyłączone dla Docker build
   },
@@ -28,10 +22,7 @@ const nextConfig = {
   // Output mode dla Firebase App Hosting
   output: 'standalone',
 
-  // Eksperymentalne funkcje
-  experimental: {
-    instrumentationHook: true,
-  },
+
 
   // Ustawienia dla stabilności na Windows
   ...(process.env.NODE_ENV === 'development' && {
