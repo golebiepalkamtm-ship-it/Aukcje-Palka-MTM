@@ -1,13 +1,14 @@
 'use client';
 
 import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal';
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileVerification } from '@/hooks/useProfileVerification';
 import { useAppStore } from '@/store/useAppStore';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { motion } from 'framer-motion';
+import { GlowingEdgeCard } from '@/components/ui/GlowingEdgeCard';
+import { InteractiveCard } from '@/components/ui/InteractiveCard';
 import { AlertCircle, Calendar, Eye, MapPin, Users } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -281,19 +282,29 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
 
   if (!auction) {
     return (
-      <UnifiedLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="p-8 text-center card-glass">
-            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <h1 className="text-2xl font-bold text-white mb-4">Ładowanie...</h1>
-            <p className="text-white/70 mb-6">Pobieranie danych aukcji...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="p-8 text-center card-glass">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h1 className="text-2xl font-bold text-white mb-4">Ładowanie...</h1>
+          <p className="text-white/70 mb-6">Pobieranie danych aukcji...</p>
         </div>
-      </UnifiedLayout>
+      </div>
     );
   }
 
+  const isOwner = user?.email === auction.seller.email;
+
   const handleBid = async () => {
+    if (!user) {
+      toast.error('Zaloguj się, aby licytować', { duration: 4000 });
+      return;
+    }
+
+    if (isOwner) {
+      toast.error('Nie możesz licytować we własnej aukcji', { duration: 4000 });
+      return;
+    }
+
     if (!canBid) {
       toast.error(
         `Aby licytować, musisz uzupełnić profil i zweryfikować numer telefonu. Brakujące pola: ${missingFields.join(', ')}`,
@@ -325,9 +336,8 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
         }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
+        await response.json();
         // Odśwież dane aukcji
         const auctionResponse = await fetch(`/api/auctions/${auction.id}`);
         if (auctionResponse.ok) {
@@ -341,21 +351,22 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
         });
       } else {
         // Obsługa błędów z serwera
-        if (data.missingFields) {
+        const errorData = await response.json(); // Pobierz dane błędu
+        console.error('Błąd licytacji (serwer):', errorData);
+
+        if (errorData.missingFields) {
           toast.error(
-            `${data.message}. Brakujące pola: ${data.missingFields.join(', ')}`,
-            {
-              duration: 5000,
-            }
+            `${errorData.message || 'Profil niekompletny'}. Brakujące pola: ${errorData.missingFields.join(', ')}`,
+            { duration: 5000 }
           );
         } else {
-          toast.error(data.error || 'Błąd podczas składania licytacji', {
+          toast.error(errorData.error || 'Błąd podczas składania licytacji', {
             duration: 4000,
           });
         }
       }
     } catch (error) {
-      console.error('Błąd podczas składania licytacji:', error);
+      console.error('Błąd podczas składania licytacji (catch):', error);
       toast.error('Wystąpił błąd podczas składania licytacji', {
         duration: 4000,
       });
@@ -365,6 +376,16 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
   };
 
   const handleBuyNow = () => {
+    if (!user) {
+      toast.error('Zaloguj się, aby kupić', { duration: 4000 });
+      return;
+    }
+
+    if (isOwner) {
+      toast.error('Nie możesz kupić własnej aukcji', { duration: 4000 });
+      return;
+    }
+
     if (!auction.buyNowPrice) {
       toast.error('Cena "Kup teraz" nie jest dostępna', {
         duration: 3000,
@@ -426,17 +447,27 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               className="card-glass p-4"
             >
               <div
-                className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gray-900 cursor-pointer group"
+                className="relative w-full h-[500px] rounded-2xl overflow-hidden bg-gray-900 cursor-pointer group"
                 onClick={() => auction.images && auction.images[0] && openFullscreen(0)}
               >
                 {auction.images && auction.images[0] ? (
                   <>
+                    {/* Rozmyte tło wypełniające całość */}
+                    <Image
+                      src={auction.images[0]}
+                      alt="Background"
+                      fill
+                      className="object-cover blur-xl opacity-50 scale-110"
+                      sizes="50vw"
+                      priority
+                    />
+                    {/* Właściwe zdjęcie - w całości */}
                     <Image
                       src={auction.images[0]}
                       alt={auction.title}
                       fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-contain z-10 hover:scale-[1.02] transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                       priority
                       onError={e => {
                         console.error('Image failed to load:', auction.images[0]);
@@ -444,8 +475,8 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                       }}
                     />
                     {/* Overlay z ikoną powiększenia */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-3">
+                    <div className="absolute inset-0 z-20 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-3 backdrop-blur-sm">
                         <svg
                           className="w-6 h-6 text-white"
                           fill="none"
@@ -490,7 +521,7 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                         src={image}
                         alt={`${auction.title} ${index + 2}`}
                         fill
-                        className="object-contain"
+                        className="object-cover hover:scale-110 transition-transform duration-300"
                         sizes="200px"
                       />
                       {/* Overlay z ikoną powiększenia */}
@@ -689,18 +720,29 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
 
                   <button
                     onClick={handleBid}
-                    disabled={!bidAmount || parseFloat(bidAmount) < minBidAmount || isBidding}
-                    className="w-full bg-slate-600 text-white py-3 px-4 rounded-md font-medium hover:bg-slate-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                    disabled={!bidAmount || parseFloat(bidAmount) < minBidAmount || isBidding || isOwner}
+                    className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
+                      isOwner
+                        ? 'bg-gray-600 cursor-not-allowed opacity-50'
+                        : 'bg-slate-600 text-white hover:bg-slate-700 disabled:bg-gray-600 disabled:cursor-not-allowed'
+                    }`}
+                    title={isOwner ? 'To Twoja aukcja' : 'Złóż ofertę'}
                   >
-                    {isBidding ? 'Licytuję...' : 'Złóż ofertę'}
+                    {isBidding ? 'Licytuję...' : isOwner ? 'To Twoja aukcja' : 'Złóż ofertę'}
                   </button>
 
                   {auction.buyNowPrice && (
                     <button
                       onClick={handleBuyNow}
-                      className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium hover:bg-green-700 transition-colors"
+                      disabled={isOwner}
+                      className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
+                        isOwner
+                          ? 'bg-gray-600 cursor-not-allowed opacity-50 text-white'
+                          : 'bg-green-600 text-white hover:bg-green-700'
+                      }`}
+                      title={isOwner ? 'To Twoja aukcja' : 'Kup teraz'}
                     >
-                      Kup teraz za {formatPrice(auction.buyNowPrice)}
+                      {isOwner ? 'To Twoja aukcja' : `Kup teraz za ${formatPrice(auction.buyNowPrice)}`}
                     </button>
                   )}
                 </div>

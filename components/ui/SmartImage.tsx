@@ -59,11 +59,20 @@ export function SmartImage({
   useEffect(() => {
     if (priority || isInView) return;
 
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setIsInView(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsInView(true);
-          observer.disconnect();
+          try {
+            observer.disconnect();
+          } catch {
+            // ignore
+          }
         }
       },
       {
@@ -76,7 +85,13 @@ export function SmartImage({
       observer.observe(imgRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      try {
+        observer.disconnect();
+      } catch {
+        // ignore
+      }
+    };
   }, [priority, isInView, imgRef]);
 
   const handleLoad = () => {
@@ -129,17 +144,21 @@ export function SmartImage({
     }
 
     // Dodaj parametry optymalizacji dla lokalnych obrazów
-    const params = new URLSearchParams();
-    if (width) params.set('w', width.toString());
-    if (height) params.set('h', height.toString());
-    if (quality) params.set('q', quality.toString());
-    if (sizes) params.set('sizes', sizes);
-    if (fitMode === 'cover') params.set('fit', 'cover');
-    if (cropFocus !== 'center') params.set('crop', cropFocus);
+    try {
+      const params = new URLSearchParams();
+      if (width) params.set('w', width.toString());
+      if (height) params.set('h', height.toString());
+      if (quality) params.set('q', quality.toString());
+      if (sizes) params.set('sizes', sizes);
+      if (fitMode === 'cover') params.set('fit', 'cover');
+      if (cropFocus !== 'center') params.set('crop', cropFocus);
 
-    const queryString = params.toString();
-    const encodedSrc = encodeURI(src);
-    return queryString ? `${encodedSrc}?${queryString}` : encodedSrc;
+      const queryString = params.toString();
+      const encodedSrc = encodeURI(src);
+      return queryString ? `${encodedSrc}${encodedSrc.includes('?') ? '&' : '?'}${queryString}` : encodedSrc;
+    } catch {
+      return src;
+    }
   };
 
   const optimizedSrc = getOptimizedSrc();
@@ -225,7 +244,7 @@ export function useImagePreload(src: string) {
   const [isPreloaded, setIsPreloaded] = useState(false);
 
   useEffect(() => {
-    if (!src) return;
+    if (!src || typeof window === 'undefined') return;
 
     const img = new window.Image();
     img.onload = () => setIsPreloaded(true);
@@ -233,8 +252,12 @@ export function useImagePreload(src: string) {
     img.src = src;
 
     return () => {
-      img.onload = null;
-      img.onerror = null;
+      try {
+        img.onload = null;
+        img.onerror = null;
+      } catch {
+        // ignore
+      }
     };
   }, [src]);
 

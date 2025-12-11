@@ -9,8 +9,8 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <UnifiedLayout>
-      <AboutPageClient />
-    </UnifiedLayout>
+      <UnifiedLayout>
+        <AboutPageClient />
+      </UnifiedLayout>
   );
 }

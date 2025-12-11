@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import ReactDOM from 'react-dom';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
-import { MouseEventHandler, useEffect, useState } from 'react';
+import { MouseEventHandler, useEffect, useState, useRef } from 'react';
 import { debug, isDev } from '@/lib/logger';
 
 interface ImageItem {
@@ -38,6 +38,8 @@ export default function ImageModal({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isBrowser, setIsBrowser] = useState(false);
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     // Sprawdź czy jesteśmy w przeglądarce
@@ -59,6 +61,15 @@ export default function ImageModal({
 
     window.addEventListener('keydown', handleEscapeKey);
 
+    // Focus the close button on mount for accessibility
+    setTimeout(() => {
+      try {
+        closeButtonRef.current?.focus();
+      } catch {
+        /* ignore */
+      }
+    }, 0);
+
     return () => {
       // Przywróć scroll
       document.body.style.position = '';
@@ -69,6 +80,39 @@ export default function ImageModal({
       window.removeEventListener('keydown', handleEscapeKey);
     };
   }, [onClose]);
+
+  // Focus trap: keep focus within modal
+  useEffect(() => {
+    if (!isBrowser) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const container = modalRef.current;
+      if (!container) return;
+      const focusable = container.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          last.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === last) {
+          first.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isBrowser]);
 
   // Osobny useEffect dla obsługi klawiatury
   useEffect(() => {
@@ -147,8 +191,24 @@ export default function ImageModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="image-modal-title"
+      aria-describedby="image-modal-description"
     >
+      {/* Hidden title and description for accessibility */}
+      <h2 id="image-modal-title" className="sr-only">
+        {image.alt || 'Podgląd zdjęcia'}
+        {currentIndex !== undefined && totalImages && totalImages > 1
+          ? ` - Zdjęcie ${currentIndex + 1} z ${totalImages}`
+          : ''}
+      </h2>
+      <p id="image-modal-description" className="sr-only">
+        Modal do przeglądania zdjęć. Użyj przycisków nawigacji, aby przejść do poprzedniego lub następnego zdjęcia. Naciśnij Escape lub kliknij przycisk zamknij, aby zamknąć.
+      </p>
+
       <motion.div
+        ref={modalRef}
         className="relative w-full h-full max-w-none max-h-none overflow-hidden"
         initial={{ scale: 0.9 }}
         animate={{ scale: 1 }}
@@ -192,6 +252,7 @@ export default function ImageModal({
 
         {/* Close Button */}
         <button
+          ref={closeButtonRef}
           onClick={e => {
             e.stopPropagation();
             if (isDev) debug('Close button clicked');

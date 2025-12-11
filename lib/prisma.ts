@@ -15,6 +15,12 @@ const getDatabaseUrl = () => {
   return process.env.DEV_DATABASE_URL || process.env.DATABASE_URL || 'file:./dev.db';
 };
 
+// Check if database is configured
+export function isDatabaseConfigured(): boolean {
+  const databaseUrl = getDatabaseUrl();
+  return !!databaseUrl && !databaseUrl.includes('placeholder');
+}
+
 // Lazy initialization function to avoid Prisma initialization during build
 const createPrismaClient = () => {
   const databaseUrl = getDatabaseUrl();

@@ -61,23 +61,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const syncInProgressRef = useRef<string | null>(null);
 
-  const fetchAndSyncUser = useCallback(async (firebaseUser: User) => {
-    // Zabezpieczenie przed wielokrotnym wywołaniem dla tego samego użytkownika
+  const syncUserWithDatabase = useCallback(async (firebaseUser: User) => {
     if (syncInProgressRef.current === firebaseUser.uid) {
-      if (isDev) debug('AuthContext: Sync already in progress for user:', firebaseUser.uid);
+      if (isDev) debug('AuthContext: Sync already in progress, skipping...');
       return;
     }
 
     syncInProgressRef.current = firebaseUser.uid;
-    if (isDev) debug('AuthContext: Syncing user with database:', firebaseUser.email);
 
     try {
-      // Pobierz token (Firebase user jest już aktualny z onAuthStateChanged)
       const token = await firebaseUser.getIdToken(true);
 
       const response = await fetch('/api/auth/sync', {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
@@ -85,34 +83,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const data = await response.json();
         setDbUser(data.user);
-        if (isDev) debug('AuthContext: User synced successfully', data.user);
-
-        // Zapisz token w cookie dla middleware
         document.cookie = `firebase-auth-token=${token}; path=/; max-age=3600; SameSite=Lax`;
+        if (isDev) info('AuthContext: User synced successfully');
       } else {
-        error('AuthContext: Sync failed:', response.status, response.statusText);
+        error('AuthContext: Sync failed:', response.status);
         setDbUser(null);
       }
     } catch (err) {
-      error('AuthContext: Sync error:', err instanceof Error ? err.message : err);
+      error('AuthContext: Sync error:', err);
       setDbUser(null);
     } finally {
-      // Reset po zakończeniu (z małym opóźnieniem, aby uniknąć race conditions)
       setTimeout(() => {
-        if (syncInProgressRef.current === firebaseUser.uid) {
-          syncInProgressRef.current = null;
-        }
-      }, 500);
+        syncInProgressRef.current = null;
+      }, 1000);
     }
   }, []);
 
   const refetchDbUser = useCallback(async () => {
     if (user) {
       setLoading(true);
-      await fetchAndSyncUser(user);
+      await syncUserWithDatabase(user);
       setLoading(false);
     }
-  }, [user, fetchAndSyncUser]);
+  }, [user, syncUserWithDatabase]);
 
   useEffect(() => {
     if (!auth) {
@@ -122,44 +115,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const unsubscribe = onAuthStateChanged(auth, async firebaseUser => {
       setUser(firebaseUser);
+      
       if (firebaseUser) {
-        await fetchAndSyncUser(firebaseUser);
-
-        // Ustaw token w cookie również przy zmianie stanu użytkownika
-        try {
-          const token = await firebaseUser.getIdToken();
-          document.cookie = `firebase-auth-token=${token}; path=/; max-age=3600; SameSite=Lax`;
-        } catch (err) {
-          error(
-            'AuthContext: Error getting token for cookie:',
-            err instanceof Error ? err.message : err
-          );
-        }
+        await syncUserWithDatabase(firebaseUser);
       } else {
         setDbUser(null);
         syncInProgressRef.current = null;
-        // Usuń cookie przy wylogowaniu
         document.cookie = 'firebase-auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       }
+      
       setLoading(false);
     });
 
-    // Nasłuchuj na zmiany w localStorage (komunikacja między kartami)
+    // Nasłuchuj na custom event "email-verified-complete" - wymuszaj reload Firebase User
+    const handleEmailVerified = async () => {
+      info('AuthContext: Email verified event - force reload Firebase User');
+      if (auth && auth.currentUser) {
+        try {
+          await auth.currentUser.reload();
+          await auth.currentUser.getIdToken(true);
+          setUser({ ...auth.currentUser });
+          info('AuthContext: Firebase User reloaded, emailVerified:', auth.currentUser.emailVerified);
+        } catch (err) {
+          error('AuthContext: Error reloading Firebase User:', err instanceof Error ? err.message : err);
+        }
+      }
+    };
+
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'email-verified' && user) {
-        info('AuthContext: Email verified event detected from another tab - refreshing user');
-        // Odśwież użytkownika po weryfikacji w innej karcie
-        refetchDbUser();
+      if (e.key === 'email-verified') {
+        handleEmailVerified();
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('email-verified-complete', handleEmailVerified);
 
     return () => {
       unsubscribe();
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('email-verified-complete', handleEmailVerified);
     };
-  }, [fetchAndSyncUser, user, refetchDbUser]);
+  }, []); // Stabilny efekt - uruchamiany tylko raz
 
   const signOut = async () => {
     try {

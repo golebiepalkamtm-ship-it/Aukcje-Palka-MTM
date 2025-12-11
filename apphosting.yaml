@@ -6,17 +6,98 @@ runConfig:
   # concurrency: 80
   # cpu: 1
   # memoryMiB: 512
-# Environment variables and secrets.
-# env:
-# Configure environment variables.
-# See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-# - variable: MESSAGE
-#   value: Hello world!
-#   availability:
-#     - BUILD
-#     - RUNTIME
 
-# Grant access to secrets in Cloud Secret Manager.
-# See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
-# - variable: MY_SECRET
-#   secret: mySecretRef
+# Cloud SQL connection configuration
+# See https://firebase.google.com/docs/app-hosting/configure#cloud-sql
+cloudSql:
+  connections:
+    - instance: m-t-m-62972:europe-west4:m-t-m-62972-instance
+
+# Environment variables and secrets.
+env:
+  # Public environment variables (available at BUILD and RUNTIME)
+  - variable: NEXT_PUBLIC_BASE_URL
+    value: https://palkamtm.pl
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyCrGcWptUnRgcNnAQl01g5RjPdMfZ2tJCA
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: m-t-m-62972.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: m-t-m-62972
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: m-t-m-62972.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "714609522899"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:714609522899:web:462e995a1f358b1b0c3c26
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-T645E1YQHW
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Secrets from Cloud Secret Manager (configure in Firebase Console)
+  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
+  - variable: DATABASE_URL
+    secret: database-url
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: FIREBASE_PROJECT_ID
+    secret: firebase-project-id
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: FIREBASE_CLIENT_EMAIL
+    secret: firebase-client-email
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: FIREBASE_PRIVATE_KEY
+    secret: firebase-private-key
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXTAUTH_SECRET
+    secret: nextauth-secret
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXTAUTH_URL
+    value: https://palkamtm.pl
+    availability:
+      - BUILD
+      - RUNTIME

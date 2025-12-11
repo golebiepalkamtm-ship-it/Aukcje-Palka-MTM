@@ -29,6 +29,12 @@ const createReferenceSchema = z.object({
 
 export async function GET() {
   try {
+    // Sprawdź dostępność bazy danych
+    const { isDatabaseConfigured } = await import('@/lib/prisma');
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json([], { status: 200 });
+    }
+
     const refs = await prisma.reference.findMany({
       where: {
         isApproved: true,

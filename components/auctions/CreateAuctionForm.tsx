@@ -9,9 +9,10 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
-import { X, LucideImage, Video, FileText } from 'lucide-react';
+import { FileText, LucideImage, Video, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UnifiedCard } from '@/components/ui/UnifiedCard';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { auctionCreateSchema } from '@/lib/validations/schemas';
 import { debug, error, isDev } from '@/lib/logger';
 
@@ -215,11 +216,24 @@ export default function CreateAuctionForm({
       toast.loading('Pobieranie tokenów bezpieczeństwa...', { id: 'auction-submit' });
 
       // Pobierz CSRF token
-      const csrfResponse = await fetch('/api/csrf');
-      if (!csrfResponse.ok) {
-        throw new Error('Nie udało się pobrać tokenu CSRF');
+      let csrfToken = '';
+      try {
+        const csrfResponse = await fetch('/api/csrf');
+        if (!csrfResponse.ok) {
+          console.error('❌ [Frontend] Błąd pobierania CSRF:', csrfResponse.status, csrfResponse.statusText);
+          // W przypadku błędu CSRF, kontynuujemy bez niego (backend może odrzucić, ale próbujemy)
+          // lub rzucamy błąd, jeśli CSRF jest krytyczny (a jest).
+          // Jednak tutaj, ponieważ mamy też Auth Token, możemy spróbować "fail open" dla UX lub "fail closed" dla security.
+          // Zgodnie z życzeniem "bezpieczeństwa nigdy za wiele", rzucamy błąd.
+          throw new Error(`Błąd serwera CSRF: ${csrfResponse.status}`);
+        }
+        const csrfData = await csrfResponse.json();
+        csrfToken = csrfData.csrfToken;
+      } catch (csrfError) {
+        console.error('❌ [Frontend] Niepowodzenie pobierania CSRF:', csrfError);
+        // Jeśli fetch failuje (np. connection refused), może to być błąd sieci.
+        throw new Error('Nie można nawiązać bezpiecznego połączenia (CSRF). Spróbuj odświeżyć stronę.');
       }
-      const { csrfToken } = await csrfResponse.json();
 
       // Upload files by category
       let uploadedImages: string[] = [];
@@ -229,29 +243,47 @@ export default function CreateAuctionForm({
       // Upload pigeon images
       if (pigeonImages.length > 0) {
         toast.loading('Przesyłanie zdjęć...', { id: 'auction-submit' });
+        
+        console.log('📤 [Frontend] Rozpoczynam upload zdjęć:', {
+          count: pigeonImages.length,
+          files: pigeonImages.map(f => ({ name: f.file.name, size: f.file.size, type: f.file.type }))
+        });
+
         const imageFormData = new FormData();
         imageFormData.append('type', 'image');
-        imageFormData.append('csrfToken', csrfToken);
+        imageFormData.append('csrfToken', csrfToken); // Przywracamy CSRF
+        
         pigeonImages.forEach(file => {
-          imageFormData.append('files', file.file);
+          if (file.file instanceof File) {
+             imageFormData.append('files', file.file);
+          } else {
+             console.error('❌ [Frontend] Błąd: Obiekt nie jest instancją File:', file);
+          }
         });
 
-        const imageResponse = await fetch('/api/upload', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: imageFormData,
-        });
+        try {
+          const imageResponse = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: imageFormData,
+          });
 
-        if (imageResponse.ok) {
-          const imageResult = await imageResponse.json();
-          uploadedImages = imageResult.files || [];
-          toast.loading('Zdjęcia przesłane pomyślnie', { id: 'auction-submit' });
-        } else {
-          const error = await imageResponse.json();
-          error('Błąd uploadu obrazów:', error);
-          throw new Error(`Błąd przesyłu zdjęć: ${error.message || 'Nieznany błąd'}`);
+
+          if (imageResponse.ok) {
+            const imageResult = await imageResponse.json();
+            uploadedImages = imageResult.files || [];
+            console.log('✅ [Frontend] Upload zakończony sukcesem:', uploadedImages);
+            toast.loading('Zdjęcia przesłane pomyślnie', { id: 'auction-submit' });
+          } else {
+            const errorData = await imageResponse.json();
+            console.error('❌ [Frontend] Błąd uploadu (odpowiedź serwera):', errorData);
+            throw new Error(errorData.error || `Błąd serwera: ${imageResponse.status}`);
+          }
+        } catch (err) {
+          console.error('❌ [Frontend] Wyjątek podczas uploadu:', err);
+          throw err;
         }
       }
 
@@ -510,7 +542,10 @@ export default function CreateAuctionForm({
           {/* Pola formularza w jednej linii, wyrównane */}
           <div className="space-y-1 mb-2">
             <div className="flex flex-row items-center gap-3">
-              <label className="w-40 text-base font-semibold text-white/80">Tytuł aukcji *</label>
+              <label className="w-40 text-base font-semibold text-white/80 flex items-center">
+                Tytuł aukcji *
+                <InfoTooltip text="Wpisz nazwę, która zachęci do zakupu, np. 'Syn Olimpijczyka - Super Rozpłodowiec'." />
+              </label>
               <input
                 type="text"
                 {...register('title')}
@@ -520,7 +555,10 @@ export default function CreateAuctionForm({
               {errors.title && <p className="text-red-400 text-sm ml-2">{errors.title.message}</p>}
             </div>
             <div className="flex flex-row items-center gap-3">
-              <label className="w-40 text-base font-semibold text-white/80">Opis *</label>
+              <label className="w-40 text-base font-semibold text-white/80 flex items-center">
+                Opis *
+                <InfoTooltip text="Opisz szczegóły: pochodzenie, osiągnięcia rodziców, cechy gołębia. Im więcej informacji, tym lepiej." />
+              </label>
               <textarea
                 {...register('description')}
                 rows={1}
@@ -532,7 +570,10 @@ export default function CreateAuctionForm({
               )}
             </div>
             <div className="flex flex-row items-center gap-3">
-              <label className="w-40 text-base font-semibold text-white/80">Kategoria *</label>
+              <label className="w-40 text-base font-semibold text-white/80 flex items-center">
+                Kategoria *
+                <InfoTooltip text="Wybierz 'Gołąb', jeśli sprzedajesz żywego ptaka." />
+              </label>
               <select
                 {...register('category')}
                 className="flex-1 px-3 py-2 text-base bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
@@ -558,8 +599,9 @@ export default function CreateAuctionForm({
             <>
               <div className="grid grid-cols-2 gap-1.5 mb-1">
                 <div>
-                  <label className="block text-sm font-semibold text-white/80 mb-0.5">
+                  <label className="block text-sm font-semibold text-white/80 mb-0.5 flex items-center">
                     Numer obrączki *
+                    <InfoTooltip text="Wpisz pełny numer z obrączki rodowej, np. PL-0123-24-12345." />
                   </label>
                   <input
                     type="text"
@@ -575,8 +617,9 @@ export default function CreateAuctionForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-white/80 mb-0.5">
+                  <label className="block text-sm font-semibold text-white/80 mb-0.5 flex items-center">
                     Linia krwi *
+                    <InfoTooltip text="Wpisz szczep lub pochodzenie, np. Janssen, Van den Bulck." />
                   </label>
                   <input
                     type="text"
@@ -962,7 +1005,10 @@ export default function CreateAuctionForm({
                   className="text-blue-600 focus:ring-blue-500"
                   title="Zaznacz aby włączyć licytację"
                 />
-                <label className="text-sm font-medium text-white/70">Cena wywoławcza (zł)</label>
+                <label className="text-sm font-medium text-white/70 flex items-center">
+                  Cena wywoławcza (zł)
+                  <InfoTooltip text="Kwota, od której rozpocznie się licytacja (np. 100 zł)." />
+                </label>
               </div>
               <input
                 type="number"
@@ -986,7 +1032,10 @@ export default function CreateAuctionForm({
                   className="text-blue-600 focus:ring-blue-500"
                   title="Zaznacz aby włączyć opcję Kup teraz"
                 />
-                <label className="text-sm font-medium text-white/70">Cena Kup teraz (zł)</label>
+                <label className="text-sm font-medium text-white/70 flex items-center">
+                  Cena Kup teraz (zł)
+                  <InfoTooltip text="Opcjonalnie: Kwota, za którą ktoś może kupić gołębia od razu, kończąc aukcję." />
+                </label>
               </div>
               <input
                 type="number"
@@ -1006,12 +1055,18 @@ export default function CreateAuctionForm({
 
           {/* Upload plików */}
           <div className="mb-1">
-            <h2 className="text-sm font-medium text-white/70 mb-1">Pliki *</h2>
+            <h2 className="text-sm font-medium text-white/70 mb-1 flex items-center">
+              Pliki *
+              <InfoTooltip text="Dodaj zdjęcia, filmy i rodowód. Im więcej materiałów, tym lepiej." />
+            </h2>
 
             <div className="grid grid-cols-2 gap-2">
               {/* Lewa kolumna - zdjęcia i filmy */}
               <div>
-                <h2 className="text-sm font-medium text-white/70 mb-1">Zdjęcia i filmy *</h2>
+                <h2 className="text-sm font-medium text-white/70 mb-1 flex items-center">
+                  Zdjęcia i filmy *
+                  <InfoTooltip text="Kliknij poniżej, aby wybrać zdjęcia i filmy z urządzenia." />
+                </h2>
                 <div className="flex gap-1.5">
                   {/* Zdjęcia gołębia */}
                   <div
@@ -1082,7 +1137,10 @@ export default function CreateAuctionForm({
 
               {/* Prawa kolumna - rodowód */}
               <div>
-                <h2 className="text-sm font-medium text-white/70 mb-1">Rodowód *</h2>
+                <h2 className="text-sm font-medium text-white/70 mb-1 flex items-center">
+                  Rodowód *
+                  <InfoTooltip text="Dodaj zdjęcie lub plik PDF rodowodu. To zwiększa zaufanie kupujących." />
+                </h2>
                 {watchedCategory === 'Pigeon' && (
                   <div
                     {...getPedigreeRootProps()}

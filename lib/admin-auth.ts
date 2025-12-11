@@ -27,7 +27,7 @@ export async function requireAdminAuth(request: NextRequest) {
 
     // Sprawdź rolę użytkownika w bazie danych
     const user = await prisma.user.findUnique({
-      where: { id: decodedToken.uid },
+      where: { firebaseUid: decodedToken.uid },
       select: { role: true, isActive: true },
     });
 
@@ -79,7 +79,7 @@ export async function requireAdminOrOwnerAuth(request: NextRequest, resourceOwne
 
     // Sprawdź rolę użytkownika w bazie danych
     const user = await prisma.user.findUnique({
-      where: { id: decodedToken.uid },
+      where: { firebaseUid: decodedToken.uid },
       select: { role: true, isActive: true },
     });
 

@@ -17,6 +17,7 @@ import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import * as logger from '@/lib/logger';
 
 type AuthMode = 'signin' | 'signup';
@@ -46,11 +47,11 @@ export default function FirebaseAuthForm({
     const emailVerified = searchParams.get('emailVerified') === 'true';
     if (verified && emailVerified) {
       setSuccess(
-        '✅ Email został pomyślnie zweryfikowany! Jesteś już zalogowany. Przejdź do panelu użytkownika, aby uzupełnić dane i zweryfikować numer telefonu.'
+        '✅ Email zweryfikowany! Poziom 2 odblokowany. Teraz możesz przejść do Panelu Użytkownika. Aby uzyskać pełny dostęp do aukcji (Poziom 3), uzupełnij profil i zweryfikuj telefon.'
       );
     } else if (verified) {
       setSuccess(
-        '✅ Email został pomyślnie zweryfikowany! Jesteś już zalogowany. Przejdź do panelu użytkownika, aby uzupełnić dane i zweryfikować numer telefonu.'
+        '✅ Email zweryfikowany! Poziom 2 odblokowany. Teraz możesz przejść do Panelu Użytkownika. Aby uzyskać pełny dostęp do aukcji (Poziom 3), uzupełnij profil i zweryfikuj telefon.'
       );
     }
   }, [searchParams]);
@@ -612,8 +613,13 @@ export default function FirebaseAuthForm({
             className="space-y-3"
           >
             {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-1 ml-1">
+                Adres email
+                <InfoTooltip text="Podaj adres email, którego używasz na co dzień. To będzie Twój login." />
+              </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-5 h-5" />
               <input
                 type="email"
                 value={email}
@@ -626,17 +632,23 @@ export default function FirebaseAuthForm({
                 }}
                 placeholder="Email"
                 autoComplete="email"
-                className={`w-full pl-10 pr-4 py-3 bg-transparent border rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full pl-12 pr-4 py-3 bg-transparent border rounded-xl text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                   formErrors.email ? 'border-red-500' : 'border-white/20'
                 }`}
                 disabled={isLoading}
               />
               {formErrors.email && <p className="text-red-400 text-sm mt-1">{formErrors.email}</p>}
+              </div>
             </div>
 
             {/* Hasło */}
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-1 ml-1">
+                Hasło
+                <InfoTooltip text="Wpisz swoje hasło. Musi mieć min. 8 znaków (małe i wielkie litery oraz cyfry)." />
+              </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-5 h-5" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
@@ -649,7 +661,7 @@ export default function FirebaseAuthForm({
                 }}
                 placeholder="Hasło"
                 autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                className={`w-full pl-10 pr-12 py-3 bg-transparent border rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full pl-12 pr-12 py-3 bg-transparent border rounded-xl text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                   formErrors.password ? 'border-red-500' : 'border-white/20'
                 }`}
                 disabled={isLoading}
@@ -657,7 +669,7 @@ export default function FirebaseAuthForm({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white transition-colors disabled:opacity-50"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black hover:text-gray-700 transition-colors disabled:opacity-50"
                 disabled={isLoading}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -665,12 +677,18 @@ export default function FirebaseAuthForm({
               {formErrors.password && (
                 <p className="text-red-400 text-sm mt-1">{formErrors.password}</p>
               )}
+              </div>
             </div>
 
             {/* Potwierdzenie hasła - tylko dla rejestracji */}
             {mode === 'signup' && (
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-1 ml-1">
+                  Powtórz hasło
+                  <InfoTooltip text="Wpisz to samo hasło jeszcze raz, aby uniknąć pomyłek." />
+                </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-5 h-5" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
@@ -683,13 +701,14 @@ export default function FirebaseAuthForm({
                   }}
                   placeholder="Potwierdź hasło"
                   autoComplete="new-password"
-                  className={`w-full pl-10 pr-4 py-3 bg-transparent border rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full pl-12 pr-4 py-3 bg-transparent border rounded-xl text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                     formErrors.confirmPassword ? 'border-red-500' : 'border-white/20'
                   }`}
                 />
                 {formErrors.confirmPassword && (
                   <p className="text-red-400 text-sm mt-1">{formErrors.confirmPassword}</p>
                 )}
+                </div>
               </div>
             )}
 

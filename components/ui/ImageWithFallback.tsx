@@ -2,7 +2,7 @@
 
 import { ImageIcon } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ImageWithFallbackProps {
   src: string;
@@ -30,6 +30,12 @@ export function ImageWithFallback({
       setImgSrc(fallbackSrc);
     }
   };
+
+  // Reset state when src changes
+  useEffect(() => {
+    setImgSrc(src);
+    setHasError(false);
+  }, [src, fallbackSrc]);
 
   if (hasError && imgSrc === fallbackSrc) {
     return (

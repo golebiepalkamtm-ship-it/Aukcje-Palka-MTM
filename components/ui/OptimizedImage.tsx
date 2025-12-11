@@ -37,17 +37,26 @@ export function OptimizedImage({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
   const [isInView, setIsInView] = useState(priority);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const imgRef = useRef<HTMLDivElement | null>(null);
 
   // Intersection Observer for lazy loading
   useEffect(() => {
     if (priority || isInView) return;
 
+    if (!('IntersectionObserver' in window)) {
+      setIsInView(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsInView(true);
-          observer.disconnect();
+          try {
+            observer.disconnect();
+          } catch {
+            // ignore
+          }
         }
       },
       {
@@ -60,7 +69,13 @@ export function OptimizedImage({
       observer.observe(imgRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      try {
+        observer.disconnect();
+      } catch {
+        // ignore
+      }
+    };
   }, [priority, isInView]);
 
   const handleLoad = () => {
@@ -80,17 +95,19 @@ export function OptimizedImage({
     if (src.startsWith('http') || src.startsWith('/api/')) {
       return src;
     }
+    // For local images, append query params safely
+    try {
+      const params = new URLSearchParams();
+      if (width) params.set('w', width.toString());
+      if (height) params.set('h', height.toString());
+      if (quality) params.set('q', quality.toString());
+      if (sizes) params.set('sizes', sizes);
 
-    // For local images, you might want to use Next.js Image Optimization
-    // or a service like Cloudinary
-    const params = new URLSearchParams();
-    if (width) params.set('w', width.toString());
-    if (height) params.set('h', height.toString());
-    if (quality) params.set('q', quality.toString());
-    if (sizes) params.set('sizes', sizes);
-
-    const queryString = params.toString();
-    return queryString ? `${src}?${queryString}` : src;
+      const queryString = params.toString();
+      return queryString ? `${src}${src.includes('?') ? '&' : '?'}${queryString}` : src;
+    } catch {
+      return src;
+    }
   };
 
   const optimizedSrc = getOptimizedSrc();

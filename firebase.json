@@ -1,36 +1,4 @@
 {
-  "functions": [
-    {
-      "codebase": "default",
-      "source": "functions",
-      "runtime": "nodejs18"
-    },
-    {
-      "codebase": "pigeonaucion",
-      "disallowLegacyRuntimeConfig": true,
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint",
-        "npm --prefix \"$RESOURCE_DIR\" run build"
-      ],
-      "source": "pigeonaucion"
-    },
-    {
-      "source": "aucion",
-      "codebase": "aucion",
-      "disallowLegacyRuntimeConfig": true,
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint",
-        "npm --prefix \"$RESOURCE_DIR\" run build"
-      ]
-    }
-  ],
   "emulators": {
     "dataconnect": {
       "dataDir": "dataconnect/.dataconnect/pgliteData"
@@ -47,7 +15,7 @@
   },
   "apphosting": [
     {
-      "backendId": "palka-mtm",
+      "backendId": "palkamtm",
       "rootDir": ".",
       "ignore": [
         "node_modules",

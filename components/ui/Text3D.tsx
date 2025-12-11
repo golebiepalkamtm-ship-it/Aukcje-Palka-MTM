@@ -28,22 +28,21 @@ export function Text3D({
   };
 
   const intensityMap = {
-    low: { scale: 1.02, rotateX: 2, rotateY: 2 },
-    medium: { scale: 1.05, rotateX: 5, rotateY: 5 },
-    high: { scale: 1.08, rotateX: 8, rotateY: 8 },
+    low: { scale: 1.02 },
+    medium: { scale: 1.05 },
+    high: { scale: 1.08 },
   };
 
   const currentIntensity = intensityMap[intensity];
 
   return (
     <motion.span
-      initial={animate ? { opacity: 0, y: 20, rotateX: -10 } : {}}
+      initial={animate ? { opacity: 0, y: 20 } : {}}
       animate={
         animate
           ? {
               opacity: 1,
               y: 0,
-              rotateX: 0,
             }
           : {}
       }
@@ -51,8 +50,6 @@ export function Text3D({
         hover
           ? {
               scale: currentIntensity.scale,
-              rotateX: currentIntensity.rotateX,
-              rotateY: currentIntensity.rotateY,
               transition: { duration: 0.3, type: 'spring', stiffness: 300 },
             }
           : {}

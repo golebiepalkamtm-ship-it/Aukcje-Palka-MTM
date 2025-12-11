@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, RotateCw, X, ZoomIn, ZoomOut } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface FullscreenImageModalProps {
   isOpen: boolean;
@@ -136,9 +137,18 @@ export function FullscreenImageModal({
     setPosition({ x: 0, y: 0 });
   };
 
+  // Sprawdź czy jesteśmy w przeglądarce dla portalu
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted) return null;
+
   if (!isOpen || images.length === 0) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -146,7 +156,18 @@ export function FullscreenImageModal({
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[99999] bg-black flex items-center justify-center"
         onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="fullscreen-image-modal-title"
+        aria-describedby="fullscreen-image-modal-description"
       >
+        {/* Hidden title and description for accessibility */}
+        <h2 id="fullscreen-image-modal-title" className="sr-only">
+          {title || 'Podgląd zdjęć'} - Zdjęcie {activeIndex + 1} z {images.length}
+        </h2>
+        <p id="fullscreen-image-modal-description" className="sr-only">
+          Modal do przeglądania zdjęć w trybie pełnoekranowym. Użyj strzałek lub przycisków nawigacji, aby przejść do poprzedniego lub następnego zdjęcia. Naciśnij Escape lub kliknij przycisk zamknij, aby zamknąć.
+        </p>
         {/* Header */}
         <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/50 to-transparent">
           <div className="flex items-center justify-between text-white">
@@ -299,6 +320,7 @@ export function FullscreenImageModal({
           </div>
         )}
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
